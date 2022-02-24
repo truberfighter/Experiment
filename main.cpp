@@ -23,7 +23,7 @@ SDL_Texture *theTexture2;
 using namespace std;
 SDL_Event currentEvent;
 EventHandler* theEventHandler = new EventHandler;
-Drawing someDrawing(theRenderer);
+shared_ptr<Drawing> someDrawing;
 int main( int argc, char* args[] ){
 
 //The window we'll be rendering to
@@ -44,7 +44,8 @@ int main( int argc, char* args[] ){
   	cout<<"kevin19"<<endl;
   IMG_Init(imgflags);
   theRenderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
-  someDrawing.m_setRenderer(theRenderer);
+  cout<<"guenther"<<endl;
+  someDrawing = make_shared<Drawing>(theRenderer);
   cout<<"Kevin"<<endl;
   //if(theRenderer==NULL)cout<<"Guenther"<<endl;
   if( window == NULL ){
@@ -56,7 +57,8 @@ int main( int argc, char* args[] ){
    //Fill the surface with color
    SDL_UpdateWindowSurface( window ); //Update the surface
    theTexture = IMG_LoadTexture(theRenderer, "bilder/2022-01-03.png");
-   MovableThing* theMovableThing2 = new MovableThing(theRenderer, 90, 90, "bilder/2022-02-12.png", 0, 0, true);;
+   shared_ptr<MovableThing> theMovableThing2;
+   theMovableThing2 = make_shared<MovableThing>(theRenderer, 90, 90, "bilder/2022-02-12.png", 0, 0, true);;
    if(theTexture == NULL) cout<<"kevinkevinkevin"<<endl;
    for(int i(0); i<10; i++){
    SDL_Rect *theRect = new SDL_Rect;
@@ -82,21 +84,25 @@ int main( int argc, char* args[] ){
   SDL_RenderPresent(theRenderer);
   //SDL_Delay(2000);
   //SDL_DestroyTexture(noOneLikesU);
-  SDL_RenderPresent(theRenderer);
+  //SDL_RenderPresent(theRenderer);
   Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
   MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
-  MovableDrawingElement mel(theRenderer, theMovableThing);
-  someDrawing.m_add(&mel);
+  cout<<"theMovableThing erfolgreich initialisiert"<<endl;
+  //MovableDrawingElement mel(theRenderer, theMovableThing);
+  if(!someDrawing) cout<<"lol"<<endl;
+  someDrawing->m_add(theMovableThing);cout<<"line 91"<<endl;
   //SDL_Delay(3000);
     //theMovableThing->m_drawRight();
     SDL_Delay(400);
     MovableThing* theMovableThing2 = new MovableThing(theRenderer, 90, 90, "bilder/2022-02-12.png", 280, 220, true);;
-    auto a = new MovableDrawingElement(theRenderer, theMovableThing2);
-
-    someDrawing.m_add(a);
+    //auto a = new MovableDrawingElement(theRenderer, theMovableThing2);
+    cout<<"theMovableThing2 erfolgreich initialisiert"<<endl;
+    someDrawing->m_add(theMovableThing2);
+    SDL_RenderPresent(theRenderer);
+    SDL_Delay(STANDARD_DRAWING_TIME);
     theEventHandler->m_setWhatToMove(theMovableThing);
     std::cout<<"g"<<std::endl;
-    theEventHandler->m_setCurrentDrawing(&someDrawing);
+    theEventHandler->m_setCurrentDrawing(someDrawing);
     MAIN_LOOP_BEGIN
   /*if(currentEvent.type == SDL_KEYDOWN){
 	  cout<<"SDL_KEYDOWN, nämlich: "<<currentEvent.key.keysym.sym<<endl;
@@ -115,7 +121,7 @@ int main( int argc, char* args[] ){
   MAIN_LOOP_END
   theMovableThing2->m_setMoveToDirection(UP_RIGHT);
   theMovableThing2->m_move();
-  someDrawing.m_draw(true);
+  someDrawing->m_draw(0);
     				//SDL_Delay(1000);
   //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
   //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);

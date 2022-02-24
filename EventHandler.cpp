@@ -42,7 +42,7 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 		if(keyCode == keyPossibilities[i]){
 			m_whatToMove->m_setMoveToDirection(directions[i]);
 			m_whatToMove->m_move();
-			m_currentDrawing->m_draw(true);		}
+			m_currentDrawing->m_draw();		}
 	}
 	switch(event.key.keysym.sym){
 
@@ -53,6 +53,6 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 	return true;
 }
 
-void EventHandler::m_setCurrentDrawing(Drawing* drawing){
+void EventHandler::m_setCurrentDrawing(std::shared_ptr<Drawing> drawing){
 	m_currentDrawing = drawing;
 }

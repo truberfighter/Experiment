@@ -38,8 +38,7 @@ public:
 
 
 
-
-class DrawingElement{
+class DrawingElement: public std::enable_shared_from_this<DrawingElement>{
 protected:
 	int m_row;
 	int m_column;
@@ -51,13 +50,14 @@ public:
 	DrawingElement(const DrawingElement&);
 	DrawingElement(int row, int column, SDL_Renderer* renderer, Layer layer = STANDARD_LAYER);
 	virtual ~DrawingElement(){}
-	virtual bool m_draw(SDL_Renderer* renderer = nullptr) = 0;
+	virtual int m_draw(SDL_Renderer* renderer = nullptr) = 0;
 	Layer m_getLayer();
 	void m_setLayer(int layer);
-	virtual bool m_equals(DrawingElement& comparedElToDr) = 0;
+	virtual bool m_equals(DrawingElement& comparedDrEl) = 0;
 	bool m_add(Drawing* newDrawing);
 	void m_climbToTop(Layer layer);
 	void m_climbToTop();
+	void m_removeDrawing(Drawing* drawing);
 };
 
 class MovableDrawingElement: public DrawingElement{
@@ -68,27 +68,33 @@ public:
 	virtual ~MovableDrawingElement();
 	virtual Drawing_Element m_DrawingElement();
 	MovableThing* Content();
-	virtual bool m_equals(DrawingElement& comparedDrEl);
-	virtual bool m_draw(SDL_Renderer* renderer = nullptr);
+	virtual bool m_equals(DrawingElement& comparedDrEl) override;
+	virtual int m_draw(SDL_Renderer* renderer = nullptr) override;
 
 
 };
 
-class Drawing{
+class Drawing: public DrawingElement{
 protected:
-	SDL_Renderer* m_renderer;
-	std::list<DrawingElement*> m_drawingList;
+	std::list<std::shared_ptr<DrawingElement>> m_drawingList;
 	void m_updateByLayers();
+	virtual int m_drawAtRenderer(SDL_Renderer* renderer);
 public:
-	Drawing(SDL_Renderer* renderer);
-	Drawing(SDL_Renderer* renderer, std::list<DrawingElement*> drawingList);
-	int m_draw(bool deleteBefore = false);
-	void m_add(DrawingElement* drawingElement);
-	void m_delete(DrawingElement* drElToDelete);
+	Drawing(SDL_Renderer* renderer, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
+	Drawing(SDL_Renderer* renderer, std::list<std::shared_ptr<DrawingElement>> drawingList, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
+	virtual ~Drawing();
+	virtual int m_draw(SDL_Renderer* renderer = nullptr) override;
+	void m_add(std::shared_ptr<DrawingElement> drawingElement);
+	void m_delete(std::shared_ptr<DrawingElement> drElToDelete);
 	//zeichne eine Figur nach oben
-	void m_putOver(DrawingElement* drElToUpdate, Layer layer);
-	bool m_updateLayer(DrawingElement* drElToUpdate, int newLayer);
+	void m_putOver(std::shared_ptr<DrawingElement> drElToUpdate, Layer layer);
+	bool m_updateLayer(std::shared_ptr<DrawingElement> drElToUpdate, int newLayer);
 	void m_setRenderer(SDL_Renderer* renderer);
+	virtual bool m_equals(DrawingElement& comparedDrEl);
+	virtual Drawing_Element m_DrawingElement();
+	void m_add(MovableThing* movableEntity);
+
+
 };
 
 #endif /* DRAWING_HPP_ */

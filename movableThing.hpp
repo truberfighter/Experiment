@@ -13,7 +13,6 @@ struct Velocity{
 };
 
 enum{STANDARD_x_VELOCITY = 100, STANDARD_y_VELOCITY = STANDARD_x_VELOCITY, NOT_MOVING = 0};
-enum{STANDARD_DRAWING_TIME = 200};
 class MovableThing{//Redactoring coming: Rect-Farb-Version muss kommen
 protected:
 	std::list<MovableDrawingElement*> m_howDrawn;

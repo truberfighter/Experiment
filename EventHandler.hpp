@@ -21,14 +21,14 @@ protected:
 	//Direction m_directionFromKeyPressed(unsigned int keysym);
 	bool m_handleKeyboardEvent(const SDL_Event& event);
 	std::list<Drawing*> m_currentDrawings;//Oder so. Damit "Wait" funktioniert.
-	Drawing* m_currentDrawing;
+	std::shared_ptr<Drawing> m_currentDrawing;
 public:
 	EventHandler();
 	bool m_handleEvent(const SDL_Event& event);
 	void m_setWhatToMove(MovableThing* whatToMove);
 	bool m_deleteDrawing(Drawing* drawingToDelete);
 	bool m_addDrawing(Drawing* drawingToAdd);
-	void m_setCurrentDrawing(Drawing* drawing);
+	void m_setCurrentDrawing(std::shared_ptr<Drawing> drawing);
 	void m_draw();
 };
 

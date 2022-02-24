@@ -19,6 +19,10 @@ Texture::Texture(SDL_Texture* texture, int width, int height)
 
 }
 
+Texture::~Texture(){
+	SDL_DestroyTexture(m_theTexture);
+}
+
 Coordinate::Coordinate(int a, int b)
     : x(a), y(b) {}
 
@@ -34,6 +38,5 @@ bool Coordinate::operator!=(const Coordinate& other){
     if(*this == other)
         return false;
     else
-        true;
+       return true;
 }
-
