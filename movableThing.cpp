@@ -16,7 +16,7 @@ using namespace std;
 unsigned int MovableThing::moveCount;
 
 
-MovableThing::MovableThing(SDL_Renderer* renderer, Texture* texture, int x, int y, bool renderInstantly)
+MovableThing::MovableThing(SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int x, int y, bool renderInstantly)
 : m_x(x), m_y(y), m_renderer(renderer), m_texture(texture)
 {
 	if(!renderer){
@@ -28,8 +28,8 @@ MovableThing::MovableThing(SDL_Renderer* renderer, Texture* texture, int x, int 
 		//return;
 	}
 	else{
-		m_standardXVelocity = texture->Width();
-		m_standardYVelocity = texture->Height();
+		m_standardXVelocity = texture->m_Width();
+		m_standardYVelocity = texture->m_Height();
 	}
 	if(renderInstantly){
 		m_drawNew(m_x, m_y, m_renderer, m_texture);
@@ -37,16 +37,16 @@ MovableThing::MovableThing(SDL_Renderer* renderer, Texture* texture, int x, int 
 }
 
 MovableThing::MovableThing(SDL_Renderer* renderer, int width, int height, const char* filename, int x, int y, bool renderInstantly)
-: MovableThing(renderer, nullptr, x, y)
+: MovableThing(renderer, nullptr, x % (STANDARD_FIELD_SIZE*WORLD_LENGTH), y % (STANDARD_FIELD_SIZE * WORLD_HEIGHT))
 {
 	SDL_Texture* newTexture = IMG_LoadTexture(renderer, filename);
-	m_texture = new Texture(newTexture, width, height);
-	m_standardXVelocity = m_texture->Width();
-	m_standardYVelocity = m_texture->Height();
+	m_texture = std::make_shared<Texture>(newTexture, width, height);
+	m_standardXVelocity = m_texture->m_Width();
+	m_standardYVelocity = m_texture->m_Height();
 }
 
 
-bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, Texture* texture){
+bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, std::shared_ptr<Texture> texture){
 
 	if(!renderer){
 		cout<<"No valid renderer for MovableThing"<<endl;
@@ -57,11 +57,11 @@ bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, Texture* text
 		return false;
 	}
 	SDL_Rect rect;
-	rect.x = x;
-	rect.y = y;
-	rect.h = texture->Height();
-	rect.w = texture->Width();
-	cout<<"x: "<<x<<", y: "<<y<<"Height: "<<rect.h<<"Width: "<<rect.w<<endl;
+	rect.x = x% (STANDARD_FIELD_SIZE*WORLD_LENGTH);
+	rect.y = y% (STANDARD_FIELD_SIZE * WORLD_HEIGHT);
+	rect.h = texture->m_Height();
+	rect.w = texture->m_Width();
+	cout<<"x: "<<x% (STANDARD_FIELD_SIZE * WORLD_LENGTH)<<", y: "<<y% (STANDARD_FIELD_SIZE * WORLD_HEIGHT)<<"Height: "<<rect.h<<"Width: "<<rect.w<<endl;
 	SDL_Texture* textureToDraw = m_texture->theTexture();
 	if(!textureToDraw){
 		cout<<"No SDL_texture in the texture!"<<endl;
@@ -70,22 +70,26 @@ bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, Texture* text
 		cout<<"SDL_Error: %s\n"<<SDL_GetError()<<endl;
 		return false;
 	}
-	SDL_RenderPresent(m_renderer);
+	//SDL_RenderPresent(m_renderer);
 	//Update data for your instance
 	m_renderer = renderer;
 	m_texture = texture;
-	m_x = x;
-	m_y = y;
-	SDL_Delay(STANDARD_DRAWING_TIME);
+	m_x = x% (STANDARD_FIELD_SIZE*WORLD_LENGTH);
+	m_y = y% (STANDARD_FIELD_SIZE * WORLD_HEIGHT);
+	//SDL_Delay(STANDARD_DRAWING_TIME);
 	return true;
 }
 
-bool MovableThing::m_drawNew(SDL_Renderer* renderer, Texture* texture){
+bool MovableThing::m_drawNew(SDL_Renderer* renderer, std::shared_ptr<Texture> texture){
 	return 	m_drawNew(m_x, m_y ,renderer, texture);
 }
 
-bool MovableThing::m_drawNew(Texture* texture){
+bool MovableThing::m_drawNew(std::shared_ptr<Texture> texture){
 	return 	m_drawNew(m_x, m_y ,m_renderer, texture);
+}
+
+bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer){
+	return m_drawNew(x,y,renderer, m_texture);
 }
 
 bool MovableThing::m_drawNew(SDL_Renderer* renderer){
@@ -99,7 +103,7 @@ bool MovableThing::m_drawNew(){
 bool MovableThing::m_drawNew(int x, int y){
 	return 	m_drawNew(x, y ,m_renderer, m_texture);
 }
-bool MovableThing::m_drawAfterMotion(Texture* texture, bool moveFurther){
+bool MovableThing::m_drawAfterMotion(std::shared_ptr<Texture> texture, bool moveFurther){
 	 if(m_drawNew(m_x + m_xVelocity, m_y + m_yVelocity, m_renderer, texture)){
 		 m_move();
 		 return true;
@@ -117,8 +121,8 @@ bool MovableThing::m_drawRight(){
 }
 
 void MovableThing::m_move(bool moveFurther){
-	m_x+=m_xVelocity;
-	m_y+=m_yVelocity;
+	m_x=xModulo(m_xVelocity+m_x);
+	m_y=yModulo(m_y+ m_yVelocity);
 	cout<<"m_move(): x: "<<m_x<<"y: "<<m_y<<endl;
 	if(!moveFurther){
 		 m_xVelocity = NOT_MOVING;

@@ -14,6 +14,7 @@
 #include "sdltypes.hpp"
 #include "movableThing.hpp"
 #include "Drawing.hpp"
+#include "Window.hpp"
 
 class EventHandler{
 protected:

@@ -27,9 +27,13 @@ Drawing::Drawing(SDL_Renderer* renderer,  std::list<shared_ptr<DrawingElement>> 
 : DrawingElement(row, column, renderer, layer), m_drawingList(drawingList){}
 
 DrawingElement::DrawingElement(int row, int column, SDL_Renderer* renderer, Layer layer)
-:  m_row(row), m_column(column), m_renderer(renderer), m_layer (layer){}
+:  m_row(row% (STANDARD_FIELD_SIZE * WORLD_LENGTH)), m_column(column% (STANDARD_FIELD_SIZE * WORLD_HEIGHT)), m_renderer(renderer), m_layer (layer){}
 
-bool DrawingElement::m_add(Drawing* newDrawing){
+SDL_Renderer* DrawingElement::m_Renderer(){
+	return m_renderer;
+}
+
+bool DrawingElement::m_addDrawing(Drawing* newDrawing){
 	//Noch keine Fehlermeldungen, doch zur Sicherheit mal bool!
 	//list<Drawing*> newList = m_whereToDraw;
 	m_whereToDraw.push_back(newDrawing);
@@ -53,12 +57,13 @@ bool MovableDrawingElement::m_equals(DrawingElement& comparedDrEl){
 	return m_content == reinterpret_cast<MovableDrawingElement*>(&comparedDrEl)->m_content;
 }
 
-int MovableDrawingElement::m_draw(SDL_Renderer* renderer){
+int MovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
+	Coordinate c = m_content->getPosition();
 	if(renderer!=nullptr){
-		return m_content->m_drawNew(renderer) ? 1 : 0;
+		return m_content->m_drawNew(rowShift + c.x, columnShift + c.y, renderer) ? 1 : 0;
 	}
 	else{ //renderer==nullptr
-		return m_content->m_drawNew() ? 1 : 0;	}
+		return m_content->m_drawNew(rowShift + c.x,columnShift + c.y) ? 1 : 0;	}
 }
 
 Drawing_Element MovableDrawingElement::m_DrawingElement(){
@@ -69,6 +74,12 @@ MovableDrawingElement::MovableDrawingElement(SDL_Renderer* renderer, MovableThin
 : DrawingElement(movableEntity->getPosition().x, movableEntity->getPosition().y, renderer, STANDARD_LAYER), m_content(movableEntity)
 {
 	movableEntity->m_add(this);
+}
+
+bool MovableDrawingElement::m_updatePosition(){
+	Coordinate c = m_content->getPosition();
+	m_row = c.x;
+	m_column = c.y;
 }
 
 void DrawingElement::m_climbToTop(Layer layer){
@@ -84,32 +95,35 @@ void DrawingElement:: m_climbToTop(){
 
 void Drawing::m_add(shared_ptr<DrawingElement> drawingElement){
 	m_putOver(drawingElement, drawingElement->m_getLayer());
-	if(!drawingElement->m_add(this)){
+	if(!drawingElement->m_addDrawing(this)){
 		cout<<"Failed to synchronize Drawing and DrawingElement"<<endl;
 	}
 }
 
-int Drawing::m_drawAtRenderer(SDL_Renderer* renderer){
-	if(SDL_RenderClear(m_renderer) == 0)
+int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnShift){
+	/*if(SDL_RenderClear(m_renderer) == 0)
 			cout<<"Renderer is cleared"<<endl;
 		else
 			std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
+			*/
 	SDL_RenderPresent(m_renderer);
 
 	int whatToReturn = m_drawingList.size();
-	cout<<"whatToReturn: "<<whatToReturn<<endl;
+	//cout<<"whatToReturn: "<<whatToReturn<<endl;
 	for(auto &it: m_drawingList){
-		if(it->m_draw(m_renderer) == true){
-			cout<<"Erfolgreiche Zeichnung!"<<endl;
+		if(it->m_draw(rowShift, columnShift, renderer) == true){
+			//cout<<"Erfolgreiche Zeichnung!"<<endl;
 			whatToReturn--;
 		}
 	}
 	return whatToReturn;
 }
 
-int Drawing::m_draw(SDL_Renderer* renderer){
+int Drawing::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
 	SDL_Renderer* rendererToUse = renderer ? renderer : m_renderer;
-	return m_drawAtRenderer(rendererToUse);
+	int whatToReturn = m_drawAtRenderer(rendererToUse, rowShift, columnShift);
+	SDL_RenderPresent(rendererToUse);
+	return whatToReturn;
 }
 
 
@@ -170,8 +184,60 @@ bool Drawing::m_equals(DrawingElement& comparedDrEl){
 	return true;
 }
 
+bool Drawing::m_updatePosition(){
+	return false;
+}
+
+int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer ){
+	m_updatePosition();
+	if(!renderer){
+			cout<<"No valid renderer for ImmovableDrawingElement"<<endl;
+			return 0;
+		}
+		cout<<"m_draw aufgerufen und renderer != nullptr"<<endl;
+		SDL_Rect rect;
+		if(!m_texture){
+					cout<<"No valid texture in ImmovableDrawingElement to draw"<<endl;
+					return 0;
+				}
+		//m_texture->m_Height();
+		//cout<<"m_texture ist schonmal vorhanden in ImmovableDrawingElement to draw"<<endl;
+ 		rect.x = modulo(m_row + rowShift, STANDARD_FIELD_SIZE * WORLD_LENGTH);
+		rect.y = modulo(m_column + columnShift, STANDARD_FIELD_SIZE * WORLD_HEIGHT);
+		//cout<<"Guenther"<<m_texture->m_Height()<<endl;
+		rect.h = m_texture->m_height;
+		rect.w = m_texture->m_width;
+		//cout<<"ImmovableDrawingElement.\n x: "<<rect.x<<", y: "<<rect.y<<"Height: "<<rect.h<<"Width: "<<rect.w<<endl;
+
+		SDL_Texture* textureToDraw = m_texture->theTexture();
+		if(!textureToDraw){
+			cout<<"No SDL_texture in the texture!"<<endl;
+		}
+		if(SDL_RenderCopy(renderer, m_texture->theTexture(), NULL, &rect)!=0){
+			cout<<"SDL_Error: %s\n"<<SDL_GetError()<<endl;
+			return 0;
+		}
+		//SDL_RenderPresent(m_renderer);
+		//Update data for your instance
+		m_renderer = renderer;
+		//SDL_Delay(STANDARD_DRAWING_TIME);
+		return true;
+
+}
+
 	/*else{
 		m_drawingList.pop_front();
 	}*/
 	//m_drawingList.insert(whereToInsert, drElToUpdate);
+
+
+ImmovableDrawingElement::ImmovableDrawingElement(SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row, int column, Layer layer)
+: DrawingElement(row, column, renderer, layer), m_texture(texture)
+{
+
+}
+
+
+
+
 

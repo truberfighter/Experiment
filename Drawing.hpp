@@ -50,14 +50,19 @@ public:
 	DrawingElement(const DrawingElement&);
 	DrawingElement(int row, int column, SDL_Renderer* renderer, Layer layer = STANDARD_LAYER);
 	virtual ~DrawingElement(){}
-	virtual int m_draw(SDL_Renderer* renderer = nullptr) = 0;
+	virtual int m_draw(int rowShift, int columnShift, SDL_Renderer* renderer = nullptr) = 0;
 	Layer m_getLayer();
 	void m_setLayer(int layer);
 	virtual bool m_equals(DrawingElement& comparedDrEl) = 0;
-	bool m_add(Drawing* newDrawing);
+	bool m_addDrawing(Drawing* newDrawing);
 	void m_climbToTop(Layer layer);
 	void m_climbToTop();
 	void m_removeDrawing(Drawing* drawing);
+	Coordinate m_getPosition(){
+		return Coordinate(m_row, m_column);
+	}
+	virtual bool m_updatePosition()=0;
+	SDL_Renderer* m_Renderer();
 };
 
 class MovableDrawingElement: public DrawingElement{
@@ -69,21 +74,21 @@ public:
 	virtual Drawing_Element m_DrawingElement();
 	MovableThing* Content();
 	virtual bool m_equals(DrawingElement& comparedDrEl) override;
-	virtual int m_draw(SDL_Renderer* renderer = nullptr) override;
-
-
+	virtual int m_draw(int rowShift, int columnShift, SDL_Renderer* renderer = nullptr) override;
+//	virtual Coordinate m_getPosition() override;
+	virtual bool m_updatePosition();
 };
 
 class Drawing: public DrawingElement{
 protected:
 	std::list<std::shared_ptr<DrawingElement>> m_drawingList;
 	void m_updateByLayers();
-	virtual int m_drawAtRenderer(SDL_Renderer* renderer);
+	virtual int m_drawAtRenderer(SDL_Renderer* renderer, int rowShift = 0, int columnShift = 0);
 public:
 	Drawing(SDL_Renderer* renderer, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
 	Drawing(SDL_Renderer* renderer, std::list<std::shared_ptr<DrawingElement>> drawingList, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
 	virtual ~Drawing();
-	virtual int m_draw(SDL_Renderer* renderer = nullptr) override;
+	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
 	void m_add(std::shared_ptr<DrawingElement> drawingElement);
 	void m_delete(std::shared_ptr<DrawingElement> drElToDelete);
 	//zeichne eine Figur nach oben
@@ -93,8 +98,22 @@ public:
 	virtual bool m_equals(DrawingElement& comparedDrEl);
 	virtual Drawing_Element m_DrawingElement();
 	void m_add(MovableThing* movableEntity);
+	virtual bool m_updatePosition();
+	//virtual Coordinate m_getPosition() override;
+};
 
-
+class ImmovableDrawingElement: public DrawingElement{
+protected:
+	std::shared_ptr<Texture> m_texture;
+public:
+	ImmovableDrawingElement (SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row = 0, int column = 0, Layer layer = STANDARD_FIELD_LAYER);
+	virtual ~ImmovableDrawingElement(){}
+	virtual bool m_updatePosition(){return false;}
+	virtual Drawing_Element m_DrawingElement(){return IMMOVABLE_DRAWING_ELEMENT;}
+	virtual bool m_equals(DrawingElement& comparedDrEl){return &comparedDrEl == this;}
+	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
+	std::shared_ptr<Texture> getTexture(){return m_texture;}
+	void setTexture(std::shared_ptr<Texture> texture){m_texture = texture;}
 };
 
 #endif /* DRAWING_HPP_ */

@@ -12,19 +12,38 @@
 #include <SDL2\SDL_image.h>
 #include "drawing.hpp"
 #include "EventHandler.hpp"
+#include "Window.hpp"
+#include "Field.hpp"
+#include "GameMain.hpp"
+#include "FieldContainer.hpp"
+#include "Settlers.hpp"
+#include "Grassland.hpp"
 
 #define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ while(SDL_PollEvent(&currentEvent)!=0){if(currentEvent.type == SDL_QUIT) quit = true;
 #define MAIN_LOOP_END }}
 //Screen dimension constants
-const int SCREEN_WIDTH = 640,SCREEN_HEIGHT= 480;
-SDL_Renderer *theRenderer;
-SDL_Texture *theTexture;
-SDL_Texture *theTexture2;
+//const int SCREEN_WIDTH = 640,SCREEN_HEIGHT= 480;
+//SDL_Renderer *theRenderer;
+//SDL_Texture *theTexture;
+//SDL_Texture *theTexture;
 using namespace std;
-SDL_Event currentEvent;
-EventHandler* theEventHandler = new EventHandler;
-shared_ptr<Drawing> someDrawing;
+//SDL_Event currentEvent;
+//EventHandler* theEventHandler = new EventHandler;
+//shared_ptr<Drawing> someDrawing;
+
 int main( int argc, char* args[] ){
+	initFieldContainer();
+	vector<Meridian>& meridianContainer = *theContainer->m_getFieldsOfTheWorld();
+	Settlers s;
+	Meridian& meridian = meridianContainer[0];
+	if(meridian[0]->m_Mining(s))
+		cout<<"MiningSuccess<<"<<endl;
+	else
+		cout<<"MiningFail"<<endl;
+
+	   //MovableThing* mmm = nullptr;
+
+	   //mmm->m_add(nullptr);
 
 //The window we'll be rendering to
  SDL_Window* window = NULL;
@@ -35,27 +54,35 @@ int main( int argc, char* args[] ){
  if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
+	 cout<<"hä?"<<endl;
+/*	 if( TTF_Init() == -1 )
+	                 {
+	                     printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
+	                 }*/
+	 int imgflags = IMG_INIT_PNG;
+	   	cout<<"kevin19"<<endl;
+	   IMG_Init(imgflags);
+   Window theWindow("SDL Tutorial lol", SCREEN_WIDTH, SCREEN_HEIGHT);
+
   //Create window
   SDL_Texture *noOneLikesU;
-  window = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED
-  , SDL_WINDOWPOS_UNDEFINED
-  , SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-  int imgflags = IMG_INIT_PNG;
-  	cout<<"kevin19"<<endl;
-  IMG_Init(imgflags);
-  theRenderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+  theRenderer = theWindow.m_Renderer();
+  FieldContainer& fc = *theContainer;
+  Meridian& m = (*(fc.m_getFieldsOfTheWorld()))[0];cout<<"main 63"<<endl;
+  //TTF_Init();
   cout<<"guenther"<<endl;
-  someDrawing = make_shared<Drawing>(theRenderer);
+
+  someDrawing = /*make_shared<Drawing>(theWindow.m_Renderer());*/ theWindow.m_CurrentDrawing();
   cout<<"Kevin"<<endl;
   //if(theRenderer==NULL)cout<<"Guenther"<<endl;
-  if( window == NULL ){
+  /*if( window == NULL ){
    std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
-  }else{
-   screenSurface = SDL_GetWindowSurface( window ); //Get window surface
+  }else{*/
+   /*screenSurface = SDL_GetWindowSurface( window ); //Get window surface
    SDL_FillRect( screenSurface, NULL
    , SDL_MapRGB( screenSurface->format, 0x00, 0xFF, 0xFF ) );
    //Fill the surface with color
-   SDL_UpdateWindowSurface( window ); //Update the surface
+   SDL_UpdateWindowSurface( window ); //Update the surface*/
    theTexture = IMG_LoadTexture(theRenderer, "bilder/2022-01-03.png");
    shared_ptr<MovableThing> theMovableThing2;
    theMovableThing2 = make_shared<MovableThing>(theRenderer, 90, 90, "bilder/2022-02-12.png", 0, 0, true);;
@@ -85,7 +112,7 @@ int main( int argc, char* args[] ){
   //SDL_Delay(2000);
   //SDL_DestroyTexture(noOneLikesU);
   //SDL_RenderPresent(theRenderer);
-  Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
+  std::shared_ptr<Texture> texture =std::make_shared <Texture>(theTexture,someColoredRect.w, someColoredRect.h);
   MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
   cout<<"theMovableThing erfolgreich initialisiert"<<endl;
   //MovableDrawingElement mel(theRenderer, theMovableThing);
@@ -117,7 +144,11 @@ int main( int argc, char* args[] ){
   			}
   		}
   	}*/
-	theEventHandler->m_handleEvent(currentEvent);
+	if(theEventHandler->m_handleEvent(currentEvent)){
+		//TTF_Font* theFont = TTF_OpenFont("Fonts/javatext.ttf", 24);
+		//SDL_Color theColor {233, 46, 56};
+	//	screenSurface = TTF_RenderText_Blended(theFont, "Komischer Text in komischer Schrift",  theColor);
+	}
   MAIN_LOOP_END
   theMovableThing2->m_setMoveToDirection(UP_RIGHT);
   theMovableThing2->m_move();
@@ -127,8 +158,10 @@ int main( int argc, char* args[] ){
   //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
   SDL_Delay(3000);
   //theMovableThing->m_drawRight();
- }
+
  SDL_DestroyWindow( window ); //Destroy window
+ //TTF_Quit();
+ IMG_Quit();
  SDL_Quit();  //Quit SDL subsystems
  return 0;
 }
