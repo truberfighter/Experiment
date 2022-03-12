@@ -20,14 +20,15 @@ using namespace std;
 Drawing::Drawing(SDL_Renderer* renderer, int row, int column, Layer layer)
 : DrawingElement(row, column, renderer, layer)
 {
+	cout<<"Drawingkonstruktor, this ="<<this;
 	std::list<DrawingElement*> m_drawingList;
 }
 
-Drawing::Drawing(SDL_Renderer* renderer,  std::list<shared_ptr<DrawingElement>> drawingList, int row, int column, Layer layer)
+Drawing::Drawing(SDL_Renderer* renderer,  std::list<shared_ptr<DrawingElement>>& drawingList, int row, int column, Layer layer)
 : DrawingElement(row, column, renderer, layer), m_drawingList(drawingList){}
 
 DrawingElement::DrawingElement(int row, int column, SDL_Renderer* renderer, Layer layer)
-:  m_row(row% (STANDARD_FIELD_SIZE * WORLD_LENGTH)), m_column(column% (STANDARD_FIELD_SIZE * WORLD_HEIGHT)), m_renderer(renderer), m_layer (layer){}
+:  m_row(row% (STANDARD_FIELD_SIZE * WORLD_LENGTH)), m_column(column% (STANDARD_FIELD_SIZE * WORLD_HEIGHT)), m_renderer(renderer), m_layer (layer), enable_shared_from_this(){}
 
 SDL_Renderer* DrawingElement::m_Renderer(){
 	return m_renderer;
@@ -85,7 +86,8 @@ bool MovableDrawingElement::m_updatePosition(){
 void DrawingElement::m_climbToTop(Layer layer){
 	cout<<"Dieses DrawingElement ist in so vielen Drawings enthalten: "<<m_whereToDraw.size()<<endl;
 	for(Drawing* it: m_whereToDraw) {
-		it->m_putOver(shared_from_this(), layer);
+		shared_ptr<DrawingElement> sharedFromThis = shared_from_this();
+		it->m_putOver(sharedFromThis, layer);
 	}
 }
 
@@ -93,11 +95,13 @@ void DrawingElement:: m_climbToTop(){
 	m_climbToTop(m_layer);
 }
 
-void Drawing::m_add(shared_ptr<DrawingElement> drawingElement){
+void Drawing::m_add(shared_ptr<DrawingElement>& drawingElement){
+//cout<<"Z.97"<<endl;
 	m_putOver(drawingElement, drawingElement->m_getLayer());
 	if(!drawingElement->m_addDrawing(this)){
 		cout<<"Failed to synchronize Drawing and DrawingElement"<<endl;
 	}
+	cout<<"m_add fertig"<<endl;
 }
 
 int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnShift){
@@ -137,11 +141,14 @@ void Drawing::m_setRenderer(SDL_Renderer* renderer){
 //Fall 1: alles ok
 //Fall 2: nicht drin
 //Fall 3: muss nach ganz hinten
-void Drawing::m_putOver(shared_ptr<DrawingElement> drElToUpdate, Layer layer){
-list<std::shared_ptr<DrawingElement>>::iterator whereToInsert = m_drawingList.begin();
+void Drawing::m_putOver(shared_ptr<DrawingElement>& drElToUpdate, Layer layer){
+	shared_ptr<DrawingElement> a = drElToUpdate;
+	cout<<"Z.142, listaddress ="<<&m_drawingList<<"this = "<<this<<", listSize = "<<m_drawingList.size()<<endl;
+	//m_drawingList.unique();
 //list<DrawingElement*>::iterator whereToErase = m_drawingList.begin();
-m_drawingList.remove_if([drElToUpdate](shared_ptr<DrawingElement> drawEl){return &(*drawEl) == &(*drElToUpdate);});
-for(; whereToInsert != m_drawingList.end(); whereToInsert++){
+m_drawingList.remove_if([&drElToUpdate](shared_ptr<DrawingElement> drawEl){bool whatToReturn = &(*drawEl) == &(*drElToUpdate); return whatToReturn;});
+list<std::shared_ptr<DrawingElement>>::iterator whereToInsert;
+for(whereToInsert= m_drawingList.begin(); whereToInsert != m_drawingList.end(); whereToInsert++){
 		if((*whereToInsert)->m_getLayer() <= drElToUpdate->m_getLayer()){
 
 			continue;
@@ -154,6 +161,7 @@ m_drawingList.insert(whereToInsert, drElToUpdate);
 }
 
 Drawing::~Drawing(){
+	cout<<"Drawing-Destruktor, this = "<<this<<endl;
 }
 
 Drawing_Element Drawing::m_DrawingElement(){
@@ -194,16 +202,15 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 			cout<<"No valid renderer for ImmovableDrawingElement"<<endl;
 			return 0;
 		}
-		cout<<"m_draw aufgerufen und renderer != nullptr"<<endl;
 		SDL_Rect rect;
 		if(!m_texture){
-					cout<<"No valid texture in ImmovableDrawingElement to draw"<<endl;
+					//cout<<"No valid texture in ImmovableDrawingElement to draw"<<endl;
 					return 0;
 				}
 		//m_texture->m_Height();
 		//cout<<"m_texture ist schonmal vorhanden in ImmovableDrawingElement to draw"<<endl;
- 		rect.x = modulo(m_row + rowShift, STANDARD_FIELD_SIZE * WORLD_LENGTH);
-		rect.y = modulo(m_column + columnShift, STANDARD_FIELD_SIZE * WORLD_HEIGHT);
+ 		rect.x = xModulo(m_row+rowShift);
+		rect.y = yModulo(m_column + columnShift);
 		//cout<<"Guenther"<<m_texture->m_Height()<<endl;
 		rect.h = m_texture->m_height;
 		rect.w = m_texture->m_width;
@@ -231,10 +238,9 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 	//m_drawingList.insert(whereToInsert, drElToUpdate);
 
 
-ImmovableDrawingElement::ImmovableDrawingElement(SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row, int column, Layer layer)
+ImmovableDrawingElement::ImmovableDrawingElement(SDL_Renderer* renderer, std::shared_ptr<Texture>& texture, int row, int column, Layer layer)
 : DrawingElement(row, column, renderer, layer), m_texture(texture)
 {
-
 }
 
 

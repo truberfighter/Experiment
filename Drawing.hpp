@@ -86,14 +86,14 @@ protected:
 	virtual int m_drawAtRenderer(SDL_Renderer* renderer, int rowShift = 0, int columnShift = 0);
 public:
 	Drawing(SDL_Renderer* renderer, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
-	Drawing(SDL_Renderer* renderer, std::list<std::shared_ptr<DrawingElement>> drawingList, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
+	Drawing(SDL_Renderer* renderer, std::list<std::shared_ptr<DrawingElement>>& drawingList, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
 	virtual ~Drawing();
 	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
-	void m_add(std::shared_ptr<DrawingElement> drawingElement);
-	void m_delete(std::shared_ptr<DrawingElement> drElToDelete);
+	void m_add(std::shared_ptr<DrawingElement>& drawingElement);
+	void m_delete(std::shared_ptr<DrawingElement>& drElToDelete);
 	//zeichne eine Figur nach oben
-	void m_putOver(std::shared_ptr<DrawingElement> drElToUpdate, Layer layer);
-	bool m_updateLayer(std::shared_ptr<DrawingElement> drElToUpdate, int newLayer);
+	void m_putOver(std::shared_ptr<DrawingElement>& drElToUpdate, Layer layer);
+	bool m_updateLayer(std::shared_ptr<DrawingElement>& drElToUpdate, int newLayer);
 	void m_setRenderer(SDL_Renderer* renderer);
 	virtual bool m_equals(DrawingElement& comparedDrEl);
 	virtual Drawing_Element m_DrawingElement();
@@ -106,13 +106,13 @@ class ImmovableDrawingElement: public DrawingElement{
 protected:
 	std::shared_ptr<Texture> m_texture;
 public:
-	ImmovableDrawingElement (SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row = 0, int column = 0, Layer layer = STANDARD_FIELD_LAYER);
+	ImmovableDrawingElement (SDL_Renderer* renderer, std::shared_ptr<Texture>& texture, int row = 0, int column = 0, Layer layer = STANDARD_FIELD_LAYER);
 	virtual ~ImmovableDrawingElement(){}
 	virtual bool m_updatePosition(){return false;}
 	virtual Drawing_Element m_DrawingElement(){return IMMOVABLE_DRAWING_ELEMENT;}
 	virtual bool m_equals(DrawingElement& comparedDrEl){return &comparedDrEl == this;}
 	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
-	std::shared_ptr<Texture> getTexture(){return m_texture;}
+	std::shared_ptr<Texture>& getTexture(){return m_texture;}
 	void setTexture(std::shared_ptr<Texture> texture){m_texture = texture;}
 };
 

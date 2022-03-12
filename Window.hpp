@@ -43,17 +43,20 @@ private:
 	unsigned int m_width;
 	unsigned int m_height;
 public:
-	Window(std::string name, unsigned int width, unsigned int height);
+	~Window();
+Window(std::string name, unsigned int width, unsigned int height);
 	std::vector<std::shared_ptr<Drawing>> m_MainDrawings();
 	unsigned int m_Height();
 	unsigned int m_Width();
 	SDL_Renderer* m_Renderer();
 	bool m_Init();
 	std::string m_Name();
-	std::shared_ptr<Drawing> m_CurrentDrawing();
+	std::shared_ptr<Drawing>& m_CurrentDrawing();
 	void m_setCurrentDrawing(int drawingNr);
 	int m_createNewDrawing();
 	void m_InitWindowSurface();
 };
+
+bool InitFieldTextures();
 
 #endif /* WINDOW_HPP_ */

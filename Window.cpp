@@ -14,6 +14,7 @@
 #include "EventHandler.hpp"
 #include "Window.hpp"
 #include <SDL2\SDL_image.h>
+#include "Field.hpp"
 #include<vector>
 
 using namespace std;
@@ -35,12 +36,19 @@ bool Window::m_Init()
 			  , SDL_WINDOWPOS_UNDEFINED
 			  , m_width, m_height, SDL_WINDOW_SHOWN );
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
+	cout<<"Window m_Init: m_renderer ="<<m_renderer<<endl;
+	SDL_Texture* t  = IMG_LoadTexture(m_renderer, "bilder/2022-01-03.png");cout<<"Window-Konstrktor: "<<SDL_GetError()<<endl;
+
 	if(m_window == nullptr){
 		throw(WindowInitFail());
 	}
-	m_InitWindowSurface();
 	std::cout<<"InitWindowSurface hat geklappt"<<std::endl;
 	return true;
+}
+
+Window::~Window(){
+	SDL_DestroyWindow(m_window);
+	cout<<"Window: Destruktor"<<endl;
 }
 
 unsigned int Window::m_Width(){
@@ -62,7 +70,8 @@ void Window::m_setCurrentDrawing(int drawingNr){
 	m_currentDrawing = m_mainDrawings[drawingNr];
 }
 
-std::shared_ptr<Drawing> Window::m_CurrentDrawing(){
+std::shared_ptr<Drawing>& Window::m_CurrentDrawing(){
+	cout<<"m_CurrentDrawing"<<endl;
 	return m_currentDrawing;
 }
 
@@ -72,7 +81,6 @@ int Window::m_createNewDrawing(){
 }
 
 void Window::m_InitWindowSurface(){
-
 	SDL_Texture* sdltexture[2] = {IMG_LoadTexture( m_renderer, "bilder/Landscapes/Plains.png"), IMG_LoadTexture( m_renderer, "bilder/Landscapes/Grassland.png")};
 	std::shared_ptr<Texture> theTextures[2] = {make_shared<Texture>(sdltexture[0], STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE),
 			std::make_shared<Texture>(sdltexture[1], STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE)
@@ -84,10 +92,11 @@ void Window::m_InitWindowSurface(){
 	Drawing& currentDrawing = *( m_currentDrawing);
 	cout<<"currentDrawing initialized"<<endl;
 	for(int i(-15); i < 16; i++){
-			for(int j(-15); j<16; j++){
-				currentDrawing.m_add(make_shared<ImmovableDrawingElement>(currentDrawing.m_Renderer(), theTextures[modulo(i+j,2)], xModulo(i * STANDARD_FIELD_SIZE), yModulo(j * STANDARD_FIELD_SIZE)));
-				cout<<"m_add aufgerufen für i = "<<i<<", j = "<<j<<endl;
-			}
+		for(int j(-15); j<16; j++){
+			shared_ptr<DrawingElement> whatToAdd = make_shared<ImmovableDrawingElement>(currentDrawing.m_Renderer(), fieldTextures[modulo(i+j,2)], xModulo(i * STANDARD_FIELD_SIZE), yModulo(j * STANDARD_FIELD_SIZE));
+			currentDrawing.m_add(whatToAdd);
+			//cout<<"m_add aufgerufen für i = "<<i<<", j = "<<j<<endl;
+		}
 	}
 	currentDrawing.m_draw();
 }

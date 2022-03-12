@@ -26,10 +26,10 @@ int modulo (const int& i, const int& j){
 }
 
 int xModulo(const int& i){
-	return modulo(i, WORLD_LENGTH*STANDARD_FIELD_SIZE);
+	return modulo(i  + STANDARD_FIELD_SIZE - MODULO_WIDTH_FOR_NEGATIVE, WORLD_LENGTH*STANDARD_FIELD_SIZE) - STANDARD_FIELD_SIZE + MODULO_WIDTH_FOR_NEGATIVE;
 }
 int yModulo(const int& i){
-	return modulo(i, WORLD_HEIGHT*STANDARD_FIELD_SIZE);
+	return modulo(i + STANDARD_FIELD_SIZE - MODULO_HEIGHT_FOR_NEGATIVE, WORLD_HEIGHT*STANDARD_FIELD_SIZE) - STANDARD_FIELD_SIZE + MODULO_HEIGHT_FOR_NEGATIVE;
 }
 
 Texture::Texture(SDL_Texture* texture, int width, int height)

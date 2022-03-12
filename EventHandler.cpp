@@ -27,7 +27,7 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 			NO_EVENT_HANDLING_FOUND
 		}
 	}
-	return true;
+	return false;
 }
 
 bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
