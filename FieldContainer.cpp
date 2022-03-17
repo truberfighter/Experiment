@@ -5,6 +5,7 @@
 #include <vector>
 #include "FieldContainer.hpp"
 #include "Grassland.hpp"
+#include "Plains.hpp"
 using namespace std;
 
 FieldContainer* theContainer = nullptr;
@@ -28,7 +29,11 @@ FieldContainer::FieldContainer(int howHigh, int howWide)
 	for(int i(0); i<howWide; i++){
 		Meridian newMeridian;
 		for(int j(0); j<howHigh; j++){
-			newMeridian.push_back(make_unique<Grassland>(i*STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
+			if((i+j)%2==0)
+				newMeridian.push_back(make_unique<Grassland>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
+			else
+				newMeridian.push_back(make_unique<Plains>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
+
 		}
 	//	cout<<"Zeile 27"<<endl;
 m_fieldsOfTheWorld->push_back(newMeridian);
@@ -37,8 +42,7 @@ m_fieldsOfTheWorld->push_back(newMeridian);
 }
 
 std::vector<Meridian>* FieldContainer::m_getFieldsOfTheWorld(){
-	if(m_fieldsOfTheWorld) cout <<"kein nullptr"<<endl;
-	auto& g = (*m_fieldsOfTheWorld);
+	//if(m_fieldsOfTheWorld) cout <<"kein nullptr"<<endl;
 	//cout<<"bla"<<g.size()<<endl;
 	return m_fieldsOfTheWorld;
 }
@@ -49,4 +53,44 @@ theContainer = new FieldContainer(WORLD_HEIGHT, WORLD_LENGTH);
 if(FieldContainer::getTheContainer()->m_fieldsOfTheWorld) cout<<"kein nullptr Z. 41"<<endl;
 }
 
-FieldContainer::FieldContainer(): FieldContainer(WORLD_LENGTH, WORLD_HEIGHT){}
+FieldContainer::FieldContainer(): FieldContainer(WORLD_HEIGHT, WORLD_LENGTH){}
+
+void FieldContainer::initContinentIDs(){
+	unsigned int continentCounter(0);
+	std::vector<Meridian>& vectorToWorkWith = *m_fieldsOfTheWorld;
+	unsigned int xsize = vectorToWorkWith.size();
+	unsigned int ysize = vectorToWorkWith[0].size();
+	for(unsigned int i(0); i< xsize;i++){
+		for(unsigned int j(0); j<ysize; j++){
+        PRINT_I_J
+			shared_ptr<Field>& currentField = vectorToWorkWith[i][j];
+			Coordinate neighbouringCoordinates[4] = {Coordinate(i,j-1), Coordinate(i,j+1)
+			, Coordinate(i+1,j), Coordinate(i-1,j)
+			};
+			bool singleIsland = true;
+			for(Coordinate& compCoord: neighbouringCoordinates){
+				shared_ptr<Field> comparedField = vectorToWorkWith[modulo(compCoord.x, xsize)][ modulo(compCoord.y, ysize)];
+				if((comparedField->m_Landscape()!=LANDMASS_SEPARATOR)
+				&&(currentField->m_Landscape()!=LANDMASS_SEPARATOR)){
+					//if both fields are on a landmass,
+					//set their index as the same8int
+					ContinentID minimumContinentID = min((unsigned int)comparedField->m_continentID, min((unsigned int) currentField->m_continentID, (unsigned int) continentCounter));
+					cout<<"minimumContinentID ="<<minimumContinentID<<endl;
+					if(minimumContinentID==continentCounter)continentCounter++;
+					currentField->m_continentID=minimumContinentID;
+					comparedField->m_continentID=minimumContinentID;
+					singleIsland = false;
+				}
+			}
+			//Catch single field islands
+			if(singleIsland && currentField->m_Landscape()!=LANDMASS_SEPARATOR)
+				currentField->m_continentID = continentCounter++;
+		}
+	}
+	for(unsigned int i(0); i< xsize;i++){
+		for(unsigned int j(0); j<ysize; j++){
+			cout<<"i = "<<i<<", j = "<<j<<", m_continentID = "<<vectorToWorkWith[i][j]->m_continentID<<endl;
+		}
+	}
+}
+

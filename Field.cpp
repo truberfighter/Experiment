@@ -9,8 +9,8 @@
 #include "Drawing.hpp"
 #include "Settlers.hpp"
 
-Field::Field(int x, int y, Layer layer)
-: m_x(x), m_y(y), m_layer(layer)
+Field::Field(int x, int y, Layer layer, bool hasSpecialResource)
+: m_x(x), m_y(y), m_layer(layer), m_hasSpecialResource(hasSpecialResource)
 {
 
 }
@@ -49,10 +49,82 @@ int Field::m_food(Nation& nation){
 	return count;
 }
 
+int Field::m_shields(Nation& nation){
+	int count = m_shields();
+	ACKNOWLEDGE_DESPOTISM
+	ACKNOWLEDGE_RAILROAD
+	return count;
+}
+
 int Field::m_trade(Nation& nation){
 	int count = m_trade();
 	ACKNOWLEDGE_DESPOTISM
 	ACKNOWLEDGE_RAILROAD
 	ACKNOWLEDGE_DEMOCRACY
 	return count;
+}
+
+bool Field::m_HasSpecialResource(){return m_hasSpecialResource;}
+
+bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers settlers){
+	switch(whatWorkWillCome){
+	case MAKE_MINING:{
+		if(m_isMined){
+				return false;//do not mine again
+			}
+		else{ //if(!m_isMined)
+			settlers.m_work(MAKE_MINING);
+			//Mining complete
+			if(m_maybeFinishWork(settlers, MAKE_MINING)){
+				//set to mined
+				m_isMined = true;				}
+			return true;
+		}
+	}
+	default:{
+		return false;
+	}
+	}
+}
+
+bool Field::m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers settlers){
+	switch(whatWorkWillCome){
+	case IRRIGATE:{
+		if(m_isIrrigated){
+				return false;//do not mine again
+			}
+		else{ //if(!m_isIrrigated)
+			settlers.m_work(IRRIGATE);
+			//Irrigation complete
+			if(m_maybeFinishWork(settlers, IRRIGATE)){
+				//set to irrigated
+				m_isIrrigated = true;				}
+			return true;
+		}
+	}
+	default:{
+		return false;
+	}
+	}
+}
+
+int Field::m_roadTradeResult(){
+	if(m_roadStatus == ROAD || m_roadStatus == RAILROAD)
+			return 1;
+		else //m_roadStatus == NOTHING
+			return 0;
+}
+
+bool Field::m_Pillage(){
+	if(m_isMined){
+		m_isMined = false;
+		return true;
+	}
+	if(m_isIrrigated){
+		m_isIrrigated = false;
+		return true;
+	}
+	else{
+		return false;
+	}
 }

@@ -101,7 +101,6 @@ void Drawing::m_add(shared_ptr<DrawingElement>& drawingElement){
 	if(!drawingElement->m_addDrawing(this)){
 		cout<<"Failed to synchronize Drawing and DrawingElement"<<endl;
 	}
-	cout<<"m_add fertig"<<endl;
 }
 
 int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnShift){
@@ -143,7 +142,6 @@ void Drawing::m_setRenderer(SDL_Renderer* renderer){
 //Fall 3: muss nach ganz hinten
 void Drawing::m_putOver(shared_ptr<DrawingElement>& drElToUpdate, Layer layer){
 	shared_ptr<DrawingElement> a = drElToUpdate;
-	cout<<"Z.142, listaddress ="<<&m_drawingList<<"this = "<<this<<", listSize = "<<m_drawingList.size()<<endl;
 	//m_drawingList.unique();
 //list<DrawingElement*>::iterator whereToErase = m_drawingList.begin();
 m_drawingList.remove_if([&drElToUpdate](shared_ptr<DrawingElement> drawEl){bool whatToReturn = &(*drawEl) == &(*drElToUpdate); return whatToReturn;});
@@ -243,7 +241,13 @@ ImmovableDrawingElement::ImmovableDrawingElement(SDL_Renderer* renderer, std::sh
 {
 }
 
+LambdaDrawingElement::LambdaDrawingElement(SDL_Renderer* renderer, int draw(int, int, SDL_Renderer* renderer), int row, int column, Layer layer)
+: DrawingElement( row, column, renderer, layer), m_Draw(draw)
+{
+}
 
+LambdaDrawingElement::~LambdaDrawingElement(){
+}
 
 
 

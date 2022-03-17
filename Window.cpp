@@ -15,6 +15,7 @@
 #include "Window.hpp"
 #include <SDL2\SDL_image.h>
 #include "Field.hpp"
+#include "FieldContainer.hpp"
 #include<vector>
 
 using namespace std;
@@ -42,7 +43,6 @@ bool Window::m_Init()
 	if(m_window == nullptr){
 		throw(WindowInitFail());
 	}
-	std::cout<<"InitWindowSurface hat geklappt"<<std::endl;
 	return true;
 }
 
@@ -91,11 +91,13 @@ void Window::m_InitWindowSurface(){
 	//std::vector<unique_ptr<ImmovableDrawingElement>> v;
 	Drawing& currentDrawing = *( m_currentDrawing);
 	cout<<"currentDrawing initialized"<<endl;
-	for(int i(-15); i < 16; i++){
-		for(int j(-15); j<16; j++){
-			shared_ptr<DrawingElement> whatToAdd = make_shared<ImmovableDrawingElement>(currentDrawing.m_Renderer(), fieldTextures[modulo(i+j,2)], xModulo(i * STANDARD_FIELD_SIZE), yModulo(j * STANDARD_FIELD_SIZE));
-			currentDrawing.m_add(whatToAdd);
+	for(int i(0); i < WORLD_LENGTH; i++){
+		for(int j(0); j<WORLD_HEIGHT; j++){
+
+			shared_ptr<DrawingElement> whatToAdd = ((*theContainer->m_getFieldsOfTheWorld())[i][j])->m_DrawingElement();
+			//früher: = make_shared<ImmovableDrawingElement>(currentDrawing.m_Renderer(), fieldTextures[modulo(i+j,2)], xModulo(i * STANDARD_FIELD_SIZE), yModulo(j * STANDARD_FIELD_SIZE));
 			//cout<<"m_add aufgerufen für i = "<<i<<", j = "<<j<<endl;
+			currentDrawing.m_add(whatToAdd);
 		}
 	}
 	currentDrawing.m_draw();

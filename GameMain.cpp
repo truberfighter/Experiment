@@ -34,6 +34,8 @@ void GameMain::m_initGame(){
 	Window* theWindow = new Window ("Game Main, Window 0", SCREEN_WIDTH, SCREEN_HEIGHT);
 	m_currentRenderer = theWindow->m_Renderer();
 	m_initFieldTextures();
+	initFieldContainer();
+	FieldContainer::getTheContainer()->initContinentIDs();
 	m_theWindows.push_back(unique_ptr<Window>());
 	m_theWindows[0].reset(theWindow);
 	//TTF_Init();
@@ -45,7 +47,6 @@ void GameMain::m_initGame(){
     someDrawing->m_add(theMovableThing2);
 	//SDL_RenderPresent(m_currentRenderer);
 	//SDL_Delay(2000);
-	initFieldContainer();
 	cout<<"m_currentRenderer: "<<m_currentRenderer<<endl;
 
 }
@@ -155,7 +156,7 @@ theTexture = IMG_LoadTexture(m_currentRenderer, "bilder/2022-01-03.png");
  }			//SDL_Delay(1000);
   //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
   //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
-  SDL_Delay(3000);
+  //SDL_Delay(3000);
   //theMovableThing->m_drawRight();
 
  //TTF_Quit();1

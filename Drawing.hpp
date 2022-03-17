@@ -116,4 +116,17 @@ public:
 	void setTexture(std::shared_ptr<Texture> texture){m_texture = texture;}
 };
 
+class LambdaDrawingElement: public DrawingElement{
+protected:
+	int (*m_Draw)(int, int, SDL_Renderer*)=0;
+public:
+	LambdaDrawingElement(SDL_Renderer* renderer, int(int, int, SDL_Renderer*), int row = 0, int column = 0, Layer layer = STANDARD_FIELD_MODIFICATOR_LAYER);
+	virtual ~LambdaDrawingElement();
+	virtual bool m_updatePosition(){return false;}
+	virtual Drawing_Element m_DrawingElement(){return LAMBDA_DRAWING_ELEMENT;}
+	virtual bool m_quals(DrawingElement& comparedDrEl){return this == &comparedDrEl;}
+	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override{return m_Draw(m_row + rowShift, m_column + columnShift, renderer? renderer : m_renderer);}
+
+};
+
 #endif /* DRAWING_HPP_ */

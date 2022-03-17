@@ -21,6 +21,12 @@ class FieldContainer;
 
 class Field{
 protected:
+	ContinentID m_continentID = NO_CONTINENT_ID_GIVEN;
+	int m_roadTradeResult();
+	bool m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers settlers);
+	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers settlers);
+	bool m_hasFortress();
+	bool m_hasSpecialResource = false;
 	std::shared_ptr<ImmovableDrawingElement> m_drawingElement;
 	int m_x;
 	int m_y;
@@ -35,7 +41,7 @@ protected:
 
 public:
 	virtual ~Field();
-	Field(int x, int y, Layer layer);
+	Field(int x, int y, Layer layer, bool hasSpecialResource = false);
 	int m_X() const;
 	int m_Y() const;
 	std::shared_ptr<ImmovableDrawingElement> m_DrawingElement();
@@ -45,8 +51,8 @@ public:
 	bool m_IsIrrigated() const;
 	virtual bool m_Mining(Settlers& settlers)=0;
 	virtual bool m_Irrigate(Settlers& settlers)=0;
-	virtual int m_shields(Nation& nation)=0;
-	virtual int m_shields()=0;
+	int m_shields(Nation& nation);
+	virtual int m_shields() = 0;
 	int m_food(Nation& nation);
 	virtual int m_food()=0;
 	int m_trade(Nation& nation);
@@ -54,10 +60,15 @@ public:
 	virtual std::string m_resourceOverview()=0;
 	virtual Landscape m_Landscape() = 0;
 	RoadStatus m_RoadStatus();
+	bool m_HasSpecialResource();
+	bool m_Pillage();
+	friend class FieldContainer;
 };
 #define ACKNOWLEDGE_RAILROAD m_railRoadProductionEffect(count);
 #define ACKNOWLEDGE_DEMOCRACY if(count>2 && (nation.m_Government()==REPUBLIC || nation.m_Government()==DEMOCRACY))count++;
 #define ACKNOWLEDGE_DESPOTISM if(count>2 && (nation.m_Government()==ANARCHY || nation.m_Government()==DESPOTISM))count--;
+#define IS_CLASSICALLY_ROAD_BASED 	{return m_roadTradeResult();}
+#define LANDMASS_SEPARATOR PLAINS
 extern FieldContainer* theContainer;
 
 #endif /* FIELD_HPP_ */

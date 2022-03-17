@@ -1,22 +1,21 @@
 /*
- * Grassland.hpp
+ * Plains.hpp
  *
- *  Created on: 08.03.2022
+ *  Created on: 12.03.2022
  *      Author: uwe-w
  */
 
-#ifndef GRASSLAND_HPP_
-#define GRASSLAND_HPP_
+#ifndef PLAINS_HPP_
+#define PLAINS_HPP_
 
 #include "Field.hpp"
 #include "Settlers.hpp"
 
-class Grassland: public Field{
+class Plains: public Field{
 private:
-	bool m_hasShield;
 public:
-	~Grassland();
-	Grassland(int x, int y, bool hasShield = false);
+	~Plains();
+	Plains(int x, int y, bool hasSpecialResource = false);
 	int m_movementPoints() override;
 	float m_defenseBonus() override;
 	bool m_Mining(Settlers& settlers) override;
@@ -31,4 +30,4 @@ public:
 
 
 
-#endif /* GRASSLAND_HPP_ */
+#endif /* PLAINS_HPP_ */

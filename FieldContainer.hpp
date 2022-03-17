@@ -26,7 +26,7 @@ public:
 	std::vector<Meridian>* m_getFieldsOfTheWorld();
 	static FieldContainer* getTheContainer();
 	friend void initFieldContainer();
-
+	void initContinentIDs();
 };
 
 void initFieldContainer();
