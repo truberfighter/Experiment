@@ -17,7 +17,7 @@
 #include <memory>
 
 class Drawing;
-
+#define NO_INSTRUCTIONS 0
 /*class DrawElement{
 protected:
 	SDL_Renderer* m_renderer;
@@ -44,6 +44,7 @@ protected:
 	int m_column;
 	SDL_Renderer* m_renderer;
 	Layer m_layer;
+	int (*m_Draw)(int, int, SDL_Renderer*)=0;
 	std::list<Drawing*> m_whereToDraw;
 public:
 	virtual Drawing_Element m_DrawingElement() = 0;
@@ -55,6 +56,7 @@ public:
 	void m_setLayer(int layer);
 	virtual bool m_equals(DrawingElement& comparedDrEl) = 0;
 	bool m_addDrawing(Drawing* newDrawing);
+	void m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Renderer*)=NO_INSTRUCTIONS);
 	void m_climbToTop(Layer layer);
 	void m_climbToTop();
 	void m_removeDrawing(Drawing* drawing);
@@ -68,6 +70,7 @@ public:
 class MovableDrawingElement: public DrawingElement{
 protected:
 	MovableThing* m_content;
+	Figure* m_figure;
 public:
 	MovableDrawingElement(SDL_Renderer* renderer, MovableThing* movableEntity);
 	virtual ~MovableDrawingElement();
@@ -77,6 +80,8 @@ public:
 	virtual int m_draw(int rowShift, int columnShift, SDL_Renderer* renderer = nullptr) override;
 //	virtual Coordinate m_getPosition() override;
 	virtual bool m_updatePosition();
+	void m_setFigure(Figure* figure){m_figure = figure;}
+	Figure* m_getFigure(){return m_figure;}
 };
 
 class Drawing: public DrawingElement{
@@ -106,7 +111,7 @@ class ImmovableDrawingElement: public DrawingElement{
 protected:
 	std::shared_ptr<Texture> m_texture;
 public:
-	ImmovableDrawingElement (SDL_Renderer* renderer, std::shared_ptr<Texture>& texture, int row = 0, int column = 0, Layer layer = STANDARD_FIELD_LAYER);
+	ImmovableDrawingElement (SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row = 0, int column = 0, Layer layer = STANDARD_FIELD_LAYER);
 	virtual ~ImmovableDrawingElement(){}
 	virtual bool m_updatePosition(){return false;}
 	virtual Drawing_Element m_DrawingElement(){return IMMOVABLE_DRAWING_ELEMENT;}
@@ -118,15 +123,15 @@ public:
 
 class LambdaDrawingElement: public DrawingElement{
 protected:
-	int (*m_Draw)(int, int, SDL_Renderer*)=0;
 public:
-	LambdaDrawingElement(SDL_Renderer* renderer, int(int, int, SDL_Renderer*), int row = 0, int column = 0, Layer layer = STANDARD_FIELD_MODIFICATOR_LAYER);
+	LambdaDrawingElement(SDL_Renderer* renderer, int(*)(int, int, SDL_Renderer*), int row = 0, int column = 0, Layer layer = STANDARD_FIELD_MODIFICATOR_LAYER);
 	virtual ~LambdaDrawingElement();
 	virtual bool m_updatePosition(){return false;}
 	virtual Drawing_Element m_DrawingElement(){return LAMBDA_DRAWING_ELEMENT;}
-	virtual bool m_quals(DrawingElement& comparedDrEl){return this == &comparedDrEl;}
+	virtual bool m_equals(DrawingElement& comparedDrEl){return this == &comparedDrEl;}
 	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override{return m_Draw(m_row + rowShift, m_column + columnShift, renderer? renderer : m_renderer);}
-
 };
+
+
 
 #endif /* DRAWING_HPP_ */

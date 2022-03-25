@@ -15,10 +15,13 @@
 #include "movableThing.hpp"
 #include "Drawing.hpp"
 #include "Window.hpp"
+#include <queue>
+
+class Figure;
 
 class EventHandler{
 protected:
-	MovableThing* m_whatToMove;
+	std::shared_ptr<Figure> m_whatToMove;
 	//Direction m_directionFromKeyPressed(unsigned int keysym);
 	bool m_handleKeyboardEvent(const SDL_Event& event);
 	std::list<Drawing*> m_currentDrawings;//Oder so. Damit "Wait" funktioniert.
@@ -26,7 +29,7 @@ protected:
 public:
 	EventHandler();
 	bool m_handleEvent(const SDL_Event& event);
-	void m_setWhatToMove(MovableThing* whatToMove);
+	void m_setWhatToMove(std::shared_ptr<Figure> whatToMove);
 	bool m_deleteDrawing(Drawing* drawingToDelete);
 	bool m_addDrawing(Drawing* drawingToAdd);
 	void m_setCurrentDrawing(std::shared_ptr<Drawing> drawing);

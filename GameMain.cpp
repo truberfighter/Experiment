@@ -13,6 +13,8 @@
 #include "FieldContainer.hpp"
 #include "Window.hpp"
 #include "movableThing.hpp"
+#include "Figure.hpp"
+
 
 using namespace std;
 SDL_Renderer* theRenderer = nullptr;
@@ -29,10 +31,19 @@ GameMain::GameMain(): EventHandler()
 	m_initGame();
 }
 
+void GameMain::m_initLetterTextures(){
+	std::string whatToGenerate = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	theLetterTextureContainer = new LetterTextureContainer(whatToGenerate);
+}
+
 void GameMain::m_initGame(){
+	int imgflags = IMG_INIT_PNG;
+	IMG_Init(imgflags);
+	TTF_Init();theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 15);
 	fieldTextures = new shared_ptr<Texture>[30];
 	Window* theWindow = new Window ("Game Main, Window 0", SCREEN_WIDTH, SCREEN_HEIGHT);
-	m_currentRenderer = theWindow->m_Renderer();
+	m_currentRenderer = theRenderer = theWindow->m_Renderer();
+	m_initLetterTextures();
 	m_initFieldTextures();
 	initFieldContainer();
 	FieldContainer::getTheContainer()->initContinentIDs();
@@ -64,6 +75,8 @@ void GameMain::m_initFieldTextures(){
 
 GameMain::~GameMain(){
 	delete fieldTextures;
+	TTF_CloseFont(theFont);
+	delete theLetterTextureContainer;
 }
 
 int GameMain::operator()(){
@@ -74,8 +87,7 @@ int GameMain::operator()(){
 	                 {
 	                     printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
 	                 }*/
-	 int imgflags = IMG_INIT_PNG;
-	   IMG_Init(imgflags);
+
    Window* theWindow=&(*m_currentWindow());
    if(theWindow)cout<<"Window existiert"<<endl;
 
@@ -124,11 +136,23 @@ theTexture = IMG_LoadTexture(m_currentRenderer, "bilder/2022-01-03.png");
     //auto a = new MovableDrawingElement(theRenderer, theMovableThing2);
     //cout<<"theMovableThing2 erfolgreich initialisiert"<<endl;
     someDrawing->m_add(theMovableThing2);
+    theRenderer = m_currentRenderer;
     SDL_RenderPresent(m_currentRenderer);
     SDL_Delay(STANDARD_DRAWING_TIME*3);
-    m_setWhatToMove(theMovableThing);
-    m_setCurrentDrawing(someDrawing);
+    shared_ptr<Nation> theRomans = make_shared<Nation>(ROMAN);
+    shared_ptr<Field>& theField = ((*theContainer->m_getFieldsOfTheWorld())[0][3]);
+    cout<<theRenderer;
+    shared_ptr<Settlers> myFirstSettlers = std::make_shared<Settlers>(theField, theRomans);
+    m_setWhatToMove(myFirstSettlers);
+myFirstSettlers->m_integrateInto(*someDrawing);
+m_setCurrentDrawing(someDrawing);
+    cout<<theLetterTextureContainer<<endl;
+    shared_ptr<DrawingElement> drElShPo = make_shared<ImmovableDrawingElement>(theRenderer, theLetterTextureContainer->m_getLetterTexture('F'), 5*STANDARD_FIELD_SIZE, 10*STANDARD_FIELD_SIZE,  STANDARD_FIELD_MODIFICATOR_LAYER);
+    cout<<drElShPo<<endl;
+    someDrawing->m_add(drElShPo);
     someDrawing->m_draw();
+    SDL_RenderPresent(m_currentRenderer);
+
     MAIN_LOOP_BEGIN
   /*if(currentEvent.type == SDL_KEYDOWN){
 	  cout<<"SDL_KEYDOWN, nämlich: "<<currentEvent.key.keysym.sym<<endl;
@@ -152,14 +176,17 @@ theTexture = IMG_LoadTexture(m_currentRenderer, "bilder/2022-01-03.png");
   MAIN_LOOP_END
   theMovableThing2->m_setMoveToDirection(UP_RIGHT);
   theMovableThing2->m_move();
+  shared_ptr<DrawingElement> st =make_shared<LambdaDrawingElement>(theRenderer, [](int a, int b, SDL_Renderer* renderer){int h = SDL_RenderDrawLine(renderer, a, b, a+120, b+120); cout<<"h = "<<h<<endl; return h;},20,20);
+  someDrawing->m_add(st);
   someDrawing->m_draw();
+  SDL_Delay( 2000);
  }			//SDL_Delay(1000);
   //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
   //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
   //SDL_Delay(3000);
   //theMovableThing->m_drawRight();
 
- //TTF_Quit();1
+ TTF_Quit();
  IMG_Quit();
  SDL_Quit();  //Quit SDL subsystems
  return 0;

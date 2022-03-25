@@ -9,9 +9,14 @@
 #include <iostream>
 #include <SDL2\SDL_image.h>
 
-int Texture::m_Width(){std::cout<<"Width aufgerufen"<<std::endl;return m_width;}
-int Texture::m_Height(){ std::cout<<"Height aufgerufen"<<std::endl;return m_height;}
+int Texture::m_Width(){return m_width;}
+int Texture::m_Height(){ return m_height;}
 SDL_Texture* Texture::theTexture(){return m_theTexture;}
+MovementPoints MOVE_PROHIBITED = -2;
+MovementPoints FIGHT_IS_COMING = -1;
+TTF_Font* theFont = nullptr;
+Figure* figureToDraw = nullptr;
+SDL_Color whiteColor{250, 250, 250};
 
 int modulo (const int& i, const int& j){
 	if(j <= 0)
@@ -35,10 +40,11 @@ int yModulo(const int& i){
 Texture::Texture(SDL_Texture* texture, int width, int height)
 : m_theTexture(texture), m_width(width), m_height(height)
 {
-
+std::cout<<"Texture-Konstruktor, this ="<<this<<", m_height = "<<m_height<<", m_width = "<<m_width<<std::endl;
 }
 
 Texture::~Texture(){
+	std::cout<<"Texture-Destruktor, this = "<<this<<std::endl;
 	SDL_DestroyTexture(m_theTexture);
 }
 
@@ -58,4 +64,12 @@ bool Coordinate::operator!=(const Coordinate& other){
         return false;
     else
        return true;
+}
+
+int drawSquareLines(SDL_Renderer* renderer, int x, int y, SDL_Color color){
+	if(SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a)!=0) std::cout<<"SDL_Error in DrawSquareLines: \n"<<SDL_GetError()<<std::endl;
+	return SDL_RenderDrawLine(renderer, x,y, x+STANDARD_FIELD_SIZE,y) +
+	SDL_RenderDrawLine(renderer, x,y+STANDARD_FIELD_SIZE, x+STANDARD_FIELD_SIZE,y+STANDARD_FIELD_SIZE) +
+	SDL_RenderDrawLine(renderer, x,y,x,y+STANDARD_FIELD_SIZE) +
+	SDL_RenderDrawLine(renderer, x+STANDARD_FIELD_SIZE, y,x+STANDARD_FIELD_SIZE,y+STANDARD_FIELD_SIZE);
 }

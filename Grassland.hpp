@@ -25,7 +25,7 @@ public:
 	int m_food() override;
 	int m_trade() override;
 	std::string m_resourceOverview()override;
-	Landscape m_Landscape() override;
+	Landscape m_Landscape() const override;
 	short int m_howLongToTake(SettlersWork work) override;
 };
 

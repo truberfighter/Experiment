@@ -22,6 +22,7 @@ private:
 	unsigned int m_currentWindowIndex = 0;
 public:
 	GameMain();
+	void m_initLetterTextures();
 	SDL_Renderer* m_currentRenderer;
 	~GameMain();
 	int operator()();

@@ -20,7 +20,7 @@ Grassland::~Grassland(){
 }
 
 int Grassland::m_movementPoints(){
-	return 1;
+	return ONE_MOVEMENT_POINT;
 }
 
 float Grassland::m_defenseBonus(){
@@ -49,7 +49,7 @@ int Grassland::m_food(){
 
 int Grassland::m_trade() IS_CLASSICALLY_ROAD_BASED
 std::string Grassland::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
-Landscape Grassland::m_Landscape(){
+Landscape Grassland::m_Landscape() const{
 	//std::cout<<"Grassland::Landscape"<<std::endl;
 	return GRASSLAND;
 }

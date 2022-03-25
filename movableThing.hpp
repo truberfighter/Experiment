@@ -14,7 +14,7 @@ struct Velocity{
 
 class MovableDrawingElement;
 
-enum{STANDARD_x_VELOCITY = 100, STANDARD_y_VELOCITY = STANDARD_x_VELOCITY, NOT_MOVING = 0};
+enum ATOMIC_VELOCITY{STANDARD_x_VELOCITY = 100, STANDARD_y_VELOCITY = STANDARD_x_VELOCITY, NOT_MOVING = 0};
 class MovableThing{//Redactoring coming: Rect-Farb-Version muss kommen
 protected:
 	std::list<MovableDrawingElement*> m_howDrawn;
@@ -28,7 +28,9 @@ protected:
 	SDL_Renderer* m_renderer;
 	std::shared_ptr<Texture> m_texture;
 public:
+	std::list<MovableDrawingElement*>& m_HowDrawn();
 	static unsigned int moveCount;
+	~MovableThing(){std::cout<<"MovableThing-Destruktor, this = "<<this<<std::endl; for(auto it: m_howDrawn)delete it;}
 	void m_add(MovableDrawingElement* newMoDrEl);
 	MovableThing(SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int x, int y, bool renderInstantly = false);
 	MovableThing(SDL_Renderer* renderer, int width, int height, const char* filename, int x, int y, bool renderInstantly = false);
@@ -51,7 +53,10 @@ public:
 	Velocity m_getStandardVelocity(Direction d = DOWN_RIGHT);
 	Coordinate getPosition();
 	unsigned int WhenMoved();
+	void m_setDrawingInstructions(int (*foo) (int, int, SDL_Renderer*));
 	//void setWhenMoved(unsigned int whenMoved);
 };
+
+
 
 #endif

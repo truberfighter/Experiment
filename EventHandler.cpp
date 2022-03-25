@@ -8,9 +8,10 @@
 #include "EventHandler.hpp"
 #include <iostream>
 #include "sdltypes.hpp"
+#include "Figure.hpp"
 #define NO_EVENT_HANDLING_FOUND return true;
 
-void EventHandler::m_setWhatToMove(MovableThing* whatToMove){
+void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	if(!whatToMove)
 		std::cout<<"Nun kann man sich nicht mehr bewegen!"<<std::endl;
 	m_whatToMove = whatToMove;
@@ -40,8 +41,7 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 			SDLK_7_UP_LEFT, SDLK_8_UP, SDLK_9_UP_RIGHT, SDLK_UP, SDLK_LEFT, SDLK_RIGHT, SDLK_DOWN};
 	for(int i = 0; i<13; i++){
 		if(keyCode == keyPossibilities[i]){
-			m_whatToMove->m_setMoveToDirection(directions[i]);
-			m_whatToMove->m_move();
+			m_whatToMove->m_tryMoveToField(directions[i]);
 			m_currentDrawing->m_draw();		}
 	}
 	switch(event.key.keysym.sym){

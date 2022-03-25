@@ -59,12 +59,21 @@ bool MovableDrawingElement::m_equals(DrawingElement& comparedDrEl){
 }
 
 int MovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
+	figureToDraw = m_figure;
 	Coordinate c = m_content->getPosition();
+	int whatToReturn = 0;
 	if(renderer!=nullptr){
-		return m_content->m_drawNew(rowShift + c.x, columnShift + c.y, renderer) ? 1 : 0;
+		whatToReturn = m_content->m_drawNew(rowShift + c.x, columnShift + c.y, renderer) ? 1 : 0;
 	}
 	else{ //renderer==nullptr
-		return m_content->m_drawNew(rowShift + c.x,columnShift + c.y) ? 1 : 0;	}
+		whatToReturn = m_content->m_drawNew(rowShift + c.x,columnShift + c.y) ? 1 : 0;	}
+	if(m_Draw){
+		cout<<"additional instructions called"<<endl;
+				if(m_Draw(rowShift + c.x, columnShift + c.y, renderer)==0)
+					whatToReturn = 1;
+			}
+	else cout<<"No additional instructions called for this = "<<this<<endl;
+	return whatToReturn;
 }
 
 Drawing_Element MovableDrawingElement::m_DrawingElement(){
@@ -81,6 +90,7 @@ bool MovableDrawingElement::m_updatePosition(){
 	Coordinate c = m_content->getPosition();
 	m_row = c.x;
 	m_column = c.y;
+	return true;
 }
 
 void DrawingElement::m_climbToTop(Layer layer){
@@ -119,7 +129,9 @@ int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnSh
 			whatToReturn--;
 		}
 	}
-	return whatToReturn;
+	return whatToReturn + (
+			m_Draw == nullptr ? 0
+			: m_Draw(rowShift + m_row, columnShift + m_column, renderer));
 }
 
 int Drawing::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
@@ -210,8 +222,8 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
  		rect.x = xModulo(m_row+rowShift);
 		rect.y = yModulo(m_column + columnShift);
 		//cout<<"Guenther"<<m_texture->m_Height()<<endl;
-		rect.h = m_texture->m_height;
-		rect.w = m_texture->m_width;
+		rect.h = m_texture->m_Height();
+		rect.w = m_texture->m_Width();
 		//cout<<"ImmovableDrawingElement.\n x: "<<rect.x<<", y: "<<rect.y<<"Height: "<<rect.h<<"Width: "<<rect.w<<endl;
 
 		SDL_Texture* textureToDraw = m_texture->theTexture();
@@ -226,7 +238,11 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 		//Update data for your instance
 		m_renderer = renderer;
 		//SDL_Delay(STANDARD_DRAWING_TIME);
-		return true;
+		if(m_Draw){
+			if(m_Draw(rowShift + m_row, columnShift + m_column, renderer)==0)
+				return 0;
+		}
+		return 1;
 
 }
 
@@ -236,18 +252,25 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 	//m_drawingList.insert(whereToInsert, drElToUpdate);
 
 
-ImmovableDrawingElement::ImmovableDrawingElement(SDL_Renderer* renderer, std::shared_ptr<Texture>& texture, int row, int column, Layer layer)
+ImmovableDrawingElement::ImmovableDrawingElement(SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row, int column, Layer layer)
 : DrawingElement(row, column, renderer, layer), m_texture(texture)
 {
 }
 
 LambdaDrawingElement::LambdaDrawingElement(SDL_Renderer* renderer, int draw(int, int, SDL_Renderer* renderer), int row, int column, Layer layer)
-: DrawingElement( row, column, renderer, layer), m_Draw(draw)
+: DrawingElement(row, column, renderer, layer)
 {
+	m_Draw = draw;
 }
 
 LambdaDrawingElement::~LambdaDrawingElement(){
 }
 
+void DrawingElement::m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Renderer*)){
+	cout<<"m_setAdditionalInstructions"<<m_Draw<<" for this = "<<this<<endl;
+this->m_Draw = *Draw;
+	m_draw(0,0,theRenderer);
+	SDL_Delay(2000);
+}
 
 

@@ -20,7 +20,7 @@ Plains::~Plains(){
 }
 
 int Plains::m_movementPoints(){
-	return 1;
+	return ONE_MOVEMENT_POINT;
 }
 
 float Plains::m_defenseBonus(){
@@ -49,7 +49,7 @@ int Plains::m_food(){
 
 int Plains::m_trade()IS_CLASSICALLY_ROAD_BASED
 std::string Plains::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
-Landscape Plains::m_Landscape(){
+Landscape Plains::m_Landscape() const{
 	//std::cout<<"Plains::Landscape"<<std::endl;
 	return PLAINS;
 }

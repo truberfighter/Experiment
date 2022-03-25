@@ -9,17 +9,35 @@
 #define SETTLERS_HPP_
 
 #include "sdltypes.hpp"
+#include "Figure.hpp"
 
-class Settlers{
+class Nation;
+class City;
+
+class Settlers: public Figure{
 private:
 	short int m_workStepsCount;
-	SettlersWork m_currentWork = NONE;
+	SettlersWork m_currentWork = IRRIGATE;
 public:
+	Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	~Settlers();
+	bool m_takeOrder(char order) ;
 	short int m_WorkStepsCount();
+	int m_drawSettlersWork(SDL_Rect& rectToDraw);
 	void m_work();
 	void m_work(SettlersWork work);
 	void m_finishWork(); //set m_workStepsCount to 0
 	SettlersWork m_CurrentWork();
+	virtual std::string m_orderOverview();
+	virtual float m_attackingStrength();
+	float m_defensiveStrength();
+	short unsigned int m_visibilityRange();
+	void m_finishMove() override;
+	short unsigned int m_defaultMovementPoints();
+	FigureCategory m_FigureCategory()override;
+	void m_foundNewCity(std::string name);
+	void m_addToCity(std::string name);
+	std::shared_ptr<MovableThing> m_createImage() override;
 };
 
 

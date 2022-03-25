@@ -10,12 +10,14 @@
 
 #include "sdltypes.hpp"
 #include "Nation.hpp"
+#include "LetterTextureContainer.hpp"
 //#include "Drawing.cpp"
 #include <String>
 
 class City;
 class Settlers;
 class Figure;
+class DrawingElement;
 class ImmovableDrawingElement;
 class FieldContainer;
 
@@ -27,7 +29,7 @@ protected:
 	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers settlers);
 	bool m_hasFortress();
 	bool m_hasSpecialResource = false;
-	std::shared_ptr<ImmovableDrawingElement> m_drawingElement;
+	std::shared_ptr<DrawingElement> m_drawingElement;
 	int m_x;
 	int m_y;
 	Layer m_layer;
@@ -38,13 +40,12 @@ protected:
 	virtual short int m_howLongToTake(SettlersWork work) = 0;
 	RoadStatus m_roadStatus = NOTHING;
 	void m_railRoadProductionEffect(int& count);
-
 public:
 	virtual ~Field();
 	Field(int x, int y, Layer layer, bool hasSpecialResource = false);
 	int m_X() const;
 	int m_Y() const;
-	std::shared_ptr<ImmovableDrawingElement> m_DrawingElement();
+	std::shared_ptr<DrawingElement> m_DrawingElement();
 	virtual int m_movementPoints() =0;
 	virtual float m_defenseBonus()=0;
 	bool m_IsMined() const;
@@ -58,12 +59,18 @@ public:
 	int m_trade(Nation& nation);
 	virtual int m_trade()=0;
 	virtual std::string m_resourceOverview()=0;
-	virtual Landscape m_Landscape() = 0;
+	virtual Landscape m_Landscape() const = 0;
 	RoadStatus m_RoadStatus();
 	bool m_HasSpecialResource();
 	bool m_Pillage();
+	std::shared_ptr<City> m_CityContained();
+	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
+	friend std::ostream& operator<<(std::ostream&, Field&);
 	friend class FieldContainer;
+	friend class Settlers;
 };
+std::ostream& operator<<(std::ostream& os, Landscape ls);
+std::ostream& operator<<(std::ostream&, Field&);
 #define ACKNOWLEDGE_RAILROAD m_railRoadProductionEffect(count);
 #define ACKNOWLEDGE_DEMOCRACY if(count>2 && (nation.m_Government()==REPUBLIC || nation.m_Government()==DEMOCRACY))count++;
 #define ACKNOWLEDGE_DESPOTISM if(count>2 && (nation.m_Government()==ANARCHY || nation.m_Government()==DESPOTISM))count--;

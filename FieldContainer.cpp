@@ -62,7 +62,7 @@ void FieldContainer::initContinentIDs(){
 	unsigned int ysize = vectorToWorkWith[0].size();
 	for(unsigned int i(0); i< xsize;i++){
 		for(unsigned int j(0); j<ysize; j++){
-        PRINT_I_J
+
 			shared_ptr<Field>& currentField = vectorToWorkWith[i][j];
 			Coordinate neighbouringCoordinates[4] = {Coordinate(i,j-1), Coordinate(i,j+1)
 			, Coordinate(i+1,j), Coordinate(i-1,j)
@@ -89,7 +89,7 @@ void FieldContainer::initContinentIDs(){
 	}
 	for(unsigned int i(0); i< xsize;i++){
 		for(unsigned int j(0); j<ysize; j++){
-			cout<<"i = "<<i<<", j = "<<j<<", m_continentID = "<<vectorToWorkWith[i][j]->m_continentID<<endl;
+			//cout<<"i = "<<i<<", j = "<<j<<", m_continentID = "<<vectorToWorkWith[i][j]->m_continentID<<endl;
 		}
 	}
 }

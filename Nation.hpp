@@ -13,12 +13,19 @@
 class Nation{
 private:
 	GovernmentType m_government = DESPOTISM;
+	Nationality m_nation;
 public:
+	Nation(Nationality n = ROMAN);
 	GovernmentType m_Government();
+	Nationality m_Nation() const;
 };
 
 inline GovernmentType Nation::m_Government(){
 	return m_government;
+}
+
+inline 	Nationality Nation::m_Nation() const{
+	return m_nation;
 }
 
 #endif //NATION_HPP_
