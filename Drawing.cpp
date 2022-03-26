@@ -207,6 +207,7 @@ bool Drawing::m_updatePosition(){
 }
 
 int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer ){
+	fieldToDraw = m_field;
 	m_updatePosition();
 	if(!renderer){
 			cout<<"No valid renderer for ImmovableDrawingElement"<<endl;
@@ -270,7 +271,6 @@ void DrawingElement::m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Rende
 	cout<<"m_setAdditionalInstructions"<<m_Draw<<" for this = "<<this<<endl;
 this->m_Draw = *Draw;
 	m_draw(0,0,theRenderer);
-	SDL_Delay(2000);
 }
 
 

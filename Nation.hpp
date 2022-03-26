@@ -18,6 +18,8 @@ public:
 	Nation(Nationality n = ROMAN);
 	GovernmentType m_Government();
 	Nationality m_Nation() const;
+	bool m_canBuildRailroad();
+	bool m_canBuildBridges();
 };
 
 inline GovernmentType Nation::m_Government(){

@@ -18,7 +18,7 @@ enum{SDLK_1_DOWN_LEFT = 1073741913, SDLK_2_DOWN = SDLK_1_DOWN_LEFT + 1, SDLK_3_D
 	SDLK_4_LEFT = SDLK_3_DOWN_RIGHT + 1, SDLK_5_CENTER = SDLK_4_LEFT + 1, SDLK_6_RIGHT = SDLK_5_CENTER+1,
 	SDLK_7_UP_LEFT = SDLK_6_RIGHT + 1, SDLK_8_UP = SDLK_7_UP_LEFT + 1, SDLK_9_UP_RIGHT = SDLK_8_UP+1,
 };
-enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 24};
+enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 60};
 enum Layer{STANDARD_LAYER = 100, STANDARD_FIELD_LAYER = -300, STANDARD_FIELD_MODIFICATOR_LAYER = 0};
 enum FigureCategory{GROUND, SEA, FLIGHT};
 enum Drawing_Element{MOVABLE_DRAWING_ELEMENT, DRAWING, IMMOVABLE_DRAWING_ELEMENT,LAMBDA_DRAWING_ELEMENT};
@@ -41,6 +41,7 @@ enum{FIELD_TEXTURE_AMOUNT = 30};
 enum Nationality {ROMAN, RUSSIAN, ZULU, GREEK, BABYLONIAN, ENGLISH, CHINESE, AMERICAN, GERMAN, FRENCH, AZTEC, EGYPTIAN, BARBARIAN, INDIAN, MONGOL};
 enum FigureState{MOVING, SENTRIED, SENTRYING, FORTIFYING, FORTIFIED, FIGHT_IN_PROGRESS, PILLAGE_IN_PROGRESS, DONE_WITH_TURN, SETTLERS_AT_WORK};
 enum{SMALL_DRAWING_FAIL = -1};
+enum{STANDARD_LINE_THICKNESS = STANDARD_FIELD_SIZE / 8};
 
 typedef short unsigned int ContinentID;
 const ContinentID NO_CONTINENT_ID_GIVEN = WORLD_LENGTH*WORLD_HEIGHT;
@@ -94,12 +95,19 @@ public:
 		}
 	}
 };
-
+namespace Graphics{
 int drawSquareLines(SDL_Renderer*, int, int, SDL_Color);
+int drawSquareStarLines(SDL_Renderer*, int, int, SDL_Color);
+int drawThickerDiagonalLineDown(SDL_Renderer* renderer, int x, int y,  int thickness = STANDARD_LINE_THICKNESS);
+int drawThickerHorizontalLine(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
+int drawThickerVerticalLine(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
+int drawThickerDiagonalLineUp(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
+};
 
 extern TTF_Font* theFont;
-extern SDL_Color whiteColor;
+extern SDL_Color whiteColor, blackColor, brownColor;
 extern Figure* figureToDraw;
+extern Field* fieldToDraw;
 
 
 

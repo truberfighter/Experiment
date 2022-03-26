@@ -109,6 +109,7 @@ public:
 
 class ImmovableDrawingElement: public DrawingElement{
 protected:
+	Field* m_field;
 	std::shared_ptr<Texture> m_texture;
 public:
 	ImmovableDrawingElement (SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row = 0, int column = 0, Layer layer = STANDARD_FIELD_LAYER);
@@ -119,6 +120,8 @@ public:
 	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
 	std::shared_ptr<Texture>& getTexture(){return m_texture;}
 	void setTexture(std::shared_ptr<Texture> texture){m_texture = texture;}
+	void m_setField(Field* field){m_field = field;}
+	Field* m_getField(){return m_field;}
 };
 
 class LambdaDrawingElement: public DrawingElement{

@@ -193,11 +193,11 @@ cout<<"figureState: "<<m_figureState<<endl;
 	case FORTIFYING: DRAW_LETTER('F')
 	case SENTRIED: {
 		SDL_Color colorToUse{100,0,255};
-		return drawSquareLines(theRenderer,x,y,colorToUse);
+		return Graphics::drawSquareStarLines(theRenderer,x,y,brownColor);
 	}
 	case FORTIFIED:{
-		SDL_Color colorToUse{255,255,255};
-		return drawSquareLines(theRenderer,x,y,colorToUse);
+		SDL_Color colorToUse{255,255,255};//zum Test verstellt
+		return Graphics::drawSquareStarLines(theRenderer,x,y,colorToUse);
 	}
 	case MOVING:{
 		Settlers* settlersThis = reinterpret_cast<Settlers*>(this);

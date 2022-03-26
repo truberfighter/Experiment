@@ -87,4 +87,3 @@ short int Plains::m_howLongToTake(SettlersWork work){
 
 
 
-

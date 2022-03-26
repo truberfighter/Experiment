@@ -54,9 +54,11 @@ Settlers::~Settlers(){
 
 bool Settlers::m_takeOrder(char order){
 	switch(order){
-	case 'H': {if(m_whereItStands->m_cityContained){m_home = m_whereItStands->m_CityContained(); return true;}return false;}
-	case 'I': return m_whereItStands->m_Irrigate(*this);
-	case 'M': return m_whereItStands->m_Mining(*this);
+	case 's': return m_sentry();
+	case 'r': return m_whereItStands->m_road(*this);
+	case 'h': {if(m_whereItStands->m_cityContained){m_home = m_whereItStands->m_CityContained(); return true;}return false;}
+	case 'i': return m_whereItStands->m_Irrigate(*this);
+	case 'm': return m_whereItStands->m_Mining(*this);
 	case ' ': {m_finishMove(); return true;}
 	default: return false;
 }
@@ -89,9 +91,18 @@ return SDL_RenderCopy(theRenderer, theLetterTextureContainer->m_getLetterTexture
 	switch(m_currentWork){
 	case IRRIGATE: DRAW_LETTER('I')
 	case MAKE_MINING: DRAW_LETTER('M')
+	case BUILD_ROAD: DRAW_LETTER('R')
 	default: return 0;
 	}
 #undef DRAW_LETTER
+}
+
+bool Settlers::m_canBuildRailroad(){
+	return m_nationality ? m_nationality->m_canBuildRailroad() : false;
+}
+
+bool Settlers::m_canBuildBridges(){
+	return m_nationality ? m_nationality->m_canBuildBridges() : false;
 }
 
 VISIBILITY_OF Settlers IS_NORMAL_VISIBILITY

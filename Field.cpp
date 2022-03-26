@@ -38,7 +38,11 @@ bool Field::m_IsMined() const{return m_isMined;}
 bool Field::m_IsIrrigated() const{return m_isIrrigated;}
 
 bool Field::m_maybeFinishWork(Settlers& settlers, SettlersWork work){
-	if(m_howLongToTake(work)>=settlers.m_WorkStepsCount()){
+	if(m_howLongToTake(work)==SETTLERSWORK_UNAVAILABLE){
+		std::cout<<"SettlersWork unavailable"<<std::endl;
+	}
+	if(m_howLongToTake(work)<=settlers.m_WorkStepsCount()){
+		std::cout<<"m_howLongToTake("<<work<<") = "<<m_howLongToTake(work)<<", settlers.m_workStepsCount() = "<<settlers.m_WorkStepsCount()<<std::endl;
 		settlers.m_finishWork();
 		return true;
 	}
@@ -74,7 +78,7 @@ int Field::m_trade(Nation& nation){
 
 bool Field::m_HasSpecialResource(){return m_hasSpecialResource;}
 
-bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers settlers){
+bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
 	switch(whatWorkWillCome){
 	case MAKE_MINING:{
 		if(m_isMined){
@@ -96,7 +100,7 @@ bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers settlers){
 	}
 }
 
-bool Field::m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers settlers){
+bool Field::m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
 	switch(whatWorkWillCome){
 	case IRRIGATE:{
 		if(m_isIrrigated){
@@ -107,7 +111,8 @@ bool Field::m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers settlers)
 			//Irrigation complete
 			if(m_maybeFinishWork(settlers, IRRIGATE)){
 				//set to irrigated
-				m_isIrrigated = true;				}
+				m_isIrrigated = true;
+			}
 			return true;
 		}
 	}
@@ -168,4 +173,47 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 
 	std::vector<Meridian>& fieldsOfTheWorld =  *theContainer->m_getFieldsOfTheWorld();
 	return fieldsOfTheWorld[x][y];
+}
+
+bool Field::m_createRoadImage(SDL_Color& color){
+	m_drawingElement->m_setAdditionalInstructions
+	([](int x, int y, SDL_Renderer* renderer)->int{return Graphics::drawSquareStarLines(renderer, x, y, brownColor);});
+	return true;
+}
+
+
+
+bool Field::m_road(Settlers& settlers){
+	if(m_roadStatus == RAILROAD){
+		std::cout<<"You cannot build some road on top of rail road"<<std::endl;
+		return false;
+	}
+	if(m_roadStatus == NOTHING){
+		if(m_Landscape()==RIVER&&(!(settlers.m_canBuildBridges()))){
+			std::cout<<"Bridge building issues!"<<std::endl;
+			return false;
+		}
+		settlers.m_work(BUILD_ROAD);
+		if(!m_maybeFinishWork(settlers, BUILD_ROAD)){
+			return true;
+		}
+	m_roadStatus = ROAD;
+	return m_createRoadImage(brownColor);
+	}
+	//alter the drawing element
+
+	if(m_roadStatus==ROAD){
+		if(!settlers.m_canBuildRailroad()){
+			std::cout<<"Settlers cannot build rail road!"<<std::endl;
+			return false;
+		}
+		settlers.m_work(BUILD_ROAD);
+		if(!m_maybeFinishWork(settlers, BUILD_ROAD)){
+			return true;
+		}
+		m_roadStatus = RAILROAD;
+		return m_createRoadImage(blackColor);
+	}
+	std::cout<<"For some reason, there is no return for Field::m_road"<<std::endl;
+	return false;
 }

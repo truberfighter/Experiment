@@ -44,8 +44,19 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 			m_whatToMove->m_tryMoveToField(directions[i]);
 			m_currentDrawing->m_draw();		}
 	}
-	switch(event.key.keysym.sym){
 
+	char orders[]={'s', 'r'};
+	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r};
+
+	for(int i = 0; i<2; i++){
+		if(keyCode == keyCharPossibilities[i]){
+			if(m_whatToMove->m_takeOrder(orders[i]))
+				m_currentDrawing->m_draw();
+			else
+				std::cout<<"Move failed for KeyCode for "<<orders[i]<<std::endl;
+		}
+	}
+	switch(event.key.keysym.sym){
 	default:
 		NO_EVENT_HANDLING_FOUND
 

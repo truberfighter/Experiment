@@ -23,10 +23,11 @@ class FieldContainer;
 
 class Field{
 protected:
+	bool m_createRoadImage(SDL_Color& color);
 	ContinentID m_continentID = NO_CONTINENT_ID_GIVEN;
 	int m_roadTradeResult();
-	bool m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers settlers);
-	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers settlers);
+	bool m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
+	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
 	bool m_hasFortress();
 	bool m_hasSpecialResource = false;
 	std::shared_ptr<DrawingElement> m_drawingElement;
@@ -39,6 +40,7 @@ protected:
 	bool m_maybeFinishWork(Settlers& settlers, SettlersWork work);
 	virtual short int m_howLongToTake(SettlersWork work) = 0;
 	RoadStatus m_roadStatus = NOTHING;
+	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
 	virtual ~Field();
@@ -50,6 +52,7 @@ public:
 	virtual float m_defenseBonus()=0;
 	bool m_IsMined() const;
 	bool m_IsIrrigated() const;
+	bool m_Road(Settlers& settlers);
 	virtual bool m_Mining(Settlers& settlers)=0;
 	virtual bool m_Irrigate(Settlers& settlers)=0;
 	int m_shields(Nation& nation);

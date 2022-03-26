@@ -38,6 +38,8 @@ public:
 	void m_foundNewCity(std::string name);
 	void m_addToCity(std::string name);
 	std::shared_ptr<MovableThing> m_createImage() override;
+	bool m_canBuildRailroad();
+	bool m_canBuildBridges();
 };
 
 

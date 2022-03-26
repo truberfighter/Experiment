@@ -15,4 +15,12 @@ Nation::Nation(Nationality nationality): m_nation(nationality)
 	cout<<"Nation-Konstruktor mit Nationalität "<< nationality<<endl;
 }
 
+bool Nation::m_canBuildRailroad(){
+	return true;
+}
+
+bool Nation::m_canBuildBridges(){
+	return true;
+}
+
 
