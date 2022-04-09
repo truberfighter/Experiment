@@ -68,11 +68,13 @@ int MovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer* r
 	else{ //renderer==nullptr
 		whatToReturn = m_content->m_drawNew(rowShift + c.x,columnShift + c.y) ? 1 : 0;	}
 	if(m_Draw){
-		cout<<"additional instructions called"<<endl;
+		//cout<<"additional instructions called"<<endl;
 				if(m_Draw(rowShift + c.x, columnShift + c.y, renderer)==0)
 					whatToReturn = 1;
 			}
-	else cout<<"No additional instructions called for this = "<<this<<endl;
+	//else cout<<"No additional instructions called for this = "<<this<<endl;
+	if(whatToReturn != 1)
+		cout<<"Probably an SDL_Error: \n"<<SDL_GetError()<<std::endl;
 	return whatToReturn;
 }
 
@@ -125,7 +127,7 @@ int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnSh
 	//cout<<"whatToReturn: "<<whatToReturn<<endl;
 	for(auto &it: m_drawingList){
 		if(it->m_draw(rowShift, columnShift, renderer) == true){
-			//cout<<"Erfolgreiche Zeichnung!"<<endl;
+			//std::cout<<"draw this = "<<it<<std::endl;
 			whatToReturn--;
 		}
 	}
@@ -158,16 +160,16 @@ void Drawing::m_putOver(shared_ptr<DrawingElement>& drElToUpdate, Layer layer){
 //list<DrawingElement*>::iterator whereToErase = m_drawingList.begin();
 m_drawingList.remove_if([&drElToUpdate](shared_ptr<DrawingElement> drawEl){bool whatToReturn = &(*drawEl) == &(*drElToUpdate); return whatToReturn;});
 list<std::shared_ptr<DrawingElement>>::iterator whereToInsert;
+cout<<"m_putOver";
 for(whereToInsert= m_drawingList.begin(); whereToInsert != m_drawingList.end(); whereToInsert++){
-		if((*whereToInsert)->m_getLayer() <= drElToUpdate->m_getLayer()){
-
+		if((*whereToInsert)->m_getLayer() <= layer){
 			continue;
 		}
 		else{
 			break;
 		}
 	}
-m_drawingList.insert(whereToInsert, drElToUpdate);
+m_drawingList.insert(( whereToInsert == m_drawingList.end() ? whereToInsert : ++whereToInsert), drElToUpdate);
 }
 
 Drawing::~Drawing(){

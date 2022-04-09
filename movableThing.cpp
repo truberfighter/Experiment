@@ -230,7 +230,7 @@ unsigned int MovableThing::WhenMoved(){
 
 void MovableThing::m_setDrawingInstructions(int (*foo) (int, int, SDL_Renderer*)){
 	for(MovableDrawingElement* currentElement: m_howDrawn){
-		cout<<"setDrawingInstructions in MovableThing"<<endl;
+		//cout<<"setDrawingInstructions in MovableThing"<<endl;
 		currentElement->m_setAdditionalInstructions(foo);
 	}
 }

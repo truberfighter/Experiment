@@ -7,6 +7,7 @@
 #include <SDL2\SDL_image.h>
 #include <memory>
 #include <vector>
+#include <string>
 #define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ while(SDL_PollEvent(&currentEvent)!=0){if(currentEvent.type == SDL_QUIT) quit = true;
 #define MAIN_LOOP_END }}
 #define KeyCode unsigned int
@@ -17,14 +18,15 @@ enum PoleHit{NORTH_POLE_HIT, SOUTHERN_POLE_HIT};
 enum{SDLK_1_DOWN_LEFT = 1073741913, SDLK_2_DOWN = SDLK_1_DOWN_LEFT + 1, SDLK_3_DOWN_RIGHT = SDLK_2_DOWN+1,
 	SDLK_4_LEFT = SDLK_3_DOWN_RIGHT + 1, SDLK_5_CENTER = SDLK_4_LEFT + 1, SDLK_6_RIGHT = SDLK_5_CENTER+1,
 	SDLK_7_UP_LEFT = SDLK_6_RIGHT + 1, SDLK_8_UP = SDLK_7_UP_LEFT + 1, SDLK_9_UP_RIGHT = SDLK_8_UP+1,
+	SDLK_ENTER_KEY = 13
 };
-enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 60};
-enum Layer{STANDARD_LAYER = 100, STANDARD_FIELD_LAYER = -300, STANDARD_FIELD_MODIFICATOR_LAYER = 0};
+enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 24};
+typedef int Layer; extern Layer STANDARD_LAYER, STANDARD_FIELD_LAYER, STANDARD_FIELD_MODIFICATOR_LAYER;
 enum FigureCategory{GROUND, SEA, FLIGHT};
 enum Drawing_Element{MOVABLE_DRAWING_ELEMENT, DRAWING, IMMOVABLE_DRAWING_ELEMENT,LAMBDA_DRAWING_ELEMENT};
 enum Direction{DOWN_LEFT = 1, DOWN = 2, DOWN_RIGHT = 3, LEFT = 4, STANDING_STILL = 5,
 	RIGHT = 6, UP_LEFT = 7, UP = 8, UP_RIGHT = 9};
-enum{WORLD_LENGTH = 40, WORLD_HEIGHT = 40, SCREEN_WIDTH_NORMED = 16, SCREEN_HEIGHT_NORMED = 12,
+enum{WORLD_LENGTH = 80, WORLD_HEIGHT = 80, SCREEN_WIDTH_NORMED = 32, SCREEN_HEIGHT_NORMED = 24,
 SCREEN_WIDTH = SCREEN_WIDTH_NORMED*STANDARD_FIELD_SIZE, SCREEN_HEIGHT = SCREEN_HEIGHT_NORMED*STANDARD_FIELD_SIZE,
 MODULO_WIDTH_FOR_NEGATIVE = 2, MODULO_HEIGHT_FOR_NEGATIVE = MODULO_WIDTH_FOR_NEGATIVE,
 FIGURESTATE_TEXTURE_HEIGHT = STANDARD_FIELD_SIZE/2, FIGURESTATE_TEXTURE_WIDTH = FIGURESTATE_TEXTURE_HEIGHT};
@@ -39,7 +41,7 @@ enum SettlersWorkingTime{SETTLERSWORK_UNAVAILABLE = -1, STANDARD_ROAD_BUILDING_T
 , STANDARD_IRRIGATION_TIME = 6, STANDARD_FORESTING_TIME = 12};
 enum{FIELD_TEXTURE_AMOUNT = 30};
 enum Nationality {ROMAN, RUSSIAN, ZULU, GREEK, BABYLONIAN, ENGLISH, CHINESE, AMERICAN, GERMAN, FRENCH, AZTEC, EGYPTIAN, BARBARIAN, INDIAN, MONGOL};
-enum FigureState{MOVING, SENTRIED, SENTRYING, FORTIFYING, FORTIFIED, FIGHT_IN_PROGRESS, PILLAGE_IN_PROGRESS, DONE_WITH_TURN, SETTLERS_AT_WORK};
+enum FigureState{MOVING, SENTRIED, SENTRYING, FORTIFYING, FORTIFIED,COMPLETELY_FORTIFIED, FIGHT_IN_PROGRESS, PILLAGE_IN_PROGRESS, DONE_WITH_TURN, SETTLERS_AT_WORK};
 enum{SMALL_DRAWING_FAIL = -1};
 enum{STANDARD_LINE_THICKNESS = STANDARD_FIELD_SIZE / 8};
 
@@ -95,6 +97,16 @@ public:
 		}
 	}
 };
+
+class NullPointerException{
+public:
+	std::string m_class;
+	std::string m_functionData = "";
+	NullPointerException(std::string s, std::string ss = ""): m_class(s), m_functionData(ss){}
+	std::string what(){return "NullPointerException: "+m_class+"\n"+m_functionData;}
+};
+
+
 namespace Graphics{
 int drawSquareLines(SDL_Renderer*, int, int, SDL_Color);
 int drawSquareStarLines(SDL_Renderer*, int, int, SDL_Color);
@@ -104,10 +116,15 @@ int drawThickerVerticalLine(SDL_Renderer* renderer, int x, int y, int thickness 
 int drawThickerDiagonalLineUp(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 };
 
+char getSettlersOrder(SettlersWork work);
+
+std::ostream& operator<<(std::ostream& os, Nationality nationality);
+
 extern TTF_Font* theFont;
 extern SDL_Color whiteColor, blackColor, brownColor;
 extern Figure* figureToDraw;
 extern Field* fieldToDraw;
+extern unsigned int settlersCount;
 
 
 

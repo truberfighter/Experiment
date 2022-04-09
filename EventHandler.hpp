@@ -16,6 +16,7 @@
 #include "Drawing.hpp"
 #include "Window.hpp"
 #include <queue>
+#include "Game.hpp"
 
 class Figure;
 
@@ -27,6 +28,7 @@ protected:
 	std::list<Drawing*> m_currentDrawings;//Oder so. Damit "Wait" funktioniert.
 	std::shared_ptr<Drawing> m_currentDrawing;
 public:
+	virtual void lol(){std::cout<<"virtual EventHandler::lol"<<std::endl;}
 	EventHandler();
 	bool m_handleEvent(const SDL_Event& event);
 	void m_setWhatToMove(std::shared_ptr<Figure> whatToMove);
@@ -36,7 +38,7 @@ public:
 	void m_draw();
 };
 
-
+extern Game* theGame;
 
 
 

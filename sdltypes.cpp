@@ -9,6 +9,8 @@
 #include <iostream>
 #include <SDL2\SDL_image.h>
 
+
+unsigned int settlersCount = 0;
 int Texture::m_Width(){return m_width;}
 int Texture::m_Height(){ return m_height;}
 SDL_Texture* Texture::theTexture(){return m_theTexture;}
@@ -20,7 +22,7 @@ Field* fieldToDraw = nullptr;
 SDL_Color whiteColor{25, 25, 250};
 SDL_Color blackColor{0,0,0};
 SDL_Color brownColor{130,80,0};
-
+Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000;
 int modulo (const int& i, const int& j){
 	if(j <= 0)
 		return MODULO_FAIL;
@@ -43,11 +45,11 @@ int yModulo(const int& i){
 Texture::Texture(SDL_Texture* texture, int width, int height)
 : m_theTexture(texture), m_width(width), m_height(height)
 {
-std::cout<<"Texture-Konstruktor, this ="<<this<<", m_height = "<<m_height<<", m_width = "<<m_width<<std::endl;
+//std::cout<<"Texture-Konstruktor, this ="<<this<<", m_height = "<<m_height<<", m_width = "<<m_width<<std::endl;
 }
 
 Texture::~Texture(){
-	std::cout<<"Texture-Destruktor, this = "<<this<<std::endl;
+	//std::cout<<"Texture-Destruktor, this = "<<this<<std::endl;
 	SDL_DestroyTexture(m_theTexture);
 }
 
@@ -154,3 +156,41 @@ int Graphics:: drawThickerVerticalLine(SDL_Renderer* renderer, int x, int y, int
 	if(whatToReturn!=0) std::cout<<"SDL Error: \n"<<SDL_GetError()<<std::endl;
 	return whatToReturn;
 }
+#define PRINT(p) {os<<p; break;}
+std::ostream& operator<<(std::ostream& os, Nationality nationality){
+	switch(nationality){
+	case GERMAN: PRINT("GERMAN")
+	case ROMAN: PRINT("ROMAN")
+	case CHINESE: PRINT("CHINESE")
+	case MONGOL: PRINT("MONGOL")
+	case FRENCH: PRINT("FRENCH")
+	case AZTEC: PRINT("AZTEC")
+	case EGYPTIAN: PRINT("EGYPTIAN")
+	case GREEK: PRINT("GREEK")
+	case ENGLISH: PRINT("ENGLISH")
+	case INDIAN: PRINT("INDIAN")
+	case RUSSIAN: PRINT("RUSSIAN")
+	case AMERICAN: PRINT("AMERICAN")
+	case ZULU: PRINT("ZULU")
+	case BABYLONIAN: PRINT("BABYLONIAN")
+	}
+	return os;
+}
+#undef PRINT(p)
+
+char getSettlersOrder(SettlersWork work){
+	switch(work){
+	case MAKE_MINING: return 'm';
+	case IRRIGATE: return 'i';
+	case BUILD_ROAD: return 'r';
+	case BUILD_RAILROAD: return 'm';
+	case CHANGE_TO_FOREST: return 'm';
+	case CHANGE_TO_GRASSLAND: return 'i';
+	case CHANGE_TO_PLAINS: return 'i';
+	case BUILD_FORTRESS: return 'f';
+	case BUILD_BRIDGE: return 'r';
+	case NONE: return ' ';
+	}
+	return 'F';
+}
+

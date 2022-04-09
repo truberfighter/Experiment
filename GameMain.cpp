@@ -39,13 +39,20 @@ void GameMain::m_initLetterTextures(){
 void GameMain::m_initGame(){
 	int imgflags = IMG_INIT_PNG;
 	IMG_Init(imgflags);
-	TTF_Init();theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 15);
+	TTF_Init();
+	theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 15);
 	fieldTextures = new shared_ptr<Texture>[30];
 	Window* theWindow = new Window ("Game Main, Window 0", SCREEN_WIDTH, SCREEN_HEIGHT);
 	m_currentRenderer = theRenderer = theWindow->m_Renderer();
 	m_initLetterTextures();
 	m_initFieldTextures();
 	initFieldContainer();
+	vector<Nationality> nationsToPlay{ROMAN, MONGOL, ZULU, CHINESE};
+	cout<<"Gameinitialisierung"<<endl;
+	m_theGame = make_unique<Game>(nationsToPlay);
+	theGame = m_theGame.get();
+	cout<<"Gameinitialisierung abgeschlossen"<<endl;
+	m_whatToMove = theGame->m_getCurrentFigure(theGame->m_NationAtCurrentTurn().get());
 	FieldContainer::getTheContainer()->initContinentIDs();
 	m_theWindows.push_back(unique_ptr<Window>());
 	m_theWindows[0].reset(theWindow);
@@ -80,7 +87,7 @@ GameMain::~GameMain(){
 }
 
 int GameMain::operator()(){
- if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){
+ if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
 /*	 if( TTF_Init() == -1 )
@@ -88,7 +95,13 @@ int GameMain::operator()(){
 	                     printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
 	                 }*/
 
-   Window* theWindow=&(*m_currentWindow());
+	 for(std::shared_ptr<Nation> currentNation: theGame->m_NationsPlaying()){
+	 		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
+	 			currentFigure->m_integrateInto(*someDrawing);
+	 		}
+	 	}
+	 //theGame->m_makeEndOfTurn();
+ Window* theWindow=&(*m_currentWindow());
    if(theWindow)cout<<"Window existiert"<<endl;
 
   //theRenderer = theWindow->m_Renderer();
@@ -106,7 +119,7 @@ int GameMain::operator()(){
    //Fill the surface with color
    SDL_UpdateWindowSurface( window ); //Update the surface*/
   cout<<"kevinkevinkevin"<<endl;
-  SDL_RenderPresent(m_currentRenderer);
+  /*SDL_RenderPresent(m_currentRenderer);
 theTexture = IMG_LoadTexture(m_currentRenderer, "bilder/2022-01-03.png");
 
   SDL_Rect someColoredRect;
@@ -138,19 +151,9 @@ theTexture = IMG_LoadTexture(m_currentRenderer, "bilder/2022-01-03.png");
     someDrawing->m_add(theMovableThing2);
     theRenderer = m_currentRenderer;
     SDL_RenderPresent(m_currentRenderer);
-    SDL_Delay(STANDARD_DRAWING_TIME*3);
-    shared_ptr<Nation> theRomans = make_shared<Nation>(ROMAN);
-    shared_ptr<Field>& theField = ((*theContainer->m_getFieldsOfTheWorld())[0][3]);
-    cout<<theRenderer;
-    shared_ptr<Settlers> myFirstSettlers = std::make_shared<Settlers>(theField, theRomans);
-    m_setWhatToMove(myFirstSettlers);
-myFirstSettlers->m_integrateInto(*someDrawing);
+    SDL_Delay(STANDARD_DRAWING_TIME*3);*/
 m_setCurrentDrawing(someDrawing);
-    cout<<theLetterTextureContainer<<endl;
-    shared_ptr<DrawingElement> drElShPo = make_shared<ImmovableDrawingElement>(theRenderer, theLetterTextureContainer->m_getLetterTexture('F'), 5*STANDARD_FIELD_SIZE, 10*STANDARD_FIELD_SIZE,  STANDARD_FIELD_MODIFICATOR_LAYER);
-    cout<<drElShPo<<endl;
-    someDrawing->m_add(drElShPo);
-    someDrawing->m_draw();
+someDrawing->m_draw();
     SDL_RenderPresent(m_currentRenderer);
 
     MAIN_LOOP_BEGIN
@@ -174,12 +177,8 @@ m_setCurrentDrawing(someDrawing);
 	//	screenSurface = TTF_RenderText_Blended(theFont, "Komischer Text in komischer Schrift",  theColor);
 	}
   MAIN_LOOP_END
-  theMovableThing2->m_setMoveToDirection(UP_RIGHT);
-  theMovableThing2->m_move();
-  shared_ptr<DrawingElement> st =make_shared<LambdaDrawingElement>(theRenderer, [](int a, int b, SDL_Renderer* renderer){int h = SDL_RenderDrawLine(renderer, a, b, a+120, b+120); cout<<"h = "<<h<<endl; return h;},20,20);
-  someDrawing->m_add(st);
-  someDrawing->m_draw();
-  SDL_Delay( 2000);
+  //theMovableThing2->m_setMoveToDirection(UP_RIGHT);
+  //theMovableThing2->m_move();
  }			//SDL_Delay(1000);
   //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
   //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
@@ -190,4 +189,45 @@ m_setCurrentDrawing(someDrawing);
  IMG_Quit();
  SDL_Quit();  //Quit SDL subsystems
  return 0;
+}
+
+void GameMain::gameMainDebug(list<SDL_Event>& eventList){
+	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
+	  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
+	 }else{
+	/*	 if( TTF_Init() == -1 )
+		                 {
+		                     printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
+		                 }*/
+
+		 for(std::shared_ptr<Nation> currentNation: theGame->m_NationsPlaying()){
+		 		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
+		 			currentFigure->m_integrateInto(*someDrawing);
+		 		}
+		 	}
+		 theGame->m_makeEndOfTurn();
+	 Window* theWindow=&(*m_currentWindow());
+	   if(theWindow)cout<<"Window existiert"<<endl;
+
+	  //theRenderer = theWindow->m_Renderer();
+	  FieldContainer& fc = *theContainer;
+
+	m_setCurrentDrawing(someDrawing);
+	someDrawing->m_draw();
+	    SDL_RenderPresent(m_currentRenderer);
+
+
+	  //theMovableThing2->m_setMoveToDirection(UP_RIGHT);
+	  //theMovableThing2->m_move();
+	 }			//SDL_Delay(1000);
+	  //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
+	  //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
+	  //SDL_Delay(3000);
+	  //theMovableThing->m_drawRight();
+	 for(SDL_Event& event: eventList){
+		 m_handleKeyboardEvent(event);
+	 }
+	 TTF_Quit();
+	 IMG_Quit();
+	 SDL_Quit();  //Quit SDL subsystems	}3_
 }

@@ -146,7 +146,7 @@ bool Field::m_Pillage(){
 std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 	int x = m_x/STANDARD_FIELD_SIZE;
 	int y = m_y/STANDARD_FIELD_SIZE;
-	std::cout<<"Field::m_getNeighbouringField: x = "<<x<<", y = "<<y;
+	//std::cout<<"Field::m_getNeighbouringField: x = "<<x<<", y = "<<y;
 	switch(whereToLook){
 		case UP:
 			{y--; break;}
@@ -168,7 +168,7 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 	x = modulo(x, WORLD_LENGTH);
 	//Tribut an Civi, man kann nicht vom Nord- oder Südpol weg
 	y = y % WORLD_HEIGHT;
-	std::cout<<"; x = "<<x<<", y = "<<y<<std::endl;
+	//std::cout<<"; x = "<<x<<", y = "<<y<<std::endl;
 	//Pol getroffen
 
 	std::vector<Meridian>& fieldsOfTheWorld =  *theContainer->m_getFieldsOfTheWorld();
@@ -176,6 +176,7 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 }
 
 bool Field::m_createRoadImage(SDL_Color& color){
+	std::cout<<"road image created"<<std::endl;
 	m_drawingElement->m_setAdditionalInstructions
 	([](int x, int y, SDL_Renderer* renderer)->int{return Graphics::drawSquareStarLines(renderer, x, y, brownColor);});
 	return true;

@@ -32,6 +32,8 @@ SettlersWork Settlers::m_CurrentWork(){
 
 void Settlers::m_finishWork(){
 	m_workStepsCount = 0;
+	m_figureState = DONE_WITH_TURN;
+	m_currentWork = NONE;
 #ifdef DEBUG
 	cout<<"Some Settlers has finished his work"<<endl;
 #endif
@@ -45,14 +47,17 @@ void Settlers::m_work(SettlersWork work){
 	m_figureState = SETTLERS_AT_WORK;
 	m_currentWork = work;
 	m_workStepsCount++;
-	cout<<"Settlers working on work "<<m_currentWork<<endl;
+	m_movementPoints = 0;
+	cout<<"Settlers working on work "<<m_currentWork<<", m_workStepsCount = "<<m_workStepsCount<<", howLongToTake = "<<m_whereItStands->m_howLongToTake(m_currentWork)<< endl;
 }
 
 Settlers::~Settlers(){
-	this->~Figure();
+	std::cout<<"Settlersdestruktor"<<this<<std::endl;
+	settlersCount--;
 }
 
 bool Settlers::m_takeOrder(char order){
+	std::cout<<"order taken by settlers: this = "<<this<<endl;
 	switch(order){
 	case 's': return m_sentry();
 	case 'r': return m_whereItStands->m_road(*this);
@@ -72,9 +77,7 @@ std::string Settlers::m_orderOverview(){return "H: HomeCity, B: Add to/Found new
 
 std::shared_ptr<MovableThing> Settlers::m_createImage(){
 	int x = m_whereItStands->m_X(), y = m_whereItStands->m_Y();
-	cout<<"Settlers::createImage"<<theRenderer<<endl;
 	//ändere das mit dem filename
-	cout<<"m_createImage direkt vor return"<<endl;
 	m_image = make_shared<MovableThing>(theRenderer, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE, "bilder/Figures/Settlers/RomanRussianSettlers.png", x, y);
 	return m_image;
 }
