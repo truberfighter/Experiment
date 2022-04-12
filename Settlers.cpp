@@ -48,6 +48,7 @@ void Settlers::m_work(SettlersWork work){
 	m_currentWork = work;
 	m_workStepsCount++;
 	m_movementPoints = 0;
+	m_nationality->m_removeFromQueue(shared_from_this());
 	cout<<"Settlers working on work "<<m_currentWork<<", m_workStepsCount = "<<m_workStepsCount<<", howLongToTake = "<<m_whereItStands->m_howLongToTake(m_currentWork)<< endl;
 }
 
@@ -57,7 +58,10 @@ Settlers::~Settlers(){
 }
 
 bool Settlers::m_takeOrder(char order){
-	std::cout<<"order taken by settlers: this = "<<this<<endl;
+	auto tempWorkCount = m_workStepsCount;
+	MovementPoints tempMovementPoints = m_movementPoints;
+	try{
+	std::cout<<"order taken by settlers: this = "<<this<<", order = "<<(order == ' '? "space" : "char: ")<<order<<std::endl;
 	switch(order){
 	case 's': return m_sentry();
 	case 'r': return m_whereItStands->m_road(*this);
@@ -66,7 +70,22 @@ bool Settlers::m_takeOrder(char order){
 	case 'm': return m_whereItStands->m_Mining(*this);
 	case ' ': {m_finishMove(); return true;}
 	default: return false;
+	}
 }
+	catch(SettlersworkUnavailable& theException){
+		m_workStepsCount = tempWorkCount;
+		m_movementPoints = tempMovementPoints;
+		m_nationality->m_addToQueue(shared_from_this());
+		return false;
+}
+
+}
+
+void Settlers::m_loseOneWorkPoint(){
+	if(m_workStepsCount <= 0){
+		throw(32435);
+	}
+	else m_workStepsCount--;
 }
 
 FigureCategory Settlers::m_FigureCategory(){

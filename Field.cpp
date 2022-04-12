@@ -40,6 +40,7 @@ bool Field::m_IsIrrigated() const{return m_isIrrigated;}
 bool Field::m_maybeFinishWork(Settlers& settlers, SettlersWork work){
 	if(m_howLongToTake(work)==SETTLERSWORK_UNAVAILABLE){
 		std::cout<<"SettlersWork unavailable"<<std::endl;
+throw(SettlersworkUnavailable());
 	}
 	if(m_howLongToTake(work)<=settlers.m_WorkStepsCount()){
 		std::cout<<"m_howLongToTake("<<work<<") = "<<m_howLongToTake(work)<<", settlers.m_workStepsCount() = "<<settlers.m_WorkStepsCount()<<std::endl;
@@ -79,6 +80,9 @@ int Field::m_trade(Nation& nation){
 bool Field::m_HasSpecialResource(){return m_hasSpecialResource;}
 
 bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
+	if(m_howLongToTake(whatWorkWillCome)==SETTLERSWORK_UNAVAILABLE){
+			throw(SettlersworkUnavailable());
+		}
 	switch(whatWorkWillCome){
 	case MAKE_MINING:{
 		if(m_isMined){
@@ -101,6 +105,9 @@ bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
 }
 
 bool Field::m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
+	if(m_howLongToTake(whatWorkWillCome)==SETTLERSWORK_UNAVAILABLE){
+		throw(SettlersworkUnavailable());
+	}
 	switch(whatWorkWillCome){
 	case IRRIGATE:{
 		if(m_isIrrigated){
@@ -185,6 +192,7 @@ bool Field::m_createRoadImage(SDL_Color& color){
 
 
 bool Field::m_road(Settlers& settlers){
+	try{
 	if(m_roadStatus == RAILROAD){
 		std::cout<<"You cannot build some road on top of rail road"<<std::endl;
 		return false;
@@ -201,6 +209,7 @@ bool Field::m_road(Settlers& settlers){
 	m_roadStatus = ROAD;
 	return m_createRoadImage(brownColor);
 	}
+
 	//alter the drawing element
 
 	if(m_roadStatus==ROAD){
@@ -217,4 +226,9 @@ bool Field::m_road(Settlers& settlers){
 	}
 	std::cout<<"For some reason, there is no return for Field::m_road"<<std::endl;
 	return false;
+	}
+		catch(SettlersworkUnavailable& theException){
+			settlers.m_loseOneWorkPoint();
+			throw(theException);
+		}
 }

@@ -19,6 +19,7 @@ private:
 	short int m_workStepsCount;
 	SettlersWork m_currentWork = NONE;
 public:
+	void m_loseOneWorkPoint();
 	Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	~Settlers();
 	bool m_takeOrder(char order) ;

@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream&, Field&);
 #define ACKNOWLEDGE_DEMOCRACY if(count>2 && (nation.m_Government()==REPUBLIC || nation.m_Government()==DEMOCRACY))count++;
 #define ACKNOWLEDGE_DESPOTISM if(count>2 && (nation.m_Government()==ANARCHY || nation.m_Government()==DESPOTISM))count--;
 #define IS_CLASSICALLY_ROAD_BASED 	{return m_roadTradeResult();}
-#define LANDMASS_SEPARATOR PLAINS
+#define LANDMASS_SEPARATOR OCEAN
 extern FieldContainer* theContainer;
 
 #endif /* FIELD_HPP_ */

@@ -1,59 +1,70 @@
 /*
- * Plains.cpp
+ * Ocean.cpp
  *
- *  Created on: 12.03.2022
+ *  Created on: 10.04.2022
  *      Author: uwe-w
  */
 
-#include "Plains.hpp"
+/*
+ * Ocean.cpp
+ *
+ *  Created on: 08.03.2022
+ *      Author: uwe-w
+ */
+
+#include "Ocean.hpp"
 #include <memory>
 #include "Drawing.hpp"
 
-Plains::Plains(int x, int y, bool hasSpecialResource)
-:Field(x,y,STANDARD_FIELD_LAYER, hasSpecialResource)
+Ocean::Ocean(int x, int y, bool hasSpecialResource)
+:Field(x,y,STANDARD_FIELD_LAYER), m_hasSpecialResource(hasSpecialResource)
 {
-	m_drawingElement = std::make_shared<ImmovableDrawingElement>(theRenderer, fieldTextures[PLAINS], x, y, STANDARD_FIELD_LAYER);
+	m_drawingElement = std::make_shared<ImmovableDrawingElement>(theRenderer, fieldTextures[OCEAN], x, y, STANDARD_FIELD_LAYER);
 }
 
-Plains::~Plains(){
+Ocean::~Ocean(){
 
 }
 
-int Plains::m_movementPoints(){
+int Ocean::m_movementPoints(){
 	return ONE_MOVEMENT_POINT;
 }
 
-float Plains::m_defenseBonus(){
+float Ocean::m_defenseBonus(){
 	return 0;
 }
 
 //returns false if it can't be mined or if it is already mined
 //returns true in amy other case, along with making the settlers mine
-bool Plains::m_Mining(Settlers& settlers){
+bool Ocean::m_Mining(Settlers& settlers){
 	return m_MiningTemplate(IRRIGATE, settlers);
 }
-bool Plains::m_Irrigate(Settlers& settlers){
+bool Ocean::m_Irrigate(Settlers& settlers){
 	return m_IrrigateTemplate(IRRIGATE, settlers);
 }
 
-int Plains::m_shields(){
-	return m_hasSpecialResource ? 3 : 1;
+int Ocean::m_shields(){
+	return 0;
 }
 
-int Plains::m_food(){
+int Ocean::m_food(){
 	int count = 1;
-		if(m_isIrrigated)
-			count++;
+		if(m_hasSpecialResource)
+			count+=2;
 		return count;
 }
 
-int Plains::m_trade()IS_CLASSICALLY_ROAD_BASED
-std::string Plains::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
-Landscape Plains::m_Landscape() const{
-	//std::cout<<"Plains::Landscape"<<std::endl;
-	return PLAINS;
+int Ocean::m_trade() {
+return 3;
 }
-short int Plains::m_howLongToTake(SettlersWork work){
+std::string Ocean::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
+Landscape Ocean::m_Landscape() const{
+	//std::cout<<"Ocean::Landscape"<<std::endl;
+	return OCEAN;
+}
+short int Ocean::m_howLongToTake(SettlersWork work){
+	return SETTLERSWORK_UNAVAILABLE;
+
 	switch(work){
 	case BUILD_ROAD:{ //soll mal ein Makro werden
 		if(m_roadStatus == NOTHING){

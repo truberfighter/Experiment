@@ -62,6 +62,7 @@ public:
 	void m_setInstructionsForDrawingElement();
 	void m_integrateInto(Drawing& drawing);
 	void m_showTheFigureIsCurrentFigure();
+	void m_wait();
 };
 
 class TurnEndsTooEarly{
@@ -76,7 +77,10 @@ class TurnEndsTooEarly{
 #define WEAK 1/1000000
 #define THE_END_OF_TURN_FOR void
 #define ONE_MOVEMENT_POINT 3
-#define GOES_UNEVENTFUL ::m_finishMove(){std::cout<<"m_finishMove(), x = "<<m_image->getPosition().x<<", y = "<<m_image->getPosition().y<<std::endl; m_figureState = DONE_WITH_TURN; return;}
+#define GOES_UNEVENTFUL ::m_finishMove(){std::cout<<"m_finishMove(), x = "<<m_image->getPosition().x<<", y = "<<m_image->getPosition().y<<std::endl;\
+	m_figureState = DONE_WITH_TURN; \
+	m_nationality->m_removeFromQueue(shared_from_this());\
+return;}
 #define DEFAULT_MOVING_POINTS(CLASS, DEFAULT) short unsigned int CLASS::m_defaultMovementPoints(){return DEFAULT*3;}
 //Man beachte, dass zwecks Ermöglichung von Drittelpunkten in Dreierschritten gezählt wird.
 #define NORMAL_MOVING(CLASS) DEFAULT_MOVING_POINTS(CLASS, 1)

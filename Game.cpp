@@ -11,7 +11,6 @@
 
 std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 	std::cout<<"nation = "<<(nation ? nation : m_NationAtCurrentTurn().get())<<", settlersCount = "<<settlersCount<<std::endl;
-	std::cout<<"nation->m_getCurrentFigure() = "<<(nation ? nation : m_NationAtCurrentTurn().get())->m_getCurrentFigure()<<std::endl;
 	auto whatToReturn = nation ? nation->m_getCurrentFigure()
 		: m_NationAtCurrentTurn()->m_getCurrentFigure();
 	std::cout<<"whatToReturn initialized!"<<std::endl;
@@ -26,9 +25,11 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 		Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
 		std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
 		std::shared_ptr<Field> fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y];
-		std::shared_ptr<Settlers> theSettlersPointer = std::make_shared<Settlers>(
-				fieldPointer, nationPointer);
-		nation.m_addFigure(theSettlersPointer);
+		for(int i(0); i<3; i++){
+			std::shared_ptr<Settlers> theSettlersPointer =
+			std::make_shared<Settlers>(fieldPointer, nationPointer);
+			nation.m_addFigure(theSettlersPointer);
+		}
 	}
 }
 

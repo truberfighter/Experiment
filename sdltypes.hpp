@@ -106,6 +106,10 @@ public:
 	std::string what(){return "NullPointerException: "+m_class+"\n"+m_functionData;}
 };
 
+class SettlersworkUnavailable{
+	std::string what(){return "Settlerswork unavailable!";}
+};
+
 
 namespace Graphics{
 int drawSquareLines(SDL_Renderer*, int, int, SDL_Color);

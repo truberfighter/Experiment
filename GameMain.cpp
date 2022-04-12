@@ -78,6 +78,7 @@ void GameMain::m_initFieldTextures(){
 	m_createFieldTexture(GRASSLAND, "bilder/Landscapes/Grassland.png");
 	cout<<"SDL_Error: "<<SDL_GetError()<<endl;
 	m_createFieldTexture(PLAINS, "bilder/Landscapes/Plains.png");
+	m_createFieldTexture(OCEAN, "bilder/Landscapes/Ocean.png");
 }
 
 GameMain::~GameMain(){
@@ -90,72 +91,7 @@ int GameMain::operator()(){
  if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
-/*	 if( TTF_Init() == -1 )
-	                 {
-	                     printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
-	                 }*/
-
-	 for(std::shared_ptr<Nation> currentNation: theGame->m_NationsPlaying()){
-	 		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
-	 			currentFigure->m_integrateInto(*someDrawing);
-	 		}
-	 	}
-	 //theGame->m_makeEndOfTurn();
- Window* theWindow=&(*m_currentWindow());
-   if(theWindow)cout<<"Window existiert"<<endl;
-
-  //theRenderer = theWindow->m_Renderer();
-  FieldContainer& fc = *theContainer;
-  cout<<"guenther"<<endl;
-
-  //someDrawing = /*make_shared<Drawing>(theWindow.m_Renderer());*/ theWindow->m_CurrentDrawing();
-  //if(theRenderer==NULL)cout<<"Guenther"<<endl;
-  /*if( window == NULL ){
-   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
-  }else{*/
-   /*screenSurface = SDL_GetWindowSurface( window ); //Get window surface
-   SDL_FillRect( screenSurface, NULL
-   , SDL_MapRGB( screenSurface->format, 0x00, 0xFF, 0xFF ) );
-   //Fill the surface with color
-   SDL_UpdateWindowSurface( window ); //Update the surface*/
-  cout<<"kevinkevinkevin"<<endl;
-  /*SDL_RenderPresent(m_currentRenderer);
-theTexture = IMG_LoadTexture(m_currentRenderer, "bilder/2022-01-03.png");
-
-  SDL_Rect someColoredRect;
-  someColoredRect.x = 34;
-  someColoredRect.y = 20;
-  someColoredRect.h = STANDARD_FIELD_SIZE;
-  someColoredRect.w = STANDARD_FIELD_SIZE;
-	cout<<"m_currentRenderer: "<<m_currentRenderer<<endl;
-  SDL_SetRenderDrawColor(m_currentRenderer, 240, 240, 240, 255);
-  SDL_RenderFillRect(m_currentRenderer, &someColoredRect);
-  SDL_RenderPresent(m_currentRenderer);
-  //SDL_Delay(2000);
-  //SDL_DestroyTexture(noOneLikesU);
-  //SDL_RenderPresent(theRenderer);
-  std::shared_ptr<Texture> texture =std::make_shared <Texture>(theTexture,someColoredRect.w, someColoredRect.h);
-  MovableThing* theMovableThing = new MovableThing(m_currentRenderer, texture, 45, 45, true);
-  cout<<"theMovableThing erfolgreich initialisiert"<<endl;
-  cout<<"m_currentRenderer: "<<m_currentRenderer<<endl;
-
-  //MovableDrawingElement mel(theRenderer, theMovableThing);
-  if(!someDrawing) cout<<"lol"<<endl;
-  someDrawing->m_add(theMovableThing);cout<<"line 91"<<endl;
-  //SDL_Delay(3000);
-    //theMovableThing->m_drawRight();
-    SDL_Delay(400);
-    MovableThing* theMovableThing2 = new MovableThing(m_currentRenderer, 90, 90, "bilder/Landscapes/Grassland.png", 280, 220, true);;
-    //auto a = new MovableDrawingElement(theRenderer, theMovableThing2);
-    //cout<<"theMovableThing2 erfolgreich initialisiert"<<endl;
-    someDrawing->m_add(theMovableThing2);
-    theRenderer = m_currentRenderer;
-    SDL_RenderPresent(m_currentRenderer);
-    SDL_Delay(STANDARD_DRAWING_TIME*3);*/
-m_setCurrentDrawing(someDrawing);
-someDrawing->m_draw();
-    SDL_RenderPresent(m_currentRenderer);
-
+	 doSomething();
     MAIN_LOOP_BEGIN
   /*if(currentEvent.type == SDL_KEYDOWN){
 	  cout<<"SDL_KEYDOWN, nämlich: "<<currentEvent.key.keysym.sym<<endl;
@@ -191,6 +127,32 @@ someDrawing->m_draw();
  return 0;
 }
 
+void GameMain::doSomething(){
+	 for(std::shared_ptr<Nation> currentNation: theGame->m_NationsPlaying()){
+			 		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
+			 			currentFigure->m_integrateInto(*someDrawing);
+			 		}
+			 	}
+		 Window* theWindow=&(*m_currentWindow());
+		   if(theWindow)cout<<"Window existiert"<<endl;
+
+		  //theRenderer = theWindow->m_Renderer();
+		  FieldContainer& fc = *theContainer;
+
+		m_setCurrentDrawing(someDrawing);
+		someDrawing->m_draw();
+		    SDL_RenderPresent(m_currentRenderer);
+
+
+		  //theMovableThing2->m_setMoveToDirection(UP_RIGHT);
+		  //theMovableThing2->m_move();
+		 }			//SDL_Delay(1000);
+		  //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
+		  //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
+		  //SDL_Delay(3000);
+		  //theMovableThing->m_drawRight();
+
+
 void GameMain::gameMainDebug(list<SDL_Event>& eventList){
 	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
 	  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
@@ -200,34 +162,12 @@ void GameMain::gameMainDebug(list<SDL_Event>& eventList){
 		                     printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
 		                 }*/
 
-		 for(std::shared_ptr<Nation> currentNation: theGame->m_NationsPlaying()){
-		 		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
-		 			currentFigure->m_integrateInto(*someDrawing);
-		 		}
-		 	}
-		 theGame->m_makeEndOfTurn();
-	 Window* theWindow=&(*m_currentWindow());
-	   if(theWindow)cout<<"Window existiert"<<endl;
-
-	  //theRenderer = theWindow->m_Renderer();
-	  FieldContainer& fc = *theContainer;
-
-	m_setCurrentDrawing(someDrawing);
-	someDrawing->m_draw();
-	    SDL_RenderPresent(m_currentRenderer);
-
-
-	  //theMovableThing2->m_setMoveToDirection(UP_RIGHT);
-	  //theMovableThing2->m_move();
-	 }			//SDL_Delay(1000);
-	  //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
-	  //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
-	  //SDL_Delay(3000);
-	  //theMovableThing->m_drawRight();
+	 doSomething();
 	 for(SDL_Event& event: eventList){
 		 m_handleKeyboardEvent(event);
+		 std::cout<<"GameMain-Loop-Ende"<<std::endl;
 	 }
-	 TTF_Quit();
-	 IMG_Quit();
-	 SDL_Quit();  //Quit SDL subsystems	}3_
+	 std::cout<<"Ende"<<std::endl;
+
+	 }
 }

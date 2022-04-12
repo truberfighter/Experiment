@@ -43,11 +43,14 @@ const std::string& Nation::m_LeaderName(){
 }
 
 void Nation::m_makeFigureWait(){
-	if(!m_getCurrentFigure()){
+	std::shared_ptr<Figure> whatToWait = m_getCurrentFigure();
+	if(!whatToWait){
 		return;
 	}
-	if(m_addToQueue(m_activeFigures.front()))
-		m_activeFigures.pop_back();
+	if(!m_removeFromQueue(whatToWait)){
+		throw("Waiting fail");
+	}
+	m_addToQueue(whatToWait);
 }
 
 bool Nation::m_removeFromQueue(std::shared_ptr<Figure> figureToRemove){
@@ -64,7 +67,7 @@ Coordinate Nation::getStandardCoordinateForNation(Nationality n){
 	case GERMAN:
 		return Coordinate(30,30);
 	case ROMAN:
-		return Coordinate(15,15);
+		return Coordinate(14,15);
 	default:{
 		return Coordinate((int) n , (int) n);
 		cout<<"Make better standardcoordinates"<<std::endl;
@@ -77,6 +80,10 @@ std::shared_ptr<Figure> Nation::m_getCurrentFigure(){
 	cout<<"m_getCurrentFigure(), &m_activeFigures = " <<&m_activeFigures<<endl;
 
 	cout<< m_activeFigures.front()<<std::endl;
+	if(m_activeFigures.empty()){
+		cout<<"empty list"<<std::endl;
+		return nullptr;
+	}
 	return m_activeFigures.front();
 }
 

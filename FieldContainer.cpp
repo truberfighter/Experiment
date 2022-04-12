@@ -6,6 +6,7 @@
 #include "FieldContainer.hpp"
 #include "Grassland.hpp"
 #include "Plains.hpp"
+#include "Ocean.hpp"
 using namespace std;
 
 FieldContainer* theContainer = nullptr;
@@ -32,7 +33,7 @@ FieldContainer::FieldContainer(int howHigh, int howWide)
 			if((i+j)%2==0)
 				newMeridian.push_back(make_unique<Grassland>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
 			else
-				newMeridian.push_back(make_unique<Plains>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
+				newMeridian.push_back(make_unique<Ocean>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
 
 		}
 	//	cout<<"Zeile 27"<<endl;

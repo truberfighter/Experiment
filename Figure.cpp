@@ -50,6 +50,7 @@ FigureState Figure::m_FigureState(){
 bool Figure::m_fortify(){
 	if(m_movementPoints!=0 && m_defensiveStrength()!=0){
 		m_figureState = FORTIFYING;
+		m_finishMove();
 		return true;
 	}
 	else return false;
@@ -58,6 +59,7 @@ bool Figure::m_fortify(){
 bool Figure::m_sentry(){
 	if(m_movementPoints!=0){
 		m_figureState = SENTRYING;
+		m_finishMove();
 		return true;
 	}
 	else return false;
@@ -265,4 +267,11 @@ void Figure::m_integrateInto(Drawing& drawing){
 
 void Figure::m_showTheFigureIsCurrentFigure(){
 
+}
+
+void Figure::m_wait(){
+	if(!m_nationality){
+		throw("Waiting without a nation!");
+	}
+	m_nationality->m_makeFigureWait();
 }

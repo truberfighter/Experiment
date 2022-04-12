@@ -17,6 +17,7 @@
 
 class GameMain: public EventHandler{
 private:
+	void doSomething();
 	std::unique_ptr<Game> m_theGame;
 	std::vector<std::unique_ptr<Window>> m_theWindows;
 	//std::vector<std::unique_ptr<Window>>::iterator m_currentWindow;

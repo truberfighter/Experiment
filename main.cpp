@@ -34,12 +34,20 @@ int main( int argc, char* args[] ){
 	SDL_Event e;
 		e.key.keysym.sym = SDLK_3_DOWN_RIGHT;
 		list<SDL_Event> liste;
-		liste.push_back(e);
 		SDL_Event f;
 		f.key.keysym.sym = SDLK_ENTER_KEY;
+		for(int i(0);i<4; i++){
+			liste.push_back(e);
+		liste.push_back(e);
+		liste.push_back(e);
 		liste.push_back(f);
+		}
+
 	GameMain gameMain;
 	gameMain();
+	TTF_Quit();
+		 IMG_Quit();
+		 SDL_Quit();  //Quit SDL subsystems	}3_
 	return 500;
 }
 

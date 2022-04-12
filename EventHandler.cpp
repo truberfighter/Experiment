@@ -16,7 +16,13 @@ Game* theGame;
 void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	if(!whatToMove)
 		std::cout<<"Nun kann man sich nicht mehr bewegen!"<<std::endl;
+	std::cout<<"whatToMove Ende"<<std::endl;
 	m_whatToMove = whatToMove;
+	if(whatToMove){
+	DrawingElement* whatToPutOver = whatToMove->m_Image()->m_HowDrawn().front();
+	std::shared_ptr<DrawingElement> pointer = whatToPutOver->shared_from_this();
+	m_currentDrawing->m_putOver(pointer, STANDARD_LAYER);
+	}
 }
 
 EventHandler::EventHandler()
@@ -29,15 +35,13 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 			std::cout<<"No EventHandling found!"<<std::endl;
 			NO_EVENT_HANDLING_FOUND
 		}
-		int i(0);
-		for(std::shared_ptr<Nation>& nation: theGame->m_NationsPlaying()){
-				std::cout<<"m_NationsPlaying()["<<i++<<"]"<<nation->m_Nation()<<std::endl;
-			}
+		std::cout<<"\n currentNation: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
 	}
 	return false;
 }
 
 bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
+	m_setWhatToMove(theGame->m_getCurrentFigure());
 	KeyCode keyCode = event.key.keysym.sym;
 	std::cout<<"Man hat den KeyCode "<<keyCode<<std::endl;
 	Direction directions[13] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT, STANDING_STILL,
@@ -45,21 +49,22 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 	KeyCode keyPossibilities[13] = {SDLK_1_DOWN_LEFT, SDLK_2_DOWN, SDLK_3_DOWN_RIGHT,
 			SDLK_4_LEFT, SDLK_5_CENTER, SDLK_6_RIGHT,
 			SDLK_7_UP_LEFT, SDLK_8_UP, SDLK_9_UP_RIGHT, SDLK_UP, SDLK_LEFT, SDLK_RIGHT, SDLK_DOWN};
-		if(m_whatToMove){
-			for(int i = 0; i<13; i++){
-				if(keyCode == keyPossibilities[i]){
-					m_whatToMove->m_tryMoveToField(directions[i]);
-					m_currentDrawing->m_draw();
-					SDL_RenderPresent(theRenderer);
-					return true;
-				}
+	if(m_whatToMove){
+		for(int i = 0; i<13; i++){
+			if(keyCode == keyPossibilities[i]){
+				m_whatToMove->m_tryMoveToField(directions[i]);
+				m_currentDrawing->m_draw();
+				std::cout<<"Z.51"<<std::endl;
+				SDL_RenderPresent(theRenderer);
+				return true;
+			}
 		}
 	}
 
-	char orders[]={'s', 'r'};
-	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r};
-if(m_whatToMove){
-	for(int i = 0; i<2; i++){
+	char orders[]={'s', 'r', ' '};
+	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r, SDLK_SPACE};
+	if(m_whatToMove){
+	for(int i = 0; i<3; i++){
 		if(keyCode == keyCharPossibilities[i]){
 			if(m_whatToMove->m_takeOrder(orders[i])){
 				m_whatToMove->m_setInstructionsForDrawingElement();
@@ -79,11 +84,14 @@ if(m_whatToMove){
 		std::cout<<"Z.74"<<std::endl;
 		break;
 	}
+	case SDLK_w:{
+		m_whatToMove->m_wait();
+		break;
+	}
 	default:
 		NO_EVENT_HANDLING_FOUND
 
 	}
-
 	return true;
 }
 
