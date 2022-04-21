@@ -21,7 +21,7 @@ Drawing::Drawing(SDL_Renderer* renderer, int row, int column, Layer layer)
 : DrawingElement(row, column, renderer, layer)
 {
 	cout<<"Drawingkonstruktor, this ="<<this;
-	std::list<DrawingElement*> m_drawingList;
+	std::list<std::shared_ptr<DrawingElement>> m_drawingList;
 }
 
 Drawing::Drawing(SDL_Renderer* renderer,  std::list<shared_ptr<DrawingElement>>& drawingList, int row, int column, Layer layer)
@@ -62,14 +62,16 @@ int MovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer* r
 	figureToDraw = m_figure;
 	Coordinate c = m_content->getPosition();
 	int whatToReturn = 0;
+	m_rowWhereLastDrawn = rowShift + c.x;
+	m_columnWhereLastDrawn = columnShift + c.y;
 	if(renderer!=nullptr){
-		whatToReturn = m_content->m_drawNew(rowShift + c.x, columnShift + c.y, renderer) ? 1 : 0;
+		whatToReturn = m_content->m_drawNew(m_rowWhereLastDrawn, m_columnWhereLastDrawn, renderer) ? 1 : 0;
 	}
 	else{ //renderer==nullptr
-		whatToReturn = m_content->m_drawNew(rowShift + c.x,columnShift + c.y) ? 1 : 0;	}
+		whatToReturn = m_content->m_drawNew(m_rowWhereLastDrawn, m_columnWhereLastDrawn) ? 1 : 0;	}
 	if(m_Draw){
 		//cout<<"additional instructions called"<<endl;
-				if(m_Draw(rowShift + c.x, columnShift + c.y, renderer)==0)
+				if(m_Draw(m_rowWhereLastDrawn, m_columnWhereLastDrawn, renderer)==0)
 					whatToReturn = 1;
 			}
 	//else cout<<"No additional instructions called for this = "<<this<<endl;
@@ -107,8 +109,15 @@ void DrawingElement:: m_climbToTop(){
 	m_climbToTop(m_layer);
 }
 
-void Drawing::m_add(shared_ptr<DrawingElement>& drawingElement){
+void Drawing::m_add(shared_ptr<DrawingElement> drawingElement){
 //cout<<"Z.97"<<endl;
+		if(drawingElement->m_DrawingElement() == DRAWING || m_drawingList.empty()){
+		cout<<"lol"<<&m_drawingList<<std::endl;
+		}
+	if(m_drawingList.empty()){
+		m_drawingList.push_back(drawingElement);
+}
+	else
 	m_putOver(drawingElement, drawingElement->m_getLayer());
 	if(!drawingElement->m_addDrawing(this)){
 		cout<<"Failed to synchronize Drawing and DrawingElement"<<endl;
@@ -137,9 +146,15 @@ int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnSh
 }
 
 int Drawing::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
+	//Handle the drawing status: You do not wanna let some asynchronous drawing happen.
+	DrawState tempDrawState = Graphics::m_whatsUpDrawingwise;
+	Graphics::m_whatsUpDrawingwise = NORMAL_DRAWING;
 	SDL_Renderer* rendererToUse = renderer ? renderer : m_renderer;
-	int whatToReturn = m_drawAtRenderer(rendererToUse, rowShift, columnShift);
+	m_rowWhereLastDrawn = rowShift + m_row;
+	m_columnWhereLastDrawn = columnShift + m_column;
+	int whatToReturn = m_drawAtRenderer(rendererToUse, rowShift + m_row, columnShift + m_column);
 	SDL_RenderPresent(rendererToUse);
+	Graphics::m_whatsUpDrawingwise = tempDrawState;
 	return whatToReturn;
 }
 
@@ -155,10 +170,11 @@ void Drawing::m_setRenderer(SDL_Renderer* renderer){
 //Fall 2: nicht drin
 //Fall 3: muss nach ganz hinten
 void Drawing::m_putOver(shared_ptr<DrawingElement>& drElToUpdate, Layer layer){
+	//cout<<"putOver"<<drElToUpdate<<std::endl;
 	shared_ptr<DrawingElement> a = drElToUpdate;
 	//m_drawingList.unique();
 //list<DrawingElement*>::iterator whereToErase = m_drawingList.begin();
-m_drawingList.remove_if([&drElToUpdate](shared_ptr<DrawingElement> drawEl){bool whatToReturn = &(*drawEl) == &(*drElToUpdate); return whatToReturn;});
+m_drawingList.remove_if([&drElToUpdate](shared_ptr<DrawingElement> drawEl){bool whatToReturn = drawEl.get() == drElToUpdate.get();  return whatToReturn;});
 list<std::shared_ptr<DrawingElement>>::iterator whereToInsert;
 cout<<"m_putOver";
 for(whereToInsert= m_drawingList.begin(); whereToInsert != m_drawingList.end(); whereToInsert++){
@@ -240,9 +256,11 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 		//SDL_RenderPresent(m_renderer);
 		//Update data for your instance
 		m_renderer = renderer;
+		m_rowWhereLastDrawn = rect.x;
+		m_columnWhereLastDrawn = rect.y;
 		//SDL_Delay(STANDARD_DRAWING_TIME);
 		if(m_Draw){
-			if(m_Draw(rowShift + m_row, columnShift + m_column, renderer)==0)
+			if(m_Draw(m_rowWhereLastDrawn, m_columnWhereLastDrawn, renderer)==0)
 				return 0;
 		}
 		return 1;
@@ -273,6 +291,12 @@ void DrawingElement::m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Rende
 	cout<<"m_setAdditionalInstructions"<<m_Draw<<" for this = "<<this<<endl;
 this->m_Draw = *Draw;
 	m_draw(0,0,theRenderer);
+}
+
+void DrawingElement::m_drawAsRemembered(SDL_Renderer* renderer){
+	SDL_Renderer* rendererToUse = (renderer ? renderer : (m_renderer ? m_renderer : theRenderer));
+	if(m_draw(m_rowWhereLastDrawn - m_row, m_columnWhereLastDrawn - m_column, rendererToUse) != 1)
+		throw(DrawingFail("Blinking goes wrong!"));
 }
 
 

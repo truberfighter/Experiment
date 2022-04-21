@@ -8,8 +8,6 @@
 #include <memory>
 #include <vector>
 #include <string>
-#define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ while(SDL_PollEvent(&currentEvent)!=0){if(currentEvent.type == SDL_QUIT) quit = true;
-#define MAIN_LOOP_END }}
 #define KeyCode unsigned int
 class Field;
 class Figure;
@@ -21,8 +19,9 @@ enum{SDLK_1_DOWN_LEFT = 1073741913, SDLK_2_DOWN = SDLK_1_DOWN_LEFT + 1, SDLK_3_D
 	SDLK_ENTER_KEY = 13
 };
 enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 24};
-typedef int Layer; extern Layer STANDARD_LAYER, STANDARD_FIELD_LAYER, STANDARD_FIELD_MODIFICATOR_LAYER;
+typedef int Layer; extern Layer STANDARD_LAYER, STANDARD_FIELD_LAYER, STANDARD_FIELD_MODIFICATOR_LAYER, SIDETEXT_LAYER;
 enum FigureCategory{GROUND, SEA, FLIGHT};
+enum FigureType{SETTLERS, MILITIA, TRANSPORT, SAIL, TRIREME};
 enum Drawing_Element{MOVABLE_DRAWING_ELEMENT, DRAWING, IMMOVABLE_DRAWING_ELEMENT,LAMBDA_DRAWING_ELEMENT};
 enum Direction{DOWN_LEFT = 1, DOWN = 2, DOWN_RIGHT = 3, LEFT = 4, STANDING_STILL = 5,
 	RIGHT = 6, UP_LEFT = 7, UP = 8, UP_RIGHT = 9};
@@ -44,10 +43,29 @@ enum Nationality {ROMAN, RUSSIAN, ZULU, GREEK, BABYLONIAN, ENGLISH, CHINESE, AME
 enum FigureState{MOVING, SENTRIED, SENTRYING, FORTIFYING, FORTIFIED,COMPLETELY_FORTIFIED, FIGHT_IN_PROGRESS, PILLAGE_IN_PROGRESS, DONE_WITH_TURN, SETTLERS_AT_WORK};
 enum{SMALL_DRAWING_FAIL = -1};
 enum{STANDARD_LINE_THICKNESS = STANDARD_FIELD_SIZE / 8};
+enum{FIGURE_INFO_WIDTH = SCREEN_WIDTH/5, FIGURE_INFO_HEIGHT = 160, FIGURE_INFO_FONT_SIZE = SCREEN_WIDTH/30, FIGURE_INFO_Y = SCREEN_HEIGHT*4/10};
+enum DrawState {NOT_IN_ANY_DRAWING, BLINKING, NORMAL_DRAWING, SOMETHING_OTHER};
+enum BlinkingTime{STANDARD_BLINKING_INTERVAL_TIME = 50};
+typedef bool BlinkingState;
+constexpr BlinkingState VISIBLE(){return true;}
+constexpr BlinkingState INVISIBLE(){return false;}
 
 typedef short unsigned int ContinentID;
 const ContinentID NO_CONTINENT_ID_GIVEN = WORLD_LENGTH*WORLD_HEIGHT;
-typedef int MovementPoints;
+class MovementPoints{
+public:
+	int m_movementPoints = 0;
+	MovementPoints(){}
+	MovementPoints(int x):m_movementPoints(x){}
+	bool operator==(const int whatToCompare){return m_movementPoints == whatToCompare;}
+	bool operator==(const MovementPoints& whatToCompare){return whatToCompare.m_movementPoints == m_movementPoints;}
+	MovementPoints& operator=(MovementPoints x){m_movementPoints += x.m_movementPoints; return *this;}
+	MovementPoints& operator=(int movementPoints){m_movementPoints += movementPoints; return *this;}
+	MovementPoints operator% (int x){return MovementPoints(m_movementPoints % x);}
+	bool operator<(int x){return m_movementPoints<x;}
+	bool operator-=(int y){return m_movementPoints+=(-y);}
+	MovementPoints& operator-=(MovementPoints x){m_movementPoints-=x.m_movementPoints; return *this;}
+};
 extern MovementPoints FIGHT_IS_COMING;
 extern MovementPoints MOVE_PROHIBITED;
 int modulo (const int& i, const int& j);
@@ -110,6 +128,13 @@ class SettlersworkUnavailable{
 	std::string what(){return "Settlerswork unavailable!";}
 };
 
+class DrawingFail{
+public:
+	std::string m_whatsUp;
+	DrawingFail();
+	DrawingFail(std::string whatsUp){m_whatsUp = std::string("DrawingFail: ")+whatsUp;}
+	std::string what(){return m_whatsUp;}
+};
 
 namespace Graphics{
 int drawSquareLines(SDL_Renderer*, int, int, SDL_Color);
@@ -118,6 +143,7 @@ int drawThickerDiagonalLineDown(SDL_Renderer* renderer, int x, int y,  int thick
 int drawThickerHorizontalLine(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 int drawThickerVerticalLine(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 int drawThickerDiagonalLineUp(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
+extern DrawState m_whatsUpDrawingwise;
 };
 
 char getSettlersOrder(SettlersWork work);
@@ -125,13 +151,13 @@ char getSettlersOrder(SettlersWork work);
 std::ostream& operator<<(std::ostream& os, Nationality nationality);
 
 extern TTF_Font* theFont;
-extern SDL_Color whiteColor, blackColor, brownColor;
+extern SDL_Color whiteColor, blackColor, brownColor, infoTextColor, infoTextBackgroundColor;
 extern Figure* figureToDraw;
 extern Field* fieldToDraw;
 extern unsigned int settlersCount;
 
-
-
+std::ostream& operator<<(std::ostream& os, FigureType figureType);
+std::ostream& operator<<(std::ostream& os, MovementPoints mp);
 
 #define PRINT_I_J 			cout<<"i = "<<i<<", j = "<<j<<endl;
 

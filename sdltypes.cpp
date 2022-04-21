@@ -22,7 +22,11 @@ Field* fieldToDraw = nullptr;
 SDL_Color whiteColor{25, 25, 250};
 SDL_Color blackColor{0,0,0};
 SDL_Color brownColor{130,80,0};
-Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000;
+SDL_Color infoTextColor{0,0,0};
+SDL_Color infoTextBackgroundColor{125,125,140};
+
+Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000, SIDETEXT_LAYER = 2000;
+DrawState Graphics::m_whatsUpDrawingwise = NOT_IN_ANY_DRAWING;
 int modulo (const int& i, const int& j){
 	if(j <= 0)
 		return MODULO_FAIL;
@@ -176,7 +180,7 @@ std::ostream& operator<<(std::ostream& os, Nationality nationality){
 	}
 	return os;
 }
-#undef PRINT(p)
+#undef PRINT
 
 char getSettlersOrder(SettlersWork work){
 	switch(work){
@@ -193,4 +197,27 @@ char getSettlersOrder(SettlersWork work){
 	}
 	return 'F';
 }
+
+std::ostream& operator<<(std::ostream& os, FigureType figureType){
+	switch(figureType){
+	case SETTLERS: {os<<"SETTLERS"; break;}
+	case MILITIA: {os<<"MILITIA"; break;}
+	case TRANSPORT: {os<<"TRANSPORT"; break;}
+	case SAIL: {os<<"SAIL"; break; }
+	case TRIREME: {os<<"TRIREME"; break;}
+	default: {os<<"UNKNOWN"; break;}
+	}
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, MovementPoints mp){
+	int a = ( mp.m_movementPoints)/3;
+	switch((mp % 3).m_movementPoints){
+	case 0: {os<<a; break;}
+	case 1: {os<<a;os<<".3"; break;}
+	case 2: {os<<a;os<<".7"; break;}
+	}
+	return os;
+}
+
 

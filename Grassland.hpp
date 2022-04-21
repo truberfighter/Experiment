@@ -17,7 +17,7 @@ private:
 public:
 	~Grassland();
 	Grassland(int x, int y, bool hasShield = false);
-	int m_movementPoints() override;
+	MovementPoints m_movementPoints() override;
 	float m_defenseBonus() override;
 	bool m_Mining(Settlers& settlers) override;
 	bool m_Irrigate(Settlers& settlers) override;

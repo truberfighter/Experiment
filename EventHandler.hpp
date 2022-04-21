@@ -27,7 +27,9 @@ protected:
 	bool m_handleKeyboardEvent(const SDL_Event& event);
 	std::list<Drawing*> m_currentDrawings;//Oder so. Damit "Wait" funktioniert.
 	std::shared_ptr<Drawing> m_currentDrawing;
+	void m_showFigureInfo();
 public:
+	virtual void m_initInfoDrawing() = 0;
 	virtual void lol(){std::cout<<"virtual EventHandler::lol"<<std::endl;}
 	EventHandler();
 	bool m_handleEvent(const SDL_Event& event);

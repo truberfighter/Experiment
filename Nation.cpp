@@ -77,9 +77,9 @@ Coordinate Nation::getStandardCoordinateForNation(Nationality n){
 
 std::shared_ptr<Figure> Nation::m_getCurrentFigure(){
 	//auto& f = m_activeFigures;
-	cout<<"m_getCurrentFigure(), &m_activeFigures = " <<&m_activeFigures<<endl;
+	//cout<<"m_getCurrentFigure(), &m_activeFigures = " <<&m_activeFigures<<endl;
 
-	cout<< m_activeFigures.front()<<std::endl;
+	//cout<< m_activeFigures.front()<<std::endl;
 	if(m_activeFigures.empty()){
 		cout<<"empty list"<<std::endl;
 		return nullptr;

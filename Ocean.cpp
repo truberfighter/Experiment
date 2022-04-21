@@ -26,7 +26,7 @@ Ocean::~Ocean(){
 
 }
 
-int Ocean::m_movementPoints(){
+MovementPoints Ocean::m_movementPoints(){
 	return ONE_MOVEMENT_POINT;
 }
 

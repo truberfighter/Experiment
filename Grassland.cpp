@@ -19,7 +19,7 @@ Grassland::~Grassland(){
 
 }
 
-int Grassland::m_movementPoints(){
+MovementPoints Grassland::m_movementPoints(){
 	return ONE_MOVEMENT_POINT;
 }
 

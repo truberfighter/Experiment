@@ -19,6 +19,7 @@ LetterTexture::LetterTexture(char imageLetter, SDL_Color& color, int size)
 	*tempChar = imageLetter;
 	SDL_Surface* temp = TTF_RenderText_Solid(theFont, tempChar, m_color);
 	m_theTexture = SDL_CreateTextureFromSurface(theRenderer, temp);
+	SDL_FreeSurface(temp);
 	free(tempChar);
 }
 

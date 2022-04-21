@@ -92,6 +92,10 @@ FigureCategory Settlers::m_FigureCategory(){
 	return GROUND;
 }
 
+FigureType Settlers::m_FigureType(){
+	return SETTLERS;
+}
+
 std::string Settlers::m_orderOverview(){return "H: HomeCity, B: Add to/Found new City, I: Irrigate, M: Mining, S: Sentry, P: Pillage";}
 
 std::shared_ptr<MovableThing> Settlers::m_createImage(){

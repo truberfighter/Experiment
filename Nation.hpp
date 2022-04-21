@@ -37,6 +37,7 @@ public:
 	bool m_addToQueue(std::shared_ptr<Figure> figureToAdd);
 	void m_startNewTurn();
 	int m_activeFiguresSize(){return m_activeFigures.size();}
+	int m_queueSize(){return m_activeFigures.size();}
 };
 
 inline GovernmentType Nation::m_Government(){

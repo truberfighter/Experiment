@@ -83,8 +83,8 @@ bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, std::shared_p
 	//Update data for your instance
 	m_renderer = renderer;
 	m_texture = texture;
-	m_x = x% (STANDARD_FIELD_SIZE*WORLD_LENGTH);
-	m_y = y% (STANDARD_FIELD_SIZE * WORLD_HEIGHT);
+	//m_x = x% (STANDARD_FIELD_SIZE*WORLD_LENGTH);
+	//m_y = y% (STANDARD_FIELD_SIZE * WORLD_HEIGHT);
 	//SDL_Delay(STANDARD_DRAWING_TIME);
 	return true;
 }

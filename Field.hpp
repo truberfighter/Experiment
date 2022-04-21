@@ -48,7 +48,7 @@ public:
 	int m_X() const;
 	int m_Y() const;
 	std::shared_ptr<DrawingElement> m_DrawingElement();
-	virtual int m_movementPoints() =0;
+	virtual MovementPoints m_movementPoints() =0;
 	virtual float m_defenseBonus()=0;
 	bool m_IsMined() const;
 	bool m_IsIrrigated() const;
@@ -68,6 +68,7 @@ public:
 	bool m_Pillage();
 	std::shared_ptr<City> m_CityContained();
 	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
+	void m_drawField();
 	friend std::ostream& operator<<(std::ostream&, Field&);
 	friend class FieldContainer;
 	friend class Settlers;

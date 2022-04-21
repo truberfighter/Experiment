@@ -27,7 +27,7 @@ protected:
 	std::shared_ptr<City> m_home;
 	std::shared_ptr<Nation> m_nationality;
 	std::shared_ptr<MovableThing> m_image;
-	short unsigned int m_movementPoints;
+	MovementPoints m_movementPoints;
 	bool m_isVeteran = false;
 	FigureState m_figureState =DONE_WITH_TURN;
 	MovementPoints m_calculateMoveCostGround(Direction whereToGo);
@@ -37,13 +37,15 @@ protected:
 public:
 	Figure(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~Figure();
+	virtual FigureType m_FigureType() = 0;
 	void m_move(Direction whereToGo);
 	virtual bool m_takeOrder(char order)=0;
 	virtual std::string m_orderOverview()=0;
+	std::string m_figureOverview();
 	void m_resetMovementPoints();
 	bool m_tryMoveToField(Direction whereToGo);
 	Field& m_WhereItStands();
-	short unsigned int m_MovementPoints();
+	MovementPoints m_MovementPoints();
 	std::shared_ptr<MovableThing> m_Image();
 	virtual float m_attackingStrength()=0;
 	virtual float m_defensiveStrength()=0;
@@ -63,6 +65,7 @@ public:
 	void m_integrateInto(Drawing& drawing);
 	void m_showTheFigureIsCurrentFigure();
 	void m_wait();
+	void m_drawFigure(BlinkingState blinkingState = VISIBLE());
 };
 
 class TurnEndsTooEarly{

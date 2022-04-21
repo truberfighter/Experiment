@@ -14,7 +14,19 @@
 #include "Window.hpp"
 #include "movableThing.hpp"
 #include "Figure.hpp"
+#include <sstream>
 
+#define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ while(SDL_PollEvent(&currentEvent)!=0){\
+	if(currentEvent.type == SDL_QUIT) quit = true;\
+if(SDL_GetTicks() % m_blinkingIntervalTime == 0){\
+		if(m_whatToMove){\
+			m_whatToMove->m_drawFigure(!m_currentBlinkingState);cout<<"BlinkingHandled"<<std::endl;\
+			SDL_RenderPresent(m_currentRenderer);\
+			millisecsAtLastBlinkingStep += m_blinkingIntervalTime;\
+			m_currentBlinkingState = !m_currentBlinkingState;\
+		}\
+	}
+#define MAIN_LOOP_END }}
 
 using namespace std;
 SDL_Renderer* theRenderer = nullptr;
@@ -24,6 +36,7 @@ SDL_Texture *theTexture2;
 SDL_Event currentEvent;
 //GameMain* theEventHandler = new GameMain;
 shared_ptr<Drawing> someDrawing;
+
 
 GameMain::GameMain(): EventHandler()
 {
@@ -61,12 +74,11 @@ void GameMain::m_initGame(){
 	theWindow->m_InitWindowSurface();
 	someDrawing = theWindow->m_CurrentDrawing();
 	//someDrawing->m_draw();
-    MovableThing* theMovableThing2 = new MovableThing(m_currentRenderer, 90, 90, "bilder/Landscapes/Grassland.png", 280, 220, true);
-    someDrawing->m_add(theMovableThing2);
-	//SDL_RenderPresent(m_currentRenderer);
+    	//SDL_RenderPresent(m_currentRenderer);
 	//SDL_Delay(2000);
-	cout<<"m_currentRenderer: "<<m_currentRenderer<<endl;
-
+	cout<<"m_initInfoDrawing"<<std::endl;
+	m_initInfoDrawing();
+	cout<<"m_initInfoDrawing"<<std::endl;
 }
 
 void GameMain::m_createFieldTexture(Landscape ls, string filename){
@@ -87,12 +99,33 @@ GameMain::~GameMain(){
 	delete theLetterTextureContainer;
 }
 
+void GameMain::m_initInfoDrawing(){
+	m_currentFigureInfo = std::make_shared<Drawing>(m_currentRenderer, -FIGURE_INFO_WIDTH, 0, SIDETEXT_LAYER);
+	std::shared_ptr<DrawingElement> rectPointer = std::make_shared<LambdaDrawingElement>(m_currentRenderer, [] (int x, int y, SDL_Renderer* renderer)->int {
+	SDL_Color& backgroundColor = infoTextBackgroundColor;
+		SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+		SDL_Rect rectToFill{x,y,FIGURE_INFO_WIDTH, SCREEN_HEIGHT};
+		std::cout<<"yCoordinate: rectToFill.y = " <<rectToFill.y<<", y = "<<y<<std::endl;
+		SDL_RenderFillRect(renderer, &rectToFill);
+		return 0;
+	},
+	0,FIGURE_INFO_Y,STANDARD_LAYER + 50);
+	m_currentFigureInfo->m_add(rectPointer);
+	auto& r = m_currentFigureInfo;
+	m_setCurrentDrawing(someDrawing);
+cout<<m_currentFigureInfo<<std::endl;
+	m_currentDrawing->m_add(r);
+}
+
 int GameMain::operator()(){
+	Uint32 millisecsAtLastBlinkingStep = SDL_GetTicks();
  if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
 	 doSomething();
     MAIN_LOOP_BEGIN
+
+
   /*if(currentEvent.type == SDL_KEYDOWN){
 	  cout<<"SDL_KEYDOWN, nämlich: "<<currentEvent.key.keysym.sym<<endl;
   		switch(currentEvent.key.keysym.sym){
@@ -139,9 +172,8 @@ void GameMain::doSomething(){
 		  //theRenderer = theWindow->m_Renderer();
 		  FieldContainer& fc = *theContainer;
 
-		m_setCurrentDrawing(someDrawing);
 		someDrawing->m_draw();
-		    SDL_RenderPresent(m_currentRenderer);
+		m_showFigureInfo();
 
 
 		  //theMovableThing2->m_setMoveToDirection(UP_RIGHT);
@@ -170,4 +202,10 @@ void GameMain::gameMainDebug(list<SDL_Event>& eventList){
 	 std::cout<<"Ende"<<std::endl;
 
 	 }
+}
+
+void GameMain::m_makeBlinkingStep(){
+	//change blinking state
+	m_currentBlinkingState = !m_currentBlinkingState;
+	m_whatToMove->m_drawFigure(m_currentBlinkingState);
 }

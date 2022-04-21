@@ -26,7 +26,7 @@ Window::Window(std::string name, unsigned int width, unsigned int height)
 	try{
 	m_Init();
 	}
-	catch(WindowInitFail someFail){
+	catch(WindowInitFail& someFail){
 		throw(WindowInitFail());
 	}
 }
@@ -76,7 +76,7 @@ std::shared_ptr<Drawing>& Window::m_CurrentDrawing(){
 }
 
 int Window::m_createNewDrawing(){
-	m_mainDrawings.push_back(make_shared<Drawing>(m_renderer));
+	m_mainDrawings.push_back(make_shared<Drawing>(m_renderer, FIGURE_INFO_WIDTH));
 	return m_mainDrawings.size();
 }
 

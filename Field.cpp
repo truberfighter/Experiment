@@ -232,3 +232,12 @@ bool Field::m_road(Settlers& settlers){
 			throw(theException);
 		}
 }
+
+void Field::m_drawField(){
+	try{
+	m_drawingElement->m_drawAsRemembered(theRenderer);
+	}
+	catch(DrawingFail& theDrawingFail){
+		throw(theDrawingFail);
+	}
+}

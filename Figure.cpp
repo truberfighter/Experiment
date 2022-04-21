@@ -11,6 +11,7 @@
 #include "Drawing.hpp"
 #include <functional>
 #include "Field.hpp"
+#include <sstream>
 
 
 using namespace std;
@@ -29,11 +30,11 @@ Figure::~Figure(){
 }
 
 void Figure::m_resetMovementPoints(){
-	m_movementPoints = m_defaultMovementPoints();
+	m_movementPoints.m_movementPoints = m_defaultMovementPoints();
 }
 
 bool Figure::m_Pillage(){
-	if(m_movementPoints!=0){
+	if(m_movementPoints.m_movementPoints!=0){
 		m_figureState = PILLAGE_IN_PROGRESS;
 		if(m_whereItStands->m_Pillage()){
 			m_finishMove();
@@ -48,7 +49,7 @@ FigureState Figure::m_FigureState(){
 }
 
 bool Figure::m_fortify(){
-	if(m_movementPoints!=0 && m_defensiveStrength()!=0){
+	if(m_movementPoints.m_movementPoints!=0 && m_defensiveStrength()!=0){
 		m_figureState = FORTIFYING;
 		m_finishMove();
 		return true;
@@ -57,23 +58,22 @@ bool Figure::m_fortify(){
 }
 
 bool Figure::m_sentry(){
-	if(m_movementPoints!=0){
+	if(m_movementPoints.m_movementPoints!=0){
 		m_figureState = SENTRYING;
 		m_finishMove();
 		return true;
 	}
 	else return false;
 }
-
-
 //Start a turn. Sentried units are kinda ignored for the first part.
 bool Figure::m_startMove(){
-cout<<"Figure::m_startMove: figureState = "<<m_figureState<<", nationality = "<<m_nationality->m_Nation()<<", this = "<<this<<std::endl;
+	cout<<"Figure::m_startMove: figureState = ";
+	cout<<m_figureState; cout<<", nationality = "<<m_nationality->m_Nation()<<", this = "<<this<<std::endl;
 	switch(m_figureState){
 	case DONE_WITH_TURN:{
 		m_resetMovementPoints();
 		m_figureState = MOVING;
-		cout<<"FigureState: "<<m_figureState<< ", MovementPoints: "<<m_movementPoints<<std::endl;
+		cout<<"FigureState: ";cout<<m_figureState;cout<< ", MovementPoints: "<<m_movementPoints<<std::endl;
 		return true;
 	}
 	case FORTIFYING: {m_figureState = FORTIFIED; return true;}
@@ -97,11 +97,11 @@ bool Figure::m_initImage(){
 MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 	switch(m_FigureCategory()){
 	case SEA:
-		return m_movementPoints >= ONE_MOVEMENT_POINT
+		return m_movementPoints.m_movementPoints >= ONE_MOVEMENT_POINT
 				&& m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()==LANDMASS_SEPARATOR ?
 						ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 	case FLIGHT:
-		return m_movementPoints >= ONE_MOVEMENT_POINT ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
+		return m_movementPoints.m_movementPoints >= ONE_MOVEMENT_POINT ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 	case GROUND:
 	{
 		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()!=LANDMASS_SEPARATOR)
@@ -121,14 +121,14 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	if(movementCost == MOVE_PROHIBITED){
 		return false;
 	}
-	if(movementCost > m_movementPoints){
+	if(movementCost.m_movementPoints > m_movementPoints.m_movementPoints){
 		return false;
 	}
 	m_move(whereToGo);
-	if((m_movementPoints -= movementCost) <= 0){
+	if((m_movementPoints -= movementCost).m_movementPoints <= 0){
 		m_finishMove();
 		if(!m_nationality->m_removeFromQueue(shared_from_this())){
-			cout<<"RemoveFromQueue-Fail"<<this;
+			cout<<" listsize = "<<m_nationality->m_queueSize()<<", this = "<<this;
 		}
 	}
 	return true;
@@ -177,7 +177,7 @@ MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
 
 MovementPoints Figure::m_calculateStandardMoveCostGround(Field& fieldToVisit){
 	if(m_movementPoints< ONE_MOVEMENT_POINT
-&& fieldToVisit.m_movementPoints() < m_movementPoints){
+&& fieldToVisit.m_movementPoints() < m_movementPoints.m_movementPoints){
 		return MOVE_PROHIBITED;
 	}
 	else {
@@ -188,6 +188,10 @@ MovementPoints Figure::m_calculateStandardMoveCostGround(Field& fieldToVisit){
 
 std::shared_ptr<MovableThing> Figure::m_Image(){
 	return m_image;
+}
+
+MovementPoints Figure::m_MovementPoints(){
+	return m_movementPoints;
 }
 
 ostream& operator<<(ostream& os, Landscape ls){
@@ -205,8 +209,18 @@ ostream& operator<<(ostream& os, Landscape ls){
 }
 
 ostream& operator<<(ostream& os, Field& field){
-	os<<"Field on x = "<<field.m_x<<", y = "<<field.m_y<<":\n";
-	os<<"Landscape = "<<field.m_Landscape()<<", Layer: "<<field.m_layer<<", this = "<<&field<<"\n";
+	os<<"Field on x = ";
+	os<<field.m_x;
+	os<<", y = ";
+	os<<field.m_y;
+	os<<":\n";
+	os<<"Landscape = ";
+	os<<field.m_Landscape();
+	os<<", Layer: ";
+	os<<field.m_layer;
+	os<<", this = ";
+	os<<&field;
+	os<<"\n";
 	if(field.m_hasSpecialResource)os<<"Special resource!\n";
 	os<<(field.m_isMined ? std::string("It's mined!") :  field.m_isIrrigated ? string("It's irrigated!") : string(""))<<"\n";
 	return os;
@@ -274,4 +288,38 @@ void Figure::m_wait(){
 		throw("Waiting without a nation!");
 	}
 	m_nationality->m_makeFigureWait();
+}
+
+void Figure::m_drawFigure(BlinkingState blinkingState){
+	try{
+	if(blinkingState == VISIBLE()){
+	for(MovableDrawingElement* currentDrawingElement: m_image->m_HowDrawn()){
+		currentDrawingElement->m_drawAsRemembered(theRenderer);
+	}
+	}
+	if(blinkingState == INVISIBLE()){
+		m_whereItStands->m_drawField();
+	}
+	}
+	catch(DrawingFail& theException){
+		cout<<theException.what()<<endl;
+		cout<<this<<endl;
+	}
+}
+
+std::string Figure::m_figureOverview(){
+	std::stringstream theStringstream;
+	if(m_nationality){
+		theStringstream<<m_nationality->m_Nation()<<std::endl;
+	}
+	theStringstream<<m_FigureType();
+	if(m_isVeteran){
+		theStringstream<<"(V)";
+	}
+		theStringstream<<endl;
+	if(!m_home){
+		theStringstream<<"NONE";
+	}
+	theStringstream.flush();
+	return theStringstream.str();
 }

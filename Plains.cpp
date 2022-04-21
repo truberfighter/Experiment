@@ -19,7 +19,7 @@ Plains::~Plains(){
 
 }
 
-int Plains::m_movementPoints(){
+MovementPoints Plains::m_movementPoints(){
 	return ONE_MOVEMENT_POINT;
 }
 

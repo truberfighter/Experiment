@@ -9,9 +9,40 @@
 #include <iostream>
 #include "sdltypes.hpp"
 #include "Figure.hpp"
+#include <sstream>
 #define NO_EVENT_HANDLING_FOUND return true;
 
 Game* theGame;
+
+void EventHandler::m_showFigureInfo(){
+	std::stringstream theStringstream;
+	theStringstream<<m_whatToMove->m_figureOverview()<<std::endl;
+	theStringstream<<"Moves: "<<m_whatToMove->m_MovementPoints()<<std::endl;
+	std::string temporaryString = "";
+	std::string stringOfInterest = theStringstream.str();
+	int length = theStringstream.str().length();
+	int whereToPlaceYCoordinate = FIGURE_INFO_Y;
+	for(int i(0); i<length; i++){
+		if(stringOfInterest[i] != '\n'){
+			temporaryString += stringOfInterest[i];
+			continue;
+		}
+		else{
+			SDL_Surface* surface = TTF_RenderText_Blended(theFont, temporaryString.c_str(), whiteColor);
+				SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, surface);
+				SDL_Rect theRect{0, whereToPlaceYCoordinate, surface->w, surface->h};
+				SDL_RenderCopy(theRenderer, texture, NULL, &theRect);
+				SDL_RenderPresent(theRenderer);
+				std::cout<<",\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"<<temporaryString<<std::endl;
+				whereToPlaceYCoordinate+=surface->h;
+				temporaryString = "";
+				SDL_DestroyTexture(texture);
+				SDL_FreeSurface(surface);
+		}
+	}
+
+	std::cout<<theStringstream.str()<<SDL_GetError()<<std::endl;
+}
 
 void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	if(!whatToMove)
@@ -21,7 +52,8 @@ void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	if(whatToMove){
 	DrawingElement* whatToPutOver = whatToMove->m_Image()->m_HowDrawn().front();
 	std::shared_ptr<DrawingElement> pointer = whatToPutOver->shared_from_this();
-	m_currentDrawing->m_putOver(pointer, STANDARD_LAYER);
+	m_currentDrawing->m_putOver(pointer, SIDETEXT_LAYER);
+	m_showFigureInfo();
 	}
 }
 
@@ -36,6 +68,7 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 			NO_EVENT_HANDLING_FOUND
 		}
 		std::cout<<"\n currentNation: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
+		m_showFigureInfo();
 	}
 	return false;
 }

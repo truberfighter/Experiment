@@ -46,6 +46,8 @@ protected:
 	Layer m_layer;
 	int (*m_Draw)(int, int, SDL_Renderer*)=0;
 	std::list<Drawing*> m_whereToDraw;
+	int m_rowWhereLastDrawn;
+	int m_columnWhereLastDrawn;
 public:
 	virtual Drawing_Element m_DrawingElement() = 0;
 	DrawingElement(const DrawingElement&);
@@ -57,6 +59,7 @@ public:
 	virtual bool m_equals(DrawingElement& comparedDrEl) = 0;
 	bool m_addDrawing(Drawing* newDrawing);
 	void m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Renderer*)=NO_INSTRUCTIONS);
+	virtual void m_drawAsRemembered(SDL_Renderer* renderer = nullptr);
 	void m_climbToTop(Layer layer);
 	void m_climbToTop();
 	void m_removeDrawing(Drawing* drawing);
@@ -82,6 +85,7 @@ public:
 	virtual bool m_updatePosition();
 	void m_setFigure(Figure* figure){m_figure = figure;}
 	Figure* m_getFigure(){return m_figure;}
+	//void m_drawAsRemembered(SDL_Renderer* renderer = nullptr) override;
 };
 
 class Drawing: public DrawingElement{
@@ -94,7 +98,7 @@ public:
 	Drawing(SDL_Renderer* renderer, std::list<std::shared_ptr<DrawingElement>>& drawingList, int row = 0, int column = 0, Layer layer = STANDARD_LAYER);
 	virtual ~Drawing();
 	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
-	void m_add(std::shared_ptr<DrawingElement>& drawingElement);
+	void m_add(std::shared_ptr<DrawingElement> drawingElement);
 	void m_delete(std::shared_ptr<DrawingElement>& drElToDelete);
 	//zeichne eine Figur nach oben
 	void m_putOver(std::shared_ptr<DrawingElement>& drElToUpdate, Layer layer);
