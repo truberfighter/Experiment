@@ -15,12 +15,21 @@
 Game* theGame;
 
 void EventHandler::m_showFigureInfo(){
-	std::stringstream theStringstream;
-	theStringstream<<m_whatToMove->m_figureOverview()<<std::endl;
-	theStringstream<<"Moves: "<<m_whatToMove->m_MovementPoints()<<std::endl;
+	std::string stringOfInterest = "";
+	if(!m_whatToMove){
+		if(theGame->m_NationAtCurrentTurn()->m_queueSize()==0){
+			stringOfInterest = "End of turn\n";
+		}
+	}
+	else{ //if(m_whatToMove)
+		std::stringstream theStringstream;
+		theStringstream<<m_whatToMove->m_figureOverview()<<std::endl;
+		theStringstream<<"Moves: "<<m_whatToMove->m_MovementPoints()<<std::endl;
+		stringOfInterest = theStringstream.str();
+		std::cout<<theStringstream.str()<<SDL_GetError()<<std::endl;
+	}
 	std::string temporaryString = "";
-	std::string stringOfInterest = theStringstream.str();
-	int length = theStringstream.str().length();
+	int length = stringOfInterest.length();
 	int whereToPlaceYCoordinate = FIGURE_INFO_Y;
 	for(int i(0); i<length; i++){
 		if(stringOfInterest[i] != '\n'){
@@ -32,16 +41,15 @@ void EventHandler::m_showFigureInfo(){
 				SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, surface);
 				SDL_Rect theRect{0, whereToPlaceYCoordinate, surface->w, surface->h};
 				SDL_RenderCopy(theRenderer, texture, NULL, &theRect);
-				SDL_RenderPresent(theRenderer);
-				std::cout<<",\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"<<temporaryString<<std::endl;
+				std::cout<<temporaryString<<std::endl;
 				whereToPlaceYCoordinate+=surface->h;
 				temporaryString = "";
 				SDL_DestroyTexture(texture);
 				SDL_FreeSurface(surface);
 		}
 	}
+	std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
 
-	std::cout<<theStringstream.str()<<SDL_GetError()<<std::endl;
 }
 
 void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
@@ -68,7 +76,11 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 			NO_EVENT_HANDLING_FOUND
 		}
 		std::cout<<"\n currentNation: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
+		m_setWhatToMove(theGame->m_getCurrentFigure());
+		m_currentDrawing->m_draw();
 		m_showFigureInfo();
+		std::cout<<"Z.51"<<std::endl;
+		SDL_RenderPresent(theRenderer);
 	}
 	return false;
 }
@@ -86,9 +98,7 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 		for(int i = 0; i<13; i++){
 			if(keyCode == keyPossibilities[i]){
 				m_whatToMove->m_tryMoveToField(directions[i]);
-				m_currentDrawing->m_draw();
-				std::cout<<"Z.51"<<std::endl;
-				SDL_RenderPresent(theRenderer);
+
 				return true;
 			}
 		}
@@ -113,8 +123,6 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 	switch(event.key.keysym.sym){
 	case SDLK_ENTER_KEY:{
 		theGame->m_makeEndOfTurn();
-		m_whatToMove = theGame->m_getCurrentFigure();
-		std::cout<<"Z.74"<<std::endl;
 		break;
 	}
 	case SDLK_w:{

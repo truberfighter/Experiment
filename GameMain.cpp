@@ -16,16 +16,19 @@
 #include "Figure.hpp"
 #include <sstream>
 
-#define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ while(SDL_PollEvent(&currentEvent)!=0){\
-	if(currentEvent.type == SDL_QUIT) quit = true;\
-if(SDL_GetTicks() % m_blinkingIntervalTime == 0){\
-		if(m_whatToMove){\
-			m_whatToMove->m_drawFigure(!m_currentBlinkingState);cout<<"BlinkingHandled"<<std::endl;\
+#define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ \
+	  Uint32 currentTime = SDL_GetTicks();\
+    if (currentTime > millisecsAtLastBlinkingStep + m_blinkingIntervalTime) {\
+    millisecsAtLastBlinkingStep = currentTime;\
+    if(m_whatToMove){\
+			m_whatToMove->m_drawFigure(m_currentBlinkingState);cout<<"BlinkingHandled"<<std::endl;\
 			SDL_RenderPresent(m_currentRenderer);\
-			millisecsAtLastBlinkingStep += m_blinkingIntervalTime;\
 			m_currentBlinkingState = !m_currentBlinkingState;\
 		}\
-	}
+	}\
+while(SDL_PollEvent(&currentEvent)!=0){\
+	if(currentEvent.type == SDL_QUIT) quit = true;\
+
 #define MAIN_LOOP_END }}
 
 using namespace std;
@@ -174,6 +177,7 @@ void GameMain::doSomething(){
 
 		someDrawing->m_draw();
 		m_showFigureInfo();
+		SDL_RenderPresent(m_currentRenderer);
 
 
 		  //theMovableThing2->m_setMoveToDirection(UP_RIGHT);

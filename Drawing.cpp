@@ -295,6 +295,7 @@ this->m_Draw = *Draw;
 
 void DrawingElement::m_drawAsRemembered(SDL_Renderer* renderer){
 	SDL_Renderer* rendererToUse = (renderer ? renderer : (m_renderer ? m_renderer : theRenderer));
+	m_updatePosition();
 	if(m_draw(m_rowWhereLastDrawn - m_row, m_columnWhereLastDrawn - m_column, rendererToUse) != 1)
 		throw(DrawingFail("Blinking goes wrong!"));
 }
