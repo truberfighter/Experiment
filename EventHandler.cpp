@@ -10,24 +10,26 @@
 #include "sdltypes.hpp"
 #include "Figure.hpp"
 #include <sstream>
+#include <list>
 #define NO_EVENT_HANDLING_FOUND return true;
 
 Game* theGame;
 
 void EventHandler::m_showFigureInfo(){
+		std::stringstream theStringstream;
 	std::string stringOfInterest = "";
+	std::list<int> f;
 	if(!m_whatToMove){
 		if(theGame->m_NationAtCurrentTurn()->m_queueSize()==0){
-			stringOfInterest = "End of turn\n";
+			theStringstream<< "End of turn for "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
 		}
 	}
 	else{ //if(m_whatToMove)
-		std::stringstream theStringstream;
 		theStringstream<<m_whatToMove->m_figureOverview()<<std::endl;
 		theStringstream<<"Moves: "<<m_whatToMove->m_MovementPoints()<<std::endl;
-		stringOfInterest = theStringstream.str();
-		std::cout<<theStringstream.str()<<SDL_GetError()<<std::endl;
 	}
+		stringOfInterest = theStringstream.str();
+		//std::cout<<theStringstream.str()<<SDL_GetError()<<std::endl;
 	std::string temporaryString = "";
 	int length = stringOfInterest.length();
 	int whereToPlaceYCoordinate = FIGURE_INFO_Y;
@@ -41,14 +43,14 @@ void EventHandler::m_showFigureInfo(){
 				SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, surface);
 				SDL_Rect theRect{0, whereToPlaceYCoordinate, surface->w, surface->h};
 				SDL_RenderCopy(theRenderer, texture, NULL, &theRect);
-				std::cout<<temporaryString<<std::endl;
+			//	std::cout<<temporaryString<<std::endl;
 				whereToPlaceYCoordinate+=surface->h;
 				temporaryString = "";
 				SDL_DestroyTexture(texture);
 				SDL_FreeSurface(surface);
 		}
 	}
-	std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
+	//std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
 
 }
 
@@ -61,7 +63,6 @@ void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	DrawingElement* whatToPutOver = whatToMove->m_Image()->m_HowDrawn().front();
 	std::shared_ptr<DrawingElement> pointer = whatToPutOver->shared_from_this();
 	m_currentDrawing->m_putOver(pointer, SIDETEXT_LAYER);
-	m_showFigureInfo();
 	}
 }
 
@@ -79,6 +80,9 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 		m_setWhatToMove(theGame->m_getCurrentFigure());
 		m_currentDrawing->m_draw();
 		m_showFigureInfo();
+		for(std::shared_ptr<Nation> nationToPrint: theGame->m_NationsPlaying()){
+			std::cout<<nationToPrint->m_Nation()<<": "<<nationToPrint->m_activeFiguresSize()<<" active figures; "<<nationToPrint->m_Figures().size()<<" figures in general"<<std::endl;
+		}
 		std::cout<<"Z.51"<<std::endl;
 		SDL_RenderPresent(theRenderer);
 	}

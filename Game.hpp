@@ -13,6 +13,7 @@
 #include "Nation.hpp"
 #include "Player.hpp"
 #include <string>
+#include <random>
 class City;
 class NationTurn;
 
@@ -25,6 +26,7 @@ public:
 	std::vector<std::shared_ptr<NationTurn>> m_turns;
 };
 private:
+	std::random_device m_theRandomDevice;
 	std::vector<std::shared_ptr<City>> m_cities;
 	void m_beginNewYear();
 	Year m_currentYear = Year(0);
@@ -38,10 +40,13 @@ public:
 	bool m_addNation(Nationality naewNationality);
 	bool m_addNation(std::shared_ptr<Nation> newNation);
 	void m_makeEndOfTurn();
+	//if necessary, create a log
+	Nationality m_calculateWinnerInFight(std::shared_ptr<Figure> attacker, std::shared_ptr<Figure> defender);
 	std::shared_ptr<Nation> m_NationAtCurrentTurn();
 	unsigned int m_Year(){return m_currentYear.m_yearNumberRaw;}
 	std::shared_ptr<Figure> m_getCurrentFigure(Nation* nation = nullptr);
 	friend class Player;
+	int m_getRandomNumberBetween(int lowerBound, int upperBound);
 };
 
 

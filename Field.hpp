@@ -23,17 +23,18 @@ class FieldContainer;
 
 class Field{
 protected:
+	std::list<std::shared_ptr<Figure>> m_figuresOnField;
 	bool m_createRoadImage(SDL_Color& color);
 	ContinentID m_continentID = NO_CONTINENT_ID_GIVEN;
 	int m_roadTradeResult();
+	bool m_hasFortress = false;
 	bool m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
 	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
-	bool m_hasFortress();
+	Layer m_layer;
 	bool m_hasSpecialResource = false;
 	std::shared_ptr<DrawingElement> m_drawingElement;
 	int m_x;
 	int m_y;
-	Layer m_layer;
 	bool m_isIrrigated = false;
 	std::shared_ptr<City> m_cityContained;
 	bool m_isMined = false;
@@ -43,11 +44,15 @@ protected:
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
+	bool m_HasFortress(){return m_hasFortress;}
+	const std::list<std::shared_ptr<Figure>>& m_FiguresOnField(){return m_figuresOnField;}
 	virtual ~Field();
 	Field(int x, int y, Layer layer, bool hasSpecialResource = false);
 	int m_X() const;
 	int m_Y() const;
 	std::shared_ptr<DrawingElement> m_DrawingElement();
+	void m_takeFigure(std::shared_ptr<Figure> movingFigure);
+	void m_releaseFigure(std::shared_ptr<Figure> movingFigure);
 	virtual MovementPoints m_movementPoints() =0;
 	virtual float m_defenseBonus()=0;
 	bool m_IsMined() const;
@@ -61,6 +66,7 @@ public:
 	virtual int m_food()=0;
 	int m_trade(Nation& nation);
 	virtual int m_trade()=0;
+	bool m_militaryProblem(std::shared_ptr<Figure> movingFigure);
 	virtual std::string m_resourceOverview()=0;
 	virtual Landscape m_Landscape() const = 0;
 	RoadStatus m_RoadStatus();

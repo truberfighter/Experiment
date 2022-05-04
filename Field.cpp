@@ -10,6 +10,7 @@
 #include "Settlers.hpp"
 #include "FieldContainer.hpp"
 #include "sdltypes.hpp"
+#include <list>
 
 Field::Field(int x, int y, Layer layer, bool hasSpecialResource)
 : m_x(x), m_y(y), m_layer(layer), m_hasSpecialResource(hasSpecialResource)
@@ -241,3 +242,76 @@ void Field::m_drawField(){
 		throw(theDrawingFail);
 	}
 }
+
+void Field::m_releaseFigure(std::shared_ptr<Figure> movingFigure){
+	unsigned int listSize = m_figuresOnField.size();
+	m_figuresOnField.remove(movingFigure);
+	std::cout<<"listSizePrevious: "<<listSize<<", now: "<<m_figuresOnField.size()<<std::endl;
+	if(listSize == m_figuresOnField.size())
+		std::cout<<("Fail: Released figure not removed!")<<std::endl;
+}
+
+void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
+	std::cout<<"m_takeFigure aufgerufen: this = "<<this<<std::endl;
+	Field& previousField = movingFigure->m_WhereItStands();
+	if(m_figuresOnField.empty()){
+		std::cout<<"auf leeren Stack"<<std::endl;
+		previousField.m_releaseFigure(movingFigure);
+		m_figuresOnField.push_front(movingFigure);
+		return;
+	}
+	std::shared_ptr<Figure> frontFigure = m_figuresOnField.front();
+	if(frontFigure->m_Nationality()==movingFigure->m_Nationality()){
+		previousField.m_releaseFigure(movingFigure);
+m_figuresOnField.push_front(movingFigure);
+		std::cout<<"auf eigenen Stack"<<std::endl;
+		m_figuresOnField.sort([](std::shared_ptr<Figure> figure1, std::shared_ptr<Figure> figure2)->bool {return figure1->m_defensiveStrength()<figure1->m_defensiveStrength();});
+		return;
+	}
+	if(frontFigure->m_Nationality()!=movingFigure->m_Nationality()){
+		//Fight. Consider emitting some kind of signal and/or logging the random value.
+		std::cout<<"Fight coming!0<<std::endl;";
+		Nationality winningNationality = theGame->m_calculateWinnerInFight(movingFigure, m_figuresOnField.front());
+		std::cout<<"fightwinner is "<<winningNationality<<std::endl;
+		FightResult result;
+		if(winningNationality == frontFigure->m_Nationality()){
+			result = ATTACKER_LOSES;
+			previousField.m_releaseFigure(movingFigure);
+			movingFigure->m_Nation()->m_destroyFigure(movingFigure);
+		}
+		else{
+			result = DEFENDER_LOSES;
+			if(m_hasFortress){
+			frontFigure->m_WhereItStands().m_releaseFigure(frontFigure);
+			frontFigure->m_Nation()->m_destroyFigure(frontFigure);
+			}
+			else{
+				while(!m_figuresOnField.empty()){
+					std::cout<<"begin clearing loop for attacked field"<<std::endl;
+					std::shared_ptr<Figure> currentFigure = m_figuresOnField.front();
+					currentFigure->m_WhereItStands().m_releaseFigure(currentFigure);
+					currentFigure->m_Nation()->m_destroyFigure(currentFigure);
+					std::cout<<"release and destroy figure: figure.this = "<<currentFigure<<std::endl;
+				}
+			}
+		}
+		throw(Fight(result));
+	}
+}
+
+bool Field::m_militaryProblem(std::shared_ptr<Figure> movingFigure){
+	if(movingFigure->m_FigureType() == DIPLOMAT || movingFigure->m_FigureType() == CARAVAN || movingFigure->m_FigureCategory() != GROUND){
+		return false;
+	}
+	for(std::shared_ptr<Figure> currentFigure: m_figuresOnField){
+		if(currentFigure->m_Nationality() == movingFigure->m_Nationality()){
+			return false;
+		}
+		if(currentFigure->m_FigureType() == DIPLOMAT || currentFigure->m_FigureType() == CARAVAN || currentFigure->m_FigureCategory() != GROUND){
+			continue;
+		}
+		return true;
+	}
+	return false;
+}
+

@@ -44,10 +44,15 @@ int main( int argc, char* args[] ){
 		}
 */
 	GameMain gameMain;
+	SDL_Event event;
+	event.type = SDL_KEYDOWN;
+	event.key.keysym.sym = SDLK_8_UP;
+	std::list<SDL_Event> eventList;
+	eventList.push_back(event);
 	gameMain();
 	TTF_Quit();
-		 IMG_Quit();
-		 SDL_Quit();  //Quit SDL subsystems	}3_
+	IMG_Quit();
+	SDL_Quit();  //Quit SDL subsystems	}3_
 	return 500;
 }
 

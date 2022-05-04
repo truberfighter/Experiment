@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <sstream>
 #define KeyCode unsigned int
 class Field;
 class Figure;
@@ -21,7 +22,8 @@ enum{SDLK_1_DOWN_LEFT = 1073741913, SDLK_2_DOWN = SDLK_1_DOWN_LEFT + 1, SDLK_3_D
 enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 24};
 typedef int Layer; extern Layer STANDARD_LAYER, STANDARD_FIELD_LAYER, STANDARD_FIELD_MODIFICATOR_LAYER, SIDETEXT_LAYER;
 enum FigureCategory{GROUND, SEA, FLIGHT};
-enum FigureType{SETTLERS, MILITIA, TRANSPORT, SAIL, TRIREME};
+enum FigureType{SETTLERS, MILITIA, TRANSPORT, SAIL, TRIREME, DIPLOMAT, CARAVAN};
+enum FightResult{ATTACKER_LOSES, DEFENDER_LOSES, KAMIKAZE};
 enum Drawing_Element{MOVABLE_DRAWING_ELEMENT, DRAWING, IMMOVABLE_DRAWING_ELEMENT,LAMBDA_DRAWING_ELEMENT};
 enum Direction{DOWN_LEFT = 1, DOWN = 2, DOWN_RIGHT = 3, LEFT = 4, STANDING_STILL = 5,
 	RIGHT = 6, UP_LEFT = 7, UP = 8, UP_RIGHT = 9};
@@ -128,12 +130,31 @@ class SettlersworkUnavailable{
 	std::string what(){return "Settlerswork unavailable!";}
 };
 
+class RandomFail{
+public:
+	int m_upperBound;
+	int m_lowerBound;
+	RandomFail(int i, int j):m_upperBound(i), m_lowerBound(j){}
+	std::string what(){
+		std::stringstream s;
+		s<< "Bad random request: upperBound = "<<(m_upperBound)<<(", lowerBound = ")<<m_lowerBound<<"!";
+		return s.str();
+	}
+};
+
 class DrawingFail{
 public:
 	std::string m_whatsUp;
 	DrawingFail();
 	DrawingFail(std::string whatsUp){m_whatsUp = std::string("DrawingFail: ")+whatsUp;}
 	std::string what(){return m_whatsUp;}
+};
+
+class Fight{
+public:
+	FightResult m_result;
+	Fight(FightResult result):m_result(result){}
+	std::string what(){return "Fight";}
 };
 
 namespace Graphics{

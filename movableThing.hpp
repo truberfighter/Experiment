@@ -30,7 +30,7 @@ protected:
 public:
 	std::list<MovableDrawingElement*>& m_HowDrawn();
 	static unsigned int moveCount;
-	~MovableThing(){std::cout<<"MovableThing-Destruktor, this = "<<this<<std::endl; for(auto it: m_howDrawn)delete it;}
+	~MovableThing();
 	void m_add(MovableDrawingElement* newMoDrEl);
 	MovableThing(SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int x, int y, bool renderInstantly = false);
 	MovableThing(SDL_Renderer* renderer, int width, int height, const char* filename, int x, int y, bool renderInstantly = false);

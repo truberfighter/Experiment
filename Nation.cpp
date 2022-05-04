@@ -12,7 +12,7 @@
 
 using namespace std;
 
-Nation::Nation(Nationality nationality, std::string leaderName): m_nation(nationality), m_leaderName(leaderName), enable_shared_from_this()
+Nation::Nation(Nationality nationality, std::string leaderName, bool directlyMakingFiguresActive): m_nation(nationality), m_directlyMakingFiguresActive(directlyMakingFiguresActive), m_leaderName(leaderName), enable_shared_from_this()
 {
 	cout<<"Nation-Konstruktor mit Nationalität "<< nationality<<", this = "<<this<<endl;
 }
@@ -138,4 +138,20 @@ void Nation::m_startNewTurn(){
 	catch(TurnEndsTooEarly& theException){
 		throw(theException);
 	}
+}
+
+bool Nation::m_destroyFigure(std::shared_ptr<Figure> figureToRemove){
+	std::cout<<"m_destroyFigure: figure.this = "<<figureToRemove<<std::endl;
+	int previousListSize = m_figures.size();
+	m_activeFigures.remove(figureToRemove);
+	for(int i(0); i<previousListSize; i++){
+		if(m_figures[i].get()==figureToRemove.get()){
+			for(int j=i; j<previousListSize - 1; j++){
+				m_figures[i] = m_figures[i+1];
+			}
+			m_figures.pop_back();
+			return true;
+		}
+	}
+	return false;
 }

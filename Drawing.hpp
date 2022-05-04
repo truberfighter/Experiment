@@ -49,10 +49,11 @@ protected:
 	int m_rowWhereLastDrawn;
 	int m_columnWhereLastDrawn;
 public:
+	friend class MovableThing;
 	virtual Drawing_Element m_DrawingElement() = 0;
 	DrawingElement(const DrawingElement&);
 	DrawingElement(int row, int column, SDL_Renderer* renderer, Layer layer = STANDARD_LAYER);
-	virtual ~DrawingElement(){}
+	virtual ~DrawingElement();
 	virtual int m_draw(int rowShift, int columnShift, SDL_Renderer* renderer = nullptr) = 0;
 	Layer m_getLayer();
 	void m_setLayer(int layer);
@@ -99,7 +100,8 @@ public:
 	virtual ~Drawing();
 	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
 	void m_add(std::shared_ptr<DrawingElement> drawingElement);
-	void m_delete(std::shared_ptr<DrawingElement>& drElToDelete);
+	void m_delete(std::shared_ptr<DrawingElement> drElToDelete);
+	void m_delete(DrawingElement* drElToDelete);
 	//zeichne eine Figur nach oben
 	void m_putOver(std::shared_ptr<DrawingElement>& drElToUpdate, Layer layer);
 	bool m_updateLayer(std::shared_ptr<DrawingElement>& drElToUpdate, int newLayer);

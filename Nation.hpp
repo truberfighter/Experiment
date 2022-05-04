@@ -18,11 +18,11 @@ private:
 	std::string m_leaderName;
 	std::vector<std::shared_ptr<Figure>> m_figures;
 	std::list<std::shared_ptr<Figure>> m_activeFigures;
-	bool m_directlyMakingFiguresActive = true;
+	bool m_directlyMakingFiguresActive = false;
 public:
 	~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 	static Coordinate getStandardCoordinateForNation(Nationality n);
-	Nation(Nationality n = ROMAN, std::string leaderName = "");
+	Nation(Nationality n = ROMAN, std::string leaderName = "", bool directlyMakingFiguresActive = false);
 	const std::string& m_LeaderName();
 	GovernmentType m_Government();
 	Nationality m_Nation() const;

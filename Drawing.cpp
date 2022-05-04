@@ -17,6 +17,19 @@
 
 using namespace std;
 
+DrawingElement::~DrawingElement(){
+for(auto current: m_whereToDraw){
+		std::cout<<"DrawingElement-Destruktor3, this = "<<this<<std::endl;
+		current->m_delete(this);
+		std::cout<<"DrawingElement-Destruktor4, this = "<<this<<",listSize = "<<m_whereToDraw.size()<<std::endl;
+		if(m_whereToDraw.size() == 0){
+			std::cout<<"ende gelände"<<std::endl;
+			goto endeDestruktor;
+		}
+		std::cout<<"lollll"<<std::endl;
+	}
+	endeDestruktor: std::cout<<"DrawingElement-Destruktor5, this = "<<this<<std::endl;
+}
 Drawing::Drawing(SDL_Renderer* renderer, int row, int column, Layer layer)
 : DrawingElement(row, column, renderer, layer)
 {
@@ -42,13 +55,28 @@ bool DrawingElement::m_addDrawing(Drawing* newDrawing){
 	return true;
 }
 
+void Drawing::m_delete(std::shared_ptr<DrawingElement> drElToDelete){
+	m_drawingList.remove(drElToDelete);
+	std::cout<<"m_delete: this = "<<this<<std::endl;
+}
+
+void Drawing::m_delete(DrawingElement* drElToDelete){
+	m_drawingList.remove_if([drElToDelete](std::shared_ptr<DrawingElement> drEl)->bool{return drEl.get()==drElToDelete;});
+	std::cout<<"pointerdelete: this = "<<this<<", pointer = "<<drElToDelete<<std::endl;
+}
+
 
 MovableDrawingElement::~MovableDrawingElement(){
-	delete m_content;
+	std::cout<<"MovableDrawingElement-Destruktor, this = "<<this<<std::endl;
 }
 
 Layer DrawingElement::m_getLayer(){
 	return m_layer;
+}
+
+void DrawingElement::m_removeDrawing(Drawing* drawing){
+	m_whereToDraw.remove(drawing);
+	std::cout<<"m_removeDrawing: this = "<<this<<std::endl;
 }
 
 bool MovableDrawingElement::m_equals(DrawingElement& comparedDrEl){

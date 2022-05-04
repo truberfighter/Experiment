@@ -21,7 +21,7 @@
     if (currentTime > millisecsAtLastBlinkingStep + m_blinkingIntervalTime) {\
     millisecsAtLastBlinkingStep = currentTime;\
     if(m_whatToMove){\
-			m_whatToMove->m_drawFigure(m_currentBlinkingState);cout<<"BlinkingHandled"<<std::endl;\
+			m_whatToMove->m_drawFigure(m_currentBlinkingState);\
 			SDL_RenderPresent(m_currentRenderer);\
 			m_currentBlinkingState = !m_currentBlinkingState;\
 		}\
@@ -116,7 +116,7 @@ void GameMain::m_initInfoDrawing(){
 	m_currentFigureInfo->m_add(rectPointer);
 	auto& r = m_currentFigureInfo;
 	m_setCurrentDrawing(someDrawing);
-cout<<m_currentFigureInfo<<std::endl;
+	cout<<m_currentFigureInfo<<std::endl;
 	m_currentDrawing->m_add(r);
 }
 

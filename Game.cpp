@@ -8,6 +8,11 @@
 #include "Game.hpp"
 #include "FieldContainer.hpp"
 #include "Settlers.hpp"
+#include <stdlib.h>
+#include <random>
+#include <functional>
+
+class
 
 std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 	std::cout<<"nation = "<<(nation ? nation : m_NationAtCurrentTurn().get())<<", settlersCount = "<<settlersCount<<std::endl;
@@ -18,8 +23,10 @@ std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 }
 
 Game::Game(std::vector<Nationality>& nationsToPlay){
+	bool firstNation = true;
 	for(Nationality currentNationality: nationsToPlay){
-		std::shared_ptr<Nation> nationPointer =  std::make_shared<Nation>(currentNationality);
+		std::shared_ptr<Nation> nationPointer =  std::make_shared<Nation>(currentNationality, "", firstNation);
+		firstNation = false;
 		m_nationsPlaying.push_back(nationPointer);
 		Nation& nation = *nationPointer;
 		Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
@@ -29,6 +36,7 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 			std::shared_ptr<Settlers> theSettlersPointer =
 			std::make_shared<Settlers>(fieldPointer, nationPointer);
 			nation.m_addFigure(theSettlersPointer);
+			fieldPointer->m_takeFigure(theSettlersPointer);
 		}
 	}
 }
@@ -48,7 +56,7 @@ void Game::m_startNewTurn(){
 		std::cout<<"wieder bei null im Nationenindex angekommen"<<std::endl;
 	m_currentYear = Year(m_currentYear.m_yearNumberRaw);
 	}
-	std::cout<<"New turn started!"<<std::endl;
+	std::cout<<"New turn started for "<<m_NationAtCurrentTurn()->m_Nation()<<"!"<<std::endl;
 	if(m_NationAtCurrentTurn()->m_activeFiguresSize()<=0){
 		std::cout<<"No figure is active!"<<std::endl;
 		m_startNewTurn();
@@ -66,4 +74,38 @@ std::shared_ptr<Nation> Game::m_NationAtCurrentTurn(){
 
 void Game::m_makeEndOfTurn(){
 	m_startNewTurn();
+}
+
+Nationality Game::m_calculateWinnerInFight(std::shared_ptr<Figure> attacker, std::shared_ptr<Figure> defender){
+	try{
+	float attackingStrength = attacker->m_attackingStrength()*std::min((float)1, (float) attacker->m_MovementPoints().m_movementPoints/ONE_MOVEMENT_POINT);
+	float defensiveStrength = defender->m_defensiveStrength();
+	defensiveStrength *= defender->m_WhereItStands().m_defenseBonus();
+	if(attacker->m_IsVeteran()){
+		attackingStrength *= 1.5;
+	}
+	if(defender->m_IsVeteran()){
+		defensiveStrength*=1.5;
+	}
+	if(defender->m_FigureState()==FORTIFIED || defender->m_FigureState() == COMPLETELY_FORTIFIED){
+		defensiveStrength*=1.5;
+	}
+	attackingStrength *= 2^8;
+	defensiveStrength *= 2^8; //für mehr Präzision, indem Überträge/Rundiúngen entschärft werden
+	int randomNumber = m_getRandomNumberBetween(1, ((int) attackingStrength) + ((int) defensiveStrength));
+
+	return randomNumber <= attackingStrength ? attacker->m_Nationality() : defender->m_Nationality();
+	}
+	catch(RandomFail& randomFail){
+	return defender->m_Nationality();
+	}
+}
+
+int Game::m_getRandomNumberBetween(int lowerBound, int upperBound){
+	if(lowerBound > upperBound){
+		throw(RandomFail(lowerBound, upperBound));
+	}
+	 std::uniform_int_distribution<int> distribution(lowerBound, upperBound);
+	 int randomNumber = distribution(m_theRandomDevice);
+	 return randomNumber;
 }

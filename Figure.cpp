@@ -12,7 +12,7 @@
 #include <functional>
 #include "Field.hpp"
 #include <sstream>
-
+#include "Nation.hpp""
 
 using namespace std;
 
@@ -28,6 +28,8 @@ Figure::Figure(std::shared_ptr<Field> whereToStart, std::shared_ptr<Nation> nati
 Figure::~Figure(){
 	std::cout<<"Figure-Destruktor"<<this<<std::endl;
 }
+
+Nationality Figure::m_Nationality(){return m_nationality->m_Nation();}
 
 void Figure::m_resetMovementPoints(){
 	m_movementPoints.m_movementPoints = m_defaultMovementPoints();
@@ -46,6 +48,10 @@ bool Figure::m_Pillage(){
 
 FigureState Figure::m_FigureState(){
 	return m_figureState;
+}
+
+Field& Figure::m_WhereItStands(){
+	return *m_whereItStands;
 }
 
 bool Figure::m_fortify(){
@@ -124,6 +130,28 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	if(movementCost.m_movementPoints > m_movementPoints.m_movementPoints){
 		return false;
 	}
+	std::shared_ptr<Figure> thisFigure = shared_from_this();
+	Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,RIGHT, UP_LEFT, UP, UP_RIGHT};
+	Field& fieldWhereToGo = *(m_whereItStands->m_getNeighbouringField(whereToGo));
+		if(fieldWhereToGo.m_FiguresOnField().empty()){
+		bool surroundedByMilitaryUnit = false;
+		for(Direction currentDirection: directions){
+			if(m_whereItStands->m_getNeighbouringField(currentDirection)->m_militaryProblem(thisFigure)){
+				//some unit next to you
+				surroundedByMilitaryUnit = true;
+				break;
+			}
+		}
+		if(surroundedByMilitaryUnit){
+			for(Direction currentDirection: directions){
+				if(fieldWhereToGo.m_getNeighbouringField(currentDirection)->m_militaryProblem(thisFigure)){
+					//some unit next to you
+					return false;
+				}
+			}
+		}
+	}
+	fieldWhereToGo.m_takeFigure(thisFigure);
 	m_move(whereToGo);
 	if((m_movementPoints -= movementCost).m_movementPoints <= 0){
 		m_finishMove();
@@ -133,9 +161,25 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	}
 	return true;
 	}
-	catch(PoleHitException &pHEx){
+	catch(PoleHitException& pHEx){
 		cout<<pHEx.what();
 		flush(cout);
+		return false;
+	}
+	catch(Fight& fight){
+		cout<<fight.what();
+		flush(cout);
+		if(fight.m_result == ATTACKER_LOSES || fight.m_result == KAMIKAZE){
+			// You died!
+			return false;
+		}
+		m_movementPoints.m_movementPoints = max(m_movementPoints.m_movementPoints - ONE_MOVEMENT_POINT, 0);
+		if(m_movementPoints == 0){
+			m_finishMove();
+			if(!m_nationality->m_removeFromQueue(shared_from_this())){
+				cout<<" listsize = "<<m_nationality->m_queueSize()<<", this = "<<this;
+			}
+		}
 		return false;
 	}
 }

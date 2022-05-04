@@ -35,6 +35,7 @@ protected:
 	MovementPoints m_calculateStandardMoveCostGround(Field& fieldToVisit);
 	int m_drawFigureState(int, int, SDL_Renderer*);
 public:
+	Nationality m_Nationality();
 	Figure(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~Figure();
 	virtual FigureType m_FigureType() = 0;
@@ -66,7 +67,12 @@ public:
 	void m_showTheFigureIsCurrentFigure();
 	void m_wait();
 	void m_drawFigure(BlinkingState blinkingState = VISIBLE());
+	void m_drawFigureSomewhere(int row, int column);
+	bool m_IsVeteran();
+	std::shared_ptr<Nation> m_Nation(){return m_nationality;}
 };
+
+inline bool Figure::m_IsVeteran(){return m_isVeteran;}
 
 class TurnEndsTooEarly{
 	public: std::string what() {return "Turn ends too early";}
