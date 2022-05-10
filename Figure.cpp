@@ -5,14 +5,15 @@
  *      Author: uwe-w
  */
 
-#include "figure.hpp"
+#include "Figure.hpp"
 #include <memory>
 #include "FieldContainer.hpp"
 #include "Drawing.hpp"
 #include <functional>
 #include "Field.hpp"
 #include <sstream>
-#include "Nation.hpp""
+#include "Nation.hpp"
+#include "Ship.hpp"
 
 using namespace std;
 
@@ -20,7 +21,6 @@ using namespace std;
 Figure::Figure(std::shared_ptr<Field> whereToStart, std::shared_ptr<Nation> nationality,  std::shared_ptr<City> home, bool isVeteran)
 : enable_shared_from_this<Figure>(), m_nationality(nationality), m_whereItStands(whereToStart), m_home(home), m_isVeteran(isVeteran)
 {
-	settlersCount++;
 	figureToDraw = this;
 	cout<<"figurekonstruktor"<<this<<endl;
 }
@@ -65,19 +65,19 @@ bool Figure::m_fortify(){
 
 bool Figure::m_sentry(){
 	if(m_movementPoints.m_movementPoints!=0){
-		m_figureState = SENTRYING;
 		m_finishMove();
+		m_figureState = SENTRYING;
 		return true;
 	}
 	else return false;
 }
 //Start a turn. Sentried units are kinda ignored for the first part.
-bool Figure::m_startMove(){
+bool Figure::m_startMove(bool activateSentried){
 	cout<<"Figure::m_startMove: figureState = ";
 	cout<<m_figureState; cout<<", nationality = "<<m_nationality->m_Nation()<<", this = "<<this<<std::endl;
 	switch(m_figureState){
 	case DONE_WITH_TURN:{
-		m_resetMovementPoints();
+	activate:	m_resetMovementPoints();
 		m_figureState = MOVING;
 		cout<<"FigureState: ";cout<<m_figureState;cout<< ", MovementPoints: "<<m_movementPoints<<std::endl;
 		return true;
@@ -85,9 +85,22 @@ bool Figure::m_startMove(){
 	case FORTIFYING: {m_figureState = FORTIFIED; return true;}
 	case FORTIFIED: {m_figureState = COMPLETELY_FORTIFIED;return true;}
 	case SENTRYING: {m_figureState = SENTRIED;return true;}
-	case SENTRIED: return true;
+	case SENTRIED: {
+		if(activateSentried)
+			goto activate;
+		Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,RIGHT, UP_LEFT, UP, UP_RIGHT};
+		for(int i(0); i<8;i++){
+			if(!(m_whereItStands->m_getNeighbouringField(directions[i])->m_FiguresOnField().empty()) &&
+			m_whereItStands->m_getNeighbouringField(directions[i])->m_FiguresOnField().front()->m_Nationality() != m_nationality->m_Nation()){
+				goto activate;
+			}
+		}
+		return true;
+	}
 	case COMPLETELY_FORTIFIED: return true;
 	case SETTLERS_AT_WORK: {
+		if(m_FigureType()!=SETTLERS)
+			throw("Big fail");
 		reinterpret_cast<Settlers*>(this)->m_takeOrder(getSettlersOrder(reinterpret_cast<Settlers*>(this)->m_CurrentWork()));
 		return true;}
 
@@ -101,18 +114,31 @@ bool Figure::m_initImage(){
 }
 
 MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
+	std::shared_ptr<Field> aim = 	m_whereItStands = m_whereItStands->m_getNeighbouringField(whereToGo);
 	switch(m_FigureCategory()){
 	case SEA:
+		if(!aim->m_FiguresOnField().empty()){
+			std::cout<<"not empty"<<std::endl;
+			return (aim->m_FiguresOnField().front()->m_Nationality()==m_Nationality()) ? MOVE_PROHIBITED : ONE_MOVEMENT_POINT;
+		}
+		if(aim->m_CityContained()!=nullptr){
+			return MovementPoints(m_movementPoints);
+		}
+		std::cout<<"standardMovement"s<<std::endl;
 		return m_movementPoints.m_movementPoints >= ONE_MOVEMENT_POINT
-				&& m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()==LANDMASS_SEPARATOR ?
+				&& m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()
+				==OCEAN ?
 						ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 	case FLIGHT:
 		return m_movementPoints.m_movementPoints >= ONE_MOVEMENT_POINT ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 	case GROUND:
 	{
-		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()!=LANDMASS_SEPARATOR)
+		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()!=OCEAN)
 		return m_calculateMoveCostGround(whereToGo);
-		else return MOVE_PROHIBITED;
+		else{
+			m_figureState = SENTRIED;
+			return m_whereItStands->m_getNeighbouringField(whereToGo)->m_getCargoCapability(*this) > 0 ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
+		}
 	}
 	}
 	return MOVE_PROHIBITED;
@@ -120,9 +146,15 @@ MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 
 bool Figure::m_tryMoveToField(Direction whereToGo){
 	try{
-		std::cout<<"figure tries move to field: nation = "<<m_nationality->m_Nation()<<", this = "<<this<<endl;
-	cout<<*m_whereItStands<<(*(m_whereItStands->m_getNeighbouringField(whereToGo)))<<std::endl;
+	Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,RIGHT, UP_LEFT, UP, UP_RIGHT};
+	std::shared_ptr<Figure> thisFigure = shared_from_this();
+	Field& fieldWhereToGo = *(m_whereItStands->m_getNeighbouringField(whereToGo));
 	MovementPoints movementCost = m_calculateMoveCost(whereToGo);
+	std::cout<<"figure tries move to field: nation = "<<m_nationality->m_Nation()<<", this = "<<this<<"2, figureState = "<<m_figureState<<", figureType = "<<m_FigureType()<<endl;
+	if(m_figureState == SENTRIED){
+		goto beginMove;
+	}
+	cout<<*m_whereItStands<<(*(m_whereItStands->m_getNeighbouringField(whereToGo)))<<std::endl;
 	cout<<"moveCost: "<<movementCost<<", MovementPoints: "<<m_movementPoints<<endl;
 	if(movementCost == MOVE_PROHIBITED){
 		return false;
@@ -130,10 +162,7 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	if(movementCost.m_movementPoints > m_movementPoints.m_movementPoints){
 		return false;
 	}
-	std::shared_ptr<Figure> thisFigure = shared_from_this();
-	Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,RIGHT, UP_LEFT, UP, UP_RIGHT};
-	Field& fieldWhereToGo = *(m_whereItStands->m_getNeighbouringField(whereToGo));
-		if(fieldWhereToGo.m_FiguresOnField().empty()){
+	if(fieldWhereToGo.m_FiguresOnField().empty()){
 		bool surroundedByMilitaryUnit = false;
 		for(Direction currentDirection: directions){
 			if(m_whereItStands->m_getNeighbouringField(currentDirection)->m_militaryProblem(thisFigure)){
@@ -151,7 +180,7 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 			}
 		}
 	}
-	fieldWhereToGo.m_takeFigure(thisFigure);
+	beginMove: fieldWhereToGo.m_takeFigure(thisFigure);
 	m_move(whereToGo);
 	if((m_movementPoints -= movementCost).m_movementPoints <= 0){
 		m_finishMove();
@@ -190,11 +219,47 @@ void Figure::m_move(Direction whereToGo){
 	m_setInstructionsForDrawingElement();
 	m_image->m_setMoveToDirection(whereToGo);
 	m_image->m_move(whereToGo);
-	m_whereItStands = (m_whereItStands->m_getNeighbouringField(whereToGo));
+	switch(m_FigureCategory()){
+	case SEA:
+	{
+		for(std::shared_ptr<Figure> figureToTakeWithMe: reinterpret_cast<Ship*>(this)->m_getCargo()){
+			figureToTakeWithMe->m_tryMoveToField(whereToGo);
+		}
+		m_whereItStands = (m_whereItStands->m_getNeighbouringField(whereToGo));
+		break;
+	}
+	case FLIGHT:
+	{
+		m_whereItStands = (m_whereItStands->m_getNeighbouringField(whereToGo));
+		if(m_whereItStands->m_getCargoCapability(*this) > 0 || m_whereItStands->m_CityContained()!= nullptr){
+			m_finishMove();
+			m_figureState = SENTRIED;
+		}
+		break;
+	}
+	case GROUND:
+	{
+		m_whereItStands = (m_whereItStands->m_getNeighbouringField(whereToGo));
+		if(m_whereItStands->m_Landscape()==OCEAN){
+			m_figureState = SENTRIED;}
+		break;
+	}
+	}
 }
 
 MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
 	Field& fieldToVisit = *(m_whereItStands->m_getNeighbouringField(whereToGo));
+	if(m_whereItStands->m_Landscape()==OCEAN && !fieldToVisit.m_FiguresOnField().empty() && fieldToVisit.m_FiguresOnField().front()->m_Nationality()!=m_Nationality()){
+		SDL_Surface* textSurface = TTF_RenderText_Solid(theFont, "You can't launch a land based attack from a sea vessel", whiteColor);
+		SDL_Rect rectToFill{INFO_TEXT_X, INFO_TEXT_Y,textSurface->w,textSurface->h};
+		SDL_SetRenderDrawColor(theRenderer, 255,0,0,0);
+		SDL_RenderFillRect(theRenderer, &rectToFill);
+		SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, textSurface);
+		SDL_RenderCopy(theRenderer, texture, NULL, &rectToFill);
+		SDL_RenderPresent(theRenderer);
+		SDL_Delay(750);
+		return MOVE_PROHIBITED;
+	}
 	switch(m_whereItStands->m_RoadStatus()){
 		case NOTHING:{
 			return m_calculateStandardMoveCostGround(fieldToVisit);
@@ -281,15 +346,14 @@ return SDL_RenderCopy(theRenderer, theLetterTextureContainer->m_getLetterTexture
 SDL_Rect rectToDraw{x+STANDARD_FIELD_SIZE/4,y+STANDARD_FIELD_SIZE/4,FIGURESTATE_TEXTURE_WIDTH, FIGURESTATE_TEXTURE_HEIGHT};
 //cout<<"figureState: "<<m_figureState<<endl;
 	switch(m_figureState){
-	case MOVING: {cout<<"Moving"<<endl;
-	return SDL_RenderCopy(theRenderer, theLetterTextureContainer->m_getLetterTexture('M')->theTexture(), nullptr, &rectToDraw);
-	}
-	case DONE_WITH_TURN: {if(true) DRAW_LETTER('D')}
+	case MOVING: {	return 0;}
+	case DONE_WITH_TURN: {if(true) DRAW_LETTER('D') break;}
 	case PILLAGE_IN_PROGRESS:DRAW_LETTER('P')
 	case SENTRYING: DRAW_LETTER('S')
 	case FORTIFYING: DRAW_LETTER('F')
 	case SENTRIED: {
 		SDL_Color colorToUse{100,0,255};
+		std::cout<<"draw Sentried for figure of firguryType "<<m_FigureType()<<" with FigureState "<<m_figureState<<std::endl;
 		return Graphics::drawSquareStarLines(theRenderer,x,y,brownColor);
 	}
 	case FORTIFIED:{
@@ -366,4 +430,9 @@ std::string Figure::m_figureOverview(){
 	}
 	theStringstream.flush();
 	return theStringstream.str();
+}
+
+void Figure::m_drawFigureSomewhere(int row, int column){
+	m_image->m_drawNew(row, column);
+	m_drawFigureState(row,column,theRenderer);
 }

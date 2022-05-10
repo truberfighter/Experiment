@@ -126,7 +126,6 @@ bool MovableDrawingElement::m_updatePosition(){
 }
 
 void DrawingElement::m_climbToTop(Layer layer){
-	cout<<"Dieses DrawingElement ist in so vielen Drawings enthalten: "<<m_whereToDraw.size()<<endl;
 	for(Drawing* it: m_whereToDraw) {
 		shared_ptr<DrawingElement> sharedFromThis = shared_from_this();
 		it->m_putOver(sharedFromThis, layer);
@@ -140,7 +139,7 @@ void DrawingElement:: m_climbToTop(){
 void Drawing::m_add(shared_ptr<DrawingElement> drawingElement){
 //cout<<"Z.97"<<endl;
 		if(drawingElement->m_DrawingElement() == DRAWING || m_drawingList.empty()){
-		cout<<"lol"<<&m_drawingList<<std::endl;
+		//cout<<"lol"<<&m_drawingList<<std::endl;
 		}
 	if(m_drawingList.empty()){
 		m_drawingList.push_back(drawingElement);

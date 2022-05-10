@@ -44,6 +44,7 @@ protected:
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
+	short unsigned int m_getCargoCapability(Figure& figureToEnter);
 	bool m_HasFortress(){return m_hasFortress;}
 	const std::list<std::shared_ptr<Figure>>& m_FiguresOnField(){return m_figuresOnField;}
 	virtual ~Field();

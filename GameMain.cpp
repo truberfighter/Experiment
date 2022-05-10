@@ -108,7 +108,7 @@ void GameMain::m_initInfoDrawing(){
 	SDL_Color& backgroundColor = infoTextBackgroundColor;
 		SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
 		SDL_Rect rectToFill{x,y,FIGURE_INFO_WIDTH, SCREEN_HEIGHT};
-		std::cout<<"yCoordinate: rectToFill.y = " <<rectToFill.y<<", y = "<<y<<std::endl;
+		//std::cout<<"yCoordinate: rectToFill.y = " <<rectToFill.y<<", y = "<<y<<std::endl;
 		SDL_RenderFillRect(renderer, &rectToFill);
 		return 0;
 	},
@@ -116,7 +116,7 @@ void GameMain::m_initInfoDrawing(){
 	m_currentFigureInfo->m_add(rectPointer);
 	auto& r = m_currentFigureInfo;
 	m_setCurrentDrawing(someDrawing);
-	cout<<m_currentFigureInfo<<std::endl;
+	//cout<<m_currentFigureInfo<<std::endl;
 	m_currentDrawing->m_add(r);
 }
 
@@ -125,7 +125,7 @@ int GameMain::operator()(){
  if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
-	 doSomething();
+ doSomething();
     MAIN_LOOP_BEGIN
 
 

@@ -8,6 +8,7 @@
 #include "Game.hpp"
 #include "FieldContainer.hpp"
 #include "Settlers.hpp"
+#include "Trireme.hpp"
 #include <stdlib.h>
 #include <random>
 #include <functional>
@@ -18,7 +19,6 @@ std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 	std::cout<<"nation = "<<(nation ? nation : m_NationAtCurrentTurn().get())<<", settlersCount = "<<settlersCount<<std::endl;
 	auto whatToReturn = nation ? nation->m_getCurrentFigure()
 		: m_NationAtCurrentTurn()->m_getCurrentFigure();
-	std::cout<<"whatToReturn initialized!"<<std::endl;
 	return whatToReturn;
 }
 
@@ -32,11 +32,15 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 		Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
 		std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
 		std::shared_ptr<Field> fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y];
-		for(int i(0); i<3; i++){
+		for(int i(0); i<2; i++){
 			std::shared_ptr<Settlers> theSettlersPointer =
 			std::make_shared<Settlers>(fieldPointer, nationPointer);
 			nation.m_addFigure(theSettlersPointer);
 			fieldPointer->m_takeFigure(theSettlersPointer);
+			std::shared_ptr<Trireme> theTriremePointer =
+			std::make_shared<Trireme>(fieldPointer->m_getNeighbouringField(LEFT), nationPointer);
+			nation.m_addFigure(theTriremePointer);
+			fieldPointer->m_getNeighbouringField(LEFT)->m_takeFigure(theTriremePointer);
 		}
 	}
 }

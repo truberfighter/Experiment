@@ -30,15 +30,15 @@ const std::string& Nation::m_LeaderName(){
 		return m_leaderName;
 	switch(m_nation){
 	case ROMAN:
-		return "Iulius Caesar";
+		return "Iulius Caesar.png";
 	case MONGOL:
-		return "Dschinghis Khan";
+		return "Dschinghis Khan.png";
 	case GERMAN:
-		return "Otto von Bismarck";
+		return "Otto von Bismarck.png";
 	case CHINESE:
-		return "Xi Jinping";
+		return "Xi Jinping.png";
 	default:
-		return "ANONYMOUS";
+		return "ANONYMOUS.png";
 	}
 }
 
@@ -67,7 +67,7 @@ Coordinate Nation::getStandardCoordinateForNation(Nationality n){
 	case GERMAN:
 		return Coordinate(30,30);
 	case ROMAN:
-		return Coordinate(14,15);
+		return Coordinate(15,15);
 	default:{
 		return Coordinate((int) n , (int) n);
 		cout<<"Make better standardcoordinates"<<std::endl;
@@ -91,7 +91,7 @@ void Nation::m_addFigure(std::shared_ptr<Figure> newFigure){
 	if(!newFigure){
 		std::string myString("m_addFigure");
 		myString+=(int)newFigure.get();
-		myString+=")";
+		myString+=").png";
 		throw(NullPointerException("Nation",myString));
 
 	}
@@ -105,14 +105,15 @@ bool Nation::m_addToQueue(std::shared_ptr<Figure> newFigure){
 	if(!newFigure){
 		std::string myString("m_addToQueue");
 		myString+=(int)newFigure.get();
-		myString+=")";
+		myString+=").png";
 		throw(NullPointerException("Nation",myString));
 	}
-	m_activeFigures.push_back(std::shared_ptr<Figure>(newFigure));
+	m_activeFigures.push_back(newFigure);
 	cout<<"size: "<<m_activeFigures.size();
 	unsigned int previousSize = m_activeFigures.size();
 	m_activeFigures.unique();
 	cout<<", "<<m_activeFigures.size()<<endl;
+	newFigure->m_setFigureState(MOVING);
 	return previousSize == m_activeFigures.size();
 }
 
@@ -131,7 +132,7 @@ void Nation::m_startNewTurn(){
 		cout<<"m_startNewTurn"<<endl<<"m_activeFiguresSize: "<<m_activeFigures.size();
 			if(m_addToQueue(currentFigure))
 			cout<< m_activeFigures.front()<<std::endl;
-			cout<<", m_activeFigures.size() = "<<m_activeFigures.size()<<", &m_activeFigures = "<<&m_activeFigures<<", nation = "<<this<<endl;
+//			cout<<", m_activeFigures.size() = "<<m_activeFigures.size()<<", &m_activeFigures = "<<&m_activeFigures<<", nation = "<<this<<endl;
 		}
 	}
 	}
@@ -149,9 +150,43 @@ bool Nation::m_destroyFigure(std::shared_ptr<Figure> figureToRemove){
 			for(int j=i; j<previousListSize - 1; j++){
 				m_figures[i] = m_figures[i+1];
 			}
-			m_figures.pop_back();
-			return true;
-		}
+					}
 	}
-	return false;
+	m_figures.pop_back();
+	std::cout<<"previousListSize (destroyFigure): "<<previousListSize<<", listSize: "<<m_figures.size()<<std::endl;
+	return true;
+}
+
+std::string Nation::m_colorString(){
+	switch(m_nation){
+	case ROMAN:
+		return "RomanRussian.png";
+	case RUSSIAN:
+		return "RomanRussian.png";
+	case BABYLONIAN:
+		return "BabylonianZulu.png";
+	case ZULU:
+		return "BabylonianZulu.png";
+	case EGYPTIAN:
+		return "AztecianEgyptian.png";
+	case AZTEC:
+		return "AztecEgyptian.png";
+	case MONGOL:
+		return "IndianMongol.png";
+	case INDIAN:
+		return "IndianMongol.png";
+	case AMERICAN:
+		return "AmericanChinese.png";
+	case CHINESE:
+		return "AmericanChinese.png";
+	case ENGLISH:
+		return "EnglishGreekpng";
+	case GREEK:
+		return "EnglishGreek.png";
+	case FRENCH:
+		return "FrenchGerman.png";
+	case GERMAN:
+		return "FrenchGerman.png";
+	}
+	return "Some mistake!";
 }

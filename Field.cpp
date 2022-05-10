@@ -11,6 +11,7 @@
 #include "FieldContainer.hpp"
 #include "sdltypes.hpp"
 #include <list>
+#include "Ship.hpp"
 
 Field::Field(int x, int y, Layer layer, bool hasSpecialResource)
 : m_x(x), m_y(y), m_layer(layer), m_hasSpecialResource(hasSpecialResource)
@@ -262,15 +263,17 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 	}
 	std::shared_ptr<Figure> frontFigure = m_figuresOnField.front();
 	if(frontFigure->m_Nationality()==movingFigure->m_Nationality()){
+		std::cout<<"auf eigenen Stack"<<", listPrevious: "<<m_figuresOnField.size();
 		previousField.m_releaseFigure(movingFigure);
 m_figuresOnField.push_front(movingFigure);
-		std::cout<<"auf eigenen Stack"<<std::endl;
 		m_figuresOnField.sort([](std::shared_ptr<Figure> figure1, std::shared_ptr<Figure> figure2)->bool {return figure1->m_defensiveStrength()<figure1->m_defensiveStrength();});
+		std::cout<<", newSize: "<<m_figuresOnField.size()<<std::endl;
 		return;
 	}
 	if(frontFigure->m_Nationality()!=movingFigure->m_Nationality()){
 		//Fight. Consider emitting some kind of signal and/or logging the random value.
-		std::cout<<"Fight coming!0<<std::endl;";
+		std::cout<<"Fight coming!0"<<std::endl;
+		std::cout<<*this<<",otherField: \n"<<m_figuresOnField.front()->m_WhereItStands();
 		Nationality winningNationality = theGame->m_calculateWinnerInFight(movingFigure, m_figuresOnField.front());
 		std::cout<<"fightwinner is "<<winningNationality<<std::endl;
 		FightResult result;
@@ -315,3 +318,21 @@ bool Field::m_militaryProblem(std::shared_ptr<Figure> movingFigure){
 	return false;
 }
 
+short unsigned int Field::m_getCargoCapability(Figure& figureToEnter){
+	if(figureToEnter.m_FigureCategory()==SEA)
+		return 0;
+	if(m_figuresOnField.empty() || m_figuresOnField.front()->m_Nationality()!=figureToEnter.m_Nationality())
+		return 0;
+		short unsigned int cargoCount = 0;
+		for(std::shared_ptr<Figure> currentFigure: m_figuresOnField){
+			if((currentFigure->m_FigureCategory() == SEA) && figureToEnter.m_FigureCategory() == (currentFigure->m_FigureType() == CARRIER) ? FLIGHT : GROUND){
+				cargoCount += reinterpret_cast<Ship*>(currentFigure.get())->m_cargoCountMax();
+				continue;
+			}
+			if(currentFigure->m_FigureCategory()==figureToEnter.m_FigureCategory()){
+				cargoCount--;
+				continue;
+			}
+		}
+	return cargoCount;
+}

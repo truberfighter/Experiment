@@ -57,7 +57,6 @@ void EventHandler::m_showFigureInfo(){
 void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	if(!whatToMove)
 		std::cout<<"Nun kann man sich nicht mehr bewegen!"<<std::endl;
-	std::cout<<"whatToMove Ende"<<std::endl;
 	m_whatToMove = whatToMove;
 	if(whatToMove){
 	DrawingElement* whatToPutOver = whatToMove->m_Image()->m_HowDrawn().front();

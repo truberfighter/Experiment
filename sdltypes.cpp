@@ -217,6 +217,7 @@ std::ostream& operator<<(std::ostream& os, MovementPoints mp){
 	case 1: {os<<a;os<<".3"; break;}
 	case 2: {os<<a;os<<".7"; break;}
 	}
+	if(mp.m_movementPoints<0)os<<"MOVE PROHIBITED!";
 	return os;
 }
 

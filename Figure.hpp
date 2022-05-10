@@ -35,6 +35,7 @@ protected:
 	MovementPoints m_calculateStandardMoveCostGround(Field& fieldToVisit);
 	int m_drawFigureState(int, int, SDL_Renderer*);
 public:
+	void m_setFigureState (FigureState newState){m_figureState = newState;}
 	Nationality m_Nationality();
 	Figure(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~Figure();
@@ -59,7 +60,7 @@ public:
 	bool m_explore();
 	virtual FigureCategory m_FigureCategory()=0;
 	FigureState m_FigureState();
-	bool m_startMove();
+	bool m_startMove(bool activateSentried = false);
 	bool m_initImage();
 	virtual std::shared_ptr<MovableThing> m_createImage() =0;
 	void m_setInstructionsForDrawingElement();
@@ -93,4 +94,5 @@ return;}
 #define DEFAULT_MOVING_POINTS(CLASS, DEFAULT) short unsigned int CLASS::m_defaultMovementPoints(){return DEFAULT*3;}
 //Man beachte, dass zwecks Ermöglichung von Drittelpunkten in Dreierschritten gezählt wird.
 #define NORMAL_MOVING(CLASS) DEFAULT_MOVING_POINTS(CLASS, 1)
+#define CARGO_COUNT_MAX(CLASS, NUMBER) short unsigned int CLASS::m_cargoCountMax(){return NUMBER;}
 #endif /* FIGURE_HPP_ */
