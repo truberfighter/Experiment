@@ -143,6 +143,7 @@ void Nation::m_startNewTurn(){
 
 bool Nation::m_destroyFigure(std::shared_ptr<Figure> figureToRemove){
 	std::cout<<"m_destroyFigure: figure.this = "<<figureToRemove<<std::endl;
+	figureToRemove->m_WhereItStands().m_releaseFigure(figureToRemove);
 	int previousListSize = m_figures.size();
 	m_activeFigures.remove(figureToRemove);
 	for(int i(0); i<previousListSize; i++){

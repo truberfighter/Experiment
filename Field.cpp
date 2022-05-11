@@ -246,14 +246,14 @@ void Field::m_drawField(){
 
 void Field::m_releaseFigure(std::shared_ptr<Figure> movingFigure){
 	unsigned int listSize = m_figuresOnField.size();
-	m_figuresOnField.remove(movingFigure);
+	m_figuresOnField.remove_if([&movingFigure](std::shared_ptr<Figure> f)->bool{return f.get()==movingFigure.get();});
 	std::cout<<"listSizePrevious: "<<listSize<<", now: "<<m_figuresOnField.size()<<std::endl;
 	if(listSize == m_figuresOnField.size())
 		std::cout<<("Fail: Released figure not removed!")<<std::endl;
 }
 
 void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
-	std::cout<<"m_takeFigure aufgerufen: this = "<<this<<std::endl;
+	std::cout<<"m_takeFigure aufgerufen: this = "<<*this<<", previousField: "<<movingFigure->m_WhereItStands()<<std::endl;
 	Field& previousField = movingFigure->m_WhereItStands();
 	if(m_figuresOnField.empty()){
 		std::cout<<"auf leeren Stack"<<std::endl;
@@ -261,6 +261,7 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		m_figuresOnField.push_front(movingFigure);
 		return;
 	}
+		std::cout<<"FieldWhereToGo: "<<*this<<",previousField: \n"<<previousField;
 	std::shared_ptr<Figure> frontFigure = m_figuresOnField.front();
 	if(frontFigure->m_Nationality()==movingFigure->m_Nationality()){
 		std::cout<<"auf eigenen Stack"<<", listPrevious: "<<m_figuresOnField.size();
@@ -273,7 +274,6 @@ m_figuresOnField.push_front(movingFigure);
 	if(frontFigure->m_Nationality()!=movingFigure->m_Nationality()){
 		//Fight. Consider emitting some kind of signal and/or logging the random value.
 		std::cout<<"Fight coming!0"<<std::endl;
-		std::cout<<*this<<",otherField: \n"<<m_figuresOnField.front()->m_WhereItStands();
 		Nationality winningNationality = theGame->m_calculateWinnerInFight(movingFigure, m_figuresOnField.front());
 		std::cout<<"fightwinner is "<<winningNationality<<std::endl;
 		FightResult result;

@@ -114,9 +114,13 @@ bool Figure::m_initImage(){
 }
 
 MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
-	std::shared_ptr<Field> aim = 	m_whereItStands = m_whereItStands->m_getNeighbouringField(whereToGo);
+	std::shared_ptr<Field> aim =  m_whereItStands->m_getNeighbouringField(whereToGo);
 	switch(m_FigureCategory()){
 	case SEA:
+		if(aim->m_Landscape()==OCEAN){
+			std::cout<<"normal moving in the ocean"<<std::endl;
+			return ONE_MOVEMENT_POINT;
+		}
 		if(!aim->m_FiguresOnField().empty()){
 			std::cout<<"not empty"<<std::endl;
 			return (aim->m_FiguresOnField().front()->m_Nationality()==m_Nationality()) ? MOVE_PROHIBITED : ONE_MOVEMENT_POINT;
@@ -180,7 +184,7 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 			}
 		}
 	}
-	beginMove: fieldWhereToGo.m_takeFigure(thisFigure);
+	beginMove: m_whereItStands->m_getNeighbouringField(whereToGo)->m_takeFigure(thisFigure);
 	m_move(whereToGo);
 	if((m_movementPoints -= movementCost).m_movementPoints <= 0){
 		m_finishMove();
@@ -200,7 +204,7 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 		flush(cout);
 		if(fight.m_result == ATTACKER_LOSES || fight.m_result == KAMIKAZE){
 			// You died!
-			return false;
+			throw(fight);
 		}
 		m_movementPoints.m_movementPoints = max(m_movementPoints.m_movementPoints - ONE_MOVEMENT_POINT, 0);
 		if(m_movementPoints == 0){
@@ -209,7 +213,7 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 				cout<<" listsize = "<<m_nationality->m_queueSize()<<", this = "<<this;
 			}
 		}
-		return false;
+		throw(fight);
 	}
 }
 
@@ -251,13 +255,15 @@ MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
 	Field& fieldToVisit = *(m_whereItStands->m_getNeighbouringField(whereToGo));
 	if(m_whereItStands->m_Landscape()==OCEAN && !fieldToVisit.m_FiguresOnField().empty() && fieldToVisit.m_FiguresOnField().front()->m_Nationality()!=m_Nationality()){
 		SDL_Surface* textSurface = TTF_RenderText_Solid(theFont, "You can't launch a land based attack from a sea vessel", whiteColor);
-		SDL_Rect rectToFill{INFO_TEXT_X, INFO_TEXT_Y,textSurface->w,textSurface->h};
+		SDL_Rect rectToFill{INFO_TEXT_X & 0, INFO_TEXT_Y,textSurface->w,textSurface->h};
 		SDL_SetRenderDrawColor(theRenderer, 255,0,0,0);
 		SDL_RenderFillRect(theRenderer, &rectToFill);
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, textSurface);
 		SDL_RenderCopy(theRenderer, texture, NULL, &rectToFill);
 		SDL_RenderPresent(theRenderer);
 		SDL_Delay(750);
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(texture);
 		return MOVE_PROHIBITED;
 	}
 	switch(m_whereItStands->m_RoadStatus()){

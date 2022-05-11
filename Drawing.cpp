@@ -19,14 +19,14 @@ using namespace std;
 
 DrawingElement::~DrawingElement(){
 for(auto current: m_whereToDraw){
-		std::cout<<"DrawingElement-Destruktor3, this = "<<this<<std::endl;
+		//std::cout<<"DrawingElement-Destruktor3, this = "<<this<<std::endl;
 		current->m_delete(this);
-		std::cout<<"DrawingElement-Destruktor4, this = "<<this<<",listSize = "<<m_whereToDraw.size()<<std::endl;
+		//std::cout<<"DrawingElement-Destruktor4, this = "<<this<<",listSize = "<<m_whereToDraw.size()<<std::endl;
 		if(m_whereToDraw.size() == 0){
-			std::cout<<"ende gelände"<<std::endl;
+			//std::cout<<"ende gelände"<<std::endl;
 			goto endeDestruktor;
 		}
-		std::cout<<"lollll"<<std::endl;
+		//std::cout<<"lollll"<<std::endl;
 	}
 	endeDestruktor: std::cout<<"DrawingElement-Destruktor5, this = "<<this<<std::endl;
 }

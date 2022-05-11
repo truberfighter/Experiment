@@ -165,10 +165,10 @@ int GameMain::operator()(){
 
 void GameMain::doSomething(){
 	 for(std::shared_ptr<Nation> currentNation: theGame->m_NationsPlaying()){
-			 		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
-			 			currentFigure->m_integrateInto(*someDrawing);
-			 		}
-			 	}
+		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
+			currentFigure->m_integrateInto(*someDrawing);
+		}
+	}
 		 Window* theWindow=&(*m_currentWindow());
 		   if(theWindow)cout<<"Window existiert"<<endl;
 

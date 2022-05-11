@@ -94,12 +94,12 @@ MovableThing::~MovableThing(){
 	std::cout<<"MovableThing-Destruktor1, this = "<<this<<std::endl;
 	while(!m_howDrawn.empty()){
 		for(Drawing* currentDrawing: m_howDrawn.front()->m_whereToDraw){
-		std::cout<<"MovableThing-Destruktor2, this = "<<this<<std::endl;
+		//std::cout<<"MovableThing-Destruktor2, this = "<<this<<std::endl;
 		currentDrawing->m_delete(m_howDrawn.front());
 		}
 		m_howDrawn.pop_front();
 	}
-	std::cout<<"MovableThing-Destruktor3, this = "<<this<<std::endl;
+	//std::cout<<"MovableThing-Destruktor3, this = "<<this<<std::endl;
 }
 
 bool MovableThing::m_drawNew(SDL_Renderer* renderer, std::shared_ptr<Texture> texture){

@@ -9,6 +9,7 @@ class City;
 
 class Ship: public Figure{
 private:
+	bool m_isCarrier = false;
 public:
 	virtual FigureType m_FigureType() override = 0;
 	Ship(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);

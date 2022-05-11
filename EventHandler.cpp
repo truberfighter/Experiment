@@ -100,9 +100,15 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 	if(m_whatToMove){
 		for(int i = 0; i<13; i++){
 			if(keyCode == keyPossibilities[i]){
-				m_whatToMove->m_tryMoveToField(directions[i]);
-
+				try{
+				if(m_whatToMove->m_tryMoveToField(directions[i])){
 				return true;
+				}
+				else return false;
+				}
+				catch(Fight& fight){
+					return true;
+				}
 			}
 		}
 	}

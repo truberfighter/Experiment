@@ -54,10 +54,43 @@ bool Ship::m_takeOrder(char order){
 }
 
 Ship::~Ship(){
-	for(std::shared_ptr<Figure> currentFigure: m_whereItStands->m_FiguresOnField()){
-		if(currentFigure->m_FigureCategory()!=SEA)
-			m_nationality->m_destroyFigure(currentFigure);
+	bool lol = true;
+	std::cout<<"Ship-Destruktor Beginn"<<std::endl;
+	while(true){
+		whilebegin: short int cargoCapability = 0;
+		for(std::shared_ptr<Figure> currentFigure:
+				m_whereItStands->m_FiguresOnField()){
+			if(currentFigure->m_FigureCategory() == SEA && (m_isCarrier ?
+			currentFigure->m_FigureType()!=CARRIER : currentFigure->m_FigureType()==CARRIER)){
+				cargoCapability+= (short int) reinterpret_cast<Ship*>(currentFigure.get())->m_cargoCountMax();
+			}
+			if(currentFigure->m_FigureCategory()== (m_isCarrier ? GROUND : FLIGHT)){
+				continue;
+			}
+			if(lol)
+			if(currentFigure->m_FigureCategory()== (m_isCarrier ? FLIGHT : GROUND)){
+				cargoCapability--;
+			}
+			std::cout<<"cargoCapability: "<<cargoCapability<<std::endl;
+		}
+		if(cargoCapability >= 0){
+			lol = false;
+		std::cout<<"lol"<<std::endl;
+			goto destructorend;
+		}
+		else{
+			for(std::shared_ptr<Figure> currentFigure: m_whereItStands->m_FiguresOnField()){
+				if(currentFigure->m_FigureCategory()==GROUND){
+					lol = true;
+					std::cout<<"deleting begun of "<<currentFigure->m_FigureType()<<std::endl;
+					currentFigure->m_Nation()->m_destroyFigure(currentFigure);
+					std::cout<<"deleting complete of "<<currentFigure->m_FigureType()<<std::endl;
+					goto whilebegin;
+				}
+			}
+		}
 	}
+		destructorend: std::cout<<"Ship-Destruktor Ende"<<std::endl;
 }
 
 void Ship::m_finishMove(){
@@ -66,8 +99,10 @@ void Ship::m_finishMove(){
 	m_nationality->m_removeFromQueue(shared_from_this());
 	if(m_FigureType()==TRIREME){
 		bool lostAtSea = theGame->m_getRandomNumberBetween(0, 1) == 0;
-		if(lostAtSea)
+		if(lostAtSea){
 			m_nationality->m_destroyFigure(shared_from_this());
+
+		}
 	}
 	return;
 }
