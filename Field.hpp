@@ -32,7 +32,7 @@ protected:
 	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
 	Layer m_layer;
 	bool m_hasSpecialResource = false;
-	std::shared_ptr<DrawingElement> m_drawingElement;
+	std::shared_ptr<ImmovableDrawingElement> m_drawingElement;
 	int m_x;
 	int m_y;
 	bool m_isIrrigated = false;
@@ -51,7 +51,7 @@ public:
 	Field(int x, int y, Layer layer, bool hasSpecialResource = false);
 	int m_X() const;
 	int m_Y() const;
-	std::shared_ptr<DrawingElement> m_DrawingElement();
+	std::shared_ptr<ImmovableDrawingElement> m_DrawingElement();
 	void m_takeFigure(std::shared_ptr<Figure> movingFigure);
 	void m_releaseFigure(std::shared_ptr<Figure> movingFigure);
 	virtual MovementPoints m_movementPoints() =0;
@@ -78,6 +78,8 @@ public:
 	void m_drawField();
 	friend std::ostream& operator<<(std::ostream&, Field&);
 	friend class FieldContainer;
+	friend class City;
+	friend class Game;
 	friend class Settlers;
 };
 std::ostream& operator<<(std::ostream& os, Landscape ls);

@@ -27,10 +27,10 @@ class City;
 
 class Citizen{
 public:
-	Citizen(std::shared_ptr<City> home, std::shared_ptr<Field> whereToWork = nullptr);
+	Citizen(City& home, std::shared_ptr<Field> whereToWork = nullptr);
 	std::shared_ptr<Field> m_whereItWorks;
 	CitizenState m_state;
-	std::shared_ptr<City> m_home;
+	City& m_home;
 	CitizenState m_changeState();
 };
 
@@ -48,9 +48,13 @@ private:
 	std::vector<std::shared_ptr<TradeRoute>> m_tradeRoutes;
 
 public:
+	bool m_takeFigure(std::shared_ptr<Figure> figureToTake);
+	bool m_releaseFigure(std::shared_ptr<Figure> figureToRelease);
 	City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNation, std::string name);
 	virtual ~City();
-
+	int m_drawCity(int x, int y, SDL_Renderer* renderer = theRenderer);
+	int m_drawCityName(int x, int y,SDL_Renderer* renderer);
+	std::string m_Name(){return this->m_name;}
 };
 
 #endif /* CITY_HPP_ */

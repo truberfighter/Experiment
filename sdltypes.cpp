@@ -16,16 +16,19 @@ int Texture::m_Height(){ return m_height;}
 SDL_Texture* Texture::theTexture(){return m_theTexture;}
 MovementPoints MOVE_PROHIBITED = -2;
 MovementPoints FIGHT_IS_COMING = -1;
-TTF_Font* theFont = nullptr;
+TTF_Font* theFont = nullptr; TTF_Font* citySizeFont = nullptr;
 Figure* figureToDraw = nullptr;
 Field* fieldToDraw = nullptr;
-SDL_Color whiteColor{25, 25, 250};
+SDL_Color whiteColor{250, 250, 250};
 SDL_Color blackColor{0,0,0};
 SDL_Color brownColor{130,80,0};
 SDL_Color infoTextColor{0,0,0};
 SDL_Color infoTextBackgroundColor{125,125,140};
+SDL_Color Graphics::Civ::cityNameColor(){return SDL_Color{30,200,200};}
+SDL_Color Graphics::Civ::cityOccupiedColor(){return blackColor;}
 
-Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000, SIDETEXT_LAYER = 2000;
+
+Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000, SIDETEXT_LAYER = 2000, CITY_LAYER = 1500;
 DrawState Graphics::m_whatsUpDrawingwise = NOT_IN_ANY_DRAWING;
 int modulo (const int& i, const int& j){
 	if(j <= 0)

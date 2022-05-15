@@ -39,6 +39,7 @@ public:
 	int m_activeFiguresSize(){return m_activeFigures.size();}
 	int m_queueSize(){return m_activeFigures.size();}
 	std::string m_colorString();
+	static SDL_Color standardNationColor(Nationality nationalityToDraw);
 };
 
 inline GovernmentType Nation::m_Government(){

@@ -3,6 +3,7 @@
 #include "sdltypes.hpp"
 #include "Field.hpp"
 #include "EventHandler.hpp"
+#include "City.hpp"
 
 FigureCategory Ship::m_FigureCategory(){
 	return SEA;
@@ -43,13 +44,8 @@ bool Ship::m_takeOrder(char order){
 		m_finishMove();
 		return true;
 	}
-	case 'h': {
-		if(m_whereItStands->m_CityContained()){
-			m_home = m_whereItStands->m_CityContained();
-			return true;
-		}
-		return false;
-	}
+	case 'h': return m_homeCity();
+	default: return false;
 }
 }
 

@@ -101,6 +101,7 @@ void Window::m_InitWindowSurface(){
 		}
 	}
 	currentDrawing.m_draw();
+
 }
 
 

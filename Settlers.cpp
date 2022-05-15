@@ -9,6 +9,7 @@
 #include "movableThing.hpp"
 #include "GameMain.hpp"
 #include "Figure.hpp"
+#include "City.hpp"
 
 using namespace std;
 
@@ -65,10 +66,10 @@ bool Settlers::m_takeOrder(char order){
 	switch(order){
 	case 's': return m_sentry();
 	case 'r': return m_whereItStands->m_road(*this);
-	case 'h': {if(m_whereItStands->m_cityContained){m_home = m_whereItStands->m_CityContained(); return true;}return false;}
-	case 'i': return m_whereItStands->m_Irrigate(*this);
+	case 'h': return m_homeCity();
 	case 'm': return m_whereItStands->m_Mining(*this);
 	case ' ': {m_finishMove(); return true;}
+	case 'b': {return (!m_whereItStands->m_CityContained() ? m_startFoundingNewCity() : false);}
 	default: return false;
 	}
 }
@@ -136,3 +137,82 @@ STRENGTH_OF Settlers WHEN_ATTACKING(1)
 STRENGTH_OF Settlers WHEN_DEFENDING(WEAK)
 THE_END_OF_TURN_FOR Settlers GOES_UNEVENTFUL
 NORMAL_MOVING(Settlers)
+SHIELD_COST(Settlers, 40)
+
+bool Settlers::m_startFoundingNewCity(){
+	if(m_whereItStands->m_Landscape()==OCEAN){
+		return false;
+	}
+	std::string cityNameSuggestion = "Some city";
+	SDL_StartTextInput();
+	SDL_SetRenderDrawColor(theRenderer, whiteColor.r, whiteColor.g, whiteColor.b, whiteColor.a);
+	bool ready = false;
+	SDL_Surface* mainTextSurface = TTF_RenderText_Shaded(theFont, "Enter city name:", blackColor, whiteColor);
+	SDL_Texture* mainTextTexture = SDL_CreateTextureFromSurface(theRenderer, mainTextSurface);
+	SDL_Rect fillingRect{FIGURE_INFO_WIDTH, (SCREEN_HEIGHT -mainTextSurface->h)/2,mainTextSurface->w,mainTextSurface->h, };
+	SDL_RenderCopy(theRenderer, mainTextTexture,NULL,&fillingRect);
+	SDL_RenderPresent(theRenderer);
+	fillingRect.y+=fillingRect.h;
+	SDL_Event currentEvent;
+	while(!ready){
+		bool renderText = false;
+		while(SDL_PollEvent(&currentEvent)!=0){
+			if(currentEvent.type == SDL_QUIT){
+				std::cout<<"uncontained closing failure!"<<std::endl;
+				class except: public std::exception{
+				public: char* what(){return "Uncontained closing failure!";}
+				};
+				throw(except());
+			}
+			else if(currentEvent.type == SDL_KEYDOWN){
+				if(currentEvent.key.keysym.sym==SDLK_BACKSPACE && cityNameSuggestion.length()>0){
+					cityNameSuggestion.pop_back();
+					renderText = true;
+				}
+				if(currentEvent.key.keysym.sym==SDLK_ENTER_KEY){
+					ready = true;
+				}
+			}
+			else if(currentEvent.key.keysym.sym == SDLK_c && (SDL_GetModState() & KMOD_CTRL) )
+				{
+					SDL_SetClipboardText( cityNameSuggestion.c_str() );
+				}
+				//Handle paste
+				else if(currentEvent.key.keysym.sym == SDLK_v && (SDL_GetModState() & KMOD_CTRL) )
+				{
+					cityNameSuggestion = SDL_GetClipboardText();
+					renderText = true;
+				}
+				else if(currentEvent.type == SDL_TEXTINPUT && cityNameSuggestion.length()<MAX_CITY_NAME_LENGTH){
+					//Not copy or pasting, taken from lazyfoo
+					if( !(( SDL_GetModState() & KMOD_CTRL) && ( currentEvent.text.text[ 0 ] == 'c' || currentEvent.text.text[ 0 ] == 'C' || currentEvent.text.text[ 0 ] == 'v' || currentEvent.text.text[ 0 ] == 'V' ) ) ){
+						cityNameSuggestion += currentEvent.text.text;
+						renderText = true;
+					}
+				}
+			if(renderText){
+				SDL_RenderFillRect(theRenderer, &fillingRect);
+				if(cityNameSuggestion != ""){
+					SDL_Surface* cityNameSuggestionSurface = TTF_RenderText_Solid(theFont, cityNameSuggestion.c_str(), blackColor);
+					SDL_Texture* cityNameSuggestionTexture = SDL_CreateTextureFromSurface(theRenderer, cityNameSuggestionSurface);
+					fillingRect.w = cityNameSuggestionSurface->w;
+					SDL_RenderFillRect(theRenderer, &fillingRect);
+					SDL_RenderCopy(theRenderer,cityNameSuggestionTexture,nullptr,&fillingRect );
+					SDL_RenderPresent(theRenderer);
+					SDL_DestroyTexture(cityNameSuggestionTexture);
+					SDL_FreeSurface(cityNameSuggestionSurface);}
+			}
+		}
+
+	}
+
+	SDL_DestroyTexture(mainTextTexture);
+	SDL_FreeSurface(mainTextSurface);
+	m_foundNewCity(cityNameSuggestion);
+}
+
+std::shared_ptr<City> Settlers::m_foundNewCity(std::string name){
+	m_whereItStands->m_cityContained = std::make_shared<City>(m_whereItStands, m_nationality, name);
+	m_nationality->m_destroyFigure(shared_from_this());
+	return m_whereItStands->m_CityContained();
+}

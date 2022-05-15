@@ -20,6 +20,7 @@ Ocean::Ocean(int x, int y, bool hasSpecialResource)
 :Field(x,y,STANDARD_FIELD_LAYER), m_hasSpecialResource(hasSpecialResource)
 {
 	m_drawingElement = std::make_shared<ImmovableDrawingElement>(theRenderer, fieldTextures[OCEAN], x, y, STANDARD_FIELD_LAYER);
+	m_drawingElement->m_setField(this);
 }
 
 Ocean::~Ocean(){

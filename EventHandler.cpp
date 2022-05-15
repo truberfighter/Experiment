@@ -40,6 +40,7 @@ void EventHandler::m_showFigureInfo(){
 		}
 		else{
 			SDL_Surface* surface = TTF_RenderText_Blended(theFont, temporaryString.c_str(), whiteColor);
+			std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
 				SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, surface);
 				SDL_Rect theRect{0, whereToPlaceYCoordinate, surface->w, surface->h};
 				SDL_RenderCopy(theRenderer, texture, NULL, &theRect);
@@ -50,6 +51,7 @@ void EventHandler::m_showFigureInfo(){
 				SDL_FreeSurface(surface);
 		}
 	}
+	std::cout<<"lol"<<stringOfInterest.length()<<std::endl;
 	//std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
 
 }
@@ -75,10 +77,10 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 			std::cout<<"No EventHandling found!"<<std::endl;
 			NO_EVENT_HANDLING_FOUND
 		}
-		std::cout<<"\n currentNation: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
 		m_setWhatToMove(theGame->m_getCurrentFigure());
 		m_currentDrawing->m_draw();
 		m_showFigureInfo();
+		std::cout<<"\n currentNatiodn: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
 		for(std::shared_ptr<Nation> nationToPrint: theGame->m_NationsPlaying()){
 			std::cout<<nationToPrint->m_Nation()<<": "<<nationToPrint->m_activeFiguresSize()<<" active figures; "<<nationToPrint->m_Figures().size()<<" figures in general"<<std::endl;
 		}
@@ -113,11 +115,12 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 		}
 	}
 
-	char orders[]={'s', 'r', ' '};
-	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r, SDLK_SPACE};
+	char orders[]={'s', 'r', ' ', 'h','b'};
+	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r, SDLK_SPACE,SDLK_h, SDLK_b};
 	if(m_whatToMove){
-	for(int i = 0; i<3; i++){
+	for(int i = 0; i<5; i++){
 		if(keyCode == keyCharPossibilities[i]){
+			try{
 			if(m_whatToMove->m_takeOrder(orders[i])){
 				m_whatToMove->m_setInstructionsForDrawingElement();
 				m_currentDrawing->m_draw();
@@ -125,7 +128,11 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 
 			else
 				std::cout<<"Move failed for KeyCode for "<<orders[i]<<std::endl;
-		return true;
+			return true;
+		}
+		catch(CityFounded& f){
+			return true;
+		}
 		}
 	}
 }

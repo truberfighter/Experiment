@@ -14,6 +14,7 @@
 #include <sstream>
 #include "Nation.hpp"
 #include "Ship.hpp"
+#include "City.hpp"
 
 using namespace std;
 
@@ -73,8 +74,8 @@ bool Figure::m_sentry(){
 }
 //Start a turn. Sentried units are kinda ignored for the first part.
 bool Figure::m_startMove(bool activateSentried){
-	cout<<"Figure::m_startMove: figureState = ";
-	cout<<m_figureState; cout<<", nationality = "<<m_nationality->m_Nation()<<", this = "<<this<<std::endl;
+	cout<<"Figure::m_startMove: figureState = " ;
+	cout<<m_figureState; cout<<", nationality = "<<m_nationality->m_Nation()<<"m_figureType = "<<m_FigureType()<<", this = "<<this<<std::endl;
 	switch(m_figureState){
 	case DONE_WITH_TURN:{
 	activate:	m_resetMovementPoints();
@@ -434,6 +435,9 @@ std::string Figure::m_figureOverview(){
 	if(!m_home){
 		theStringstream<<"NONE";
 	}
+	else{
+		theStringstream<<m_home->m_Name();
+	}
 	theStringstream.flush();
 	return theStringstream.str();
 }
@@ -441,4 +445,16 @@ std::string Figure::m_figureOverview(){
 void Figure::m_drawFigureSomewhere(int row, int column){
 	m_image->m_drawNew(row, column);
 	m_drawFigureState(row,column,theRenderer);
+}
+
+bool Figure::m_homeCity(){
+if(m_whereItStands->m_CityContained()){
+			if(m_home){
+				m_home->m_releaseFigure(shared_from_this());
+			}
+			m_home = m_whereItStands->m_CityContained();
+			m_home->m_takeFigure(shared_from_this());
+			return true;
+		}
+		return false;
 }

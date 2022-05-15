@@ -23,6 +23,7 @@ public:
 	~Trireme();
 	float m_attackingStrength();
 	float m_defensiveStrength();
+	int m_shieldCost();
 	short unsigned int m_visibilityRange();
 	short unsigned int m_defaultMovementPoints();
 	std::shared_ptr<MovableThing> m_createImage() override;

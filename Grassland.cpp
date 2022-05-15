@@ -13,6 +13,7 @@ Grassland::Grassland(int x, int y, bool hasShield)
 :Field(x,y,STANDARD_FIELD_LAYER), m_hasShield(false)
 {
 	m_drawingElement = std::make_shared<ImmovableDrawingElement>(theRenderer, fieldTextures[GRASSLAND], x, y, STANDARD_FIELD_LAYER);
+	m_drawingElement->m_setField(this);
 }
 
 Grassland::~Grassland(){

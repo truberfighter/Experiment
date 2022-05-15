@@ -21,7 +21,7 @@ enum{SDLK_1_DOWN_LEFT = 1073741913, SDLK_2_DOWN = SDLK_1_DOWN_LEFT + 1, SDLK_3_D
 };
 enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 24};
 enum CitizenState{HAPPY=13,CONTENT=26,UNHAPPY=39,TAX_COLLECTOR=65,ENTERTAINER=52,SCIENTIST=78};
-typedef int Layer; extern Layer STANDARD_LAYER, STANDARD_FIELD_LAYER, STANDARD_FIELD_MODIFICATOR_LAYER, SIDETEXT_LAYER;
+typedef int Layer; extern Layer CITY_LAYER, STANDARD_LAYER, STANDARD_FIELD_LAYER, STANDARD_FIELD_MODIFICATOR_LAYER, SIDETEXT_LAYER;
 enum FigureCategory{GROUND, SEA, FLIGHT};
 enum FigureType{SETTLERS, MILITIA, TRANSPORT, SAIL, CARRIER, TRIREME, DIPLOMAT, CARAVAN};
 enum FightResult{ATTACKER_LOSES, DEFENDER_LOSES, KAMIKAZE};
@@ -49,6 +49,7 @@ enum{STANDARD_LINE_THICKNESS = STANDARD_FIELD_SIZE / 8, INFO_TEXT_X = 200, INFO_
 enum{FIGURE_INFO_WIDTH = SCREEN_WIDTH/5, FIGURE_INFO_HEIGHT = 160, FIGURE_INFO_FONT_SIZE = SCREEN_WIDTH/30, FIGURE_INFO_Y = SCREEN_HEIGHT*4/10};
 enum DrawState {NOT_IN_ANY_DRAWING, BLINKING, NORMAL_DRAWING, SOMETHING_OTHER};
 enum BlinkingTime{STANDARD_BLINKING_INTERVAL_TIME = 1500};
+enum{MAX_CITY_NAME_LENGTH = 12};
 typedef bool BlinkingState;
 constexpr BlinkingState VISIBLE(){return true;}
 constexpr BlinkingState INVISIBLE(){return false;}
@@ -158,6 +159,10 @@ public:
 	std::string what(){return "Fight";}
 };
 
+class CityFounded{
+
+};
+
 namespace Graphics{
 int drawSquareLines(SDL_Renderer*, int, int, SDL_Color);
 int drawSquareStarLines(SDL_Renderer*, int, int, SDL_Color);
@@ -165,6 +170,10 @@ int drawThickerDiagonalLineDown(SDL_Renderer* renderer, int x, int y,  int thick
 int drawThickerHorizontalLine(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 int drawThickerVerticalLine(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 int drawThickerDiagonalLineUp(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
+namespace Civ{
+SDL_Color cityNameColor();
+SDL_Color cityOccupiedColor();
+}
 extern DrawState m_whatsUpDrawingwise;
 };
 
@@ -172,7 +181,7 @@ char getSettlersOrder(SettlersWork work);
 
 std::ostream& operator<<(std::ostream& os, Nationality nationality);
 
-extern TTF_Font* theFont;
+extern TTF_Font* theFont, *citySizeFont;
 extern SDL_Color whiteColor, blackColor, brownColor, infoTextColor, infoTextBackgroundColor;
 extern Figure* figureToDraw;
 extern Field* fieldToDraw;

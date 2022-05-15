@@ -14,7 +14,6 @@
 #include <stdexcept>
 #include "LetterTextureContainer.hpp"
 
-
 class Field;
 class Nation;
 class City;
@@ -41,6 +40,7 @@ public:
 	virtual ~Figure();
 	virtual FigureType m_FigureType() = 0;
 	void m_move(Direction whereToGo);
+	std::shared_ptr<City> m_Home(){return m_home;}
 	virtual bool m_takeOrder(char order)=0;
 	virtual std::string m_orderOverview()=0;
 	std::string m_figureOverview();
@@ -70,7 +70,9 @@ public:
 	void m_drawFigure(BlinkingState blinkingState = VISIBLE());
 	void m_drawFigureSomewhere(int row, int column);
 	bool m_IsVeteran();
+	virtual int m_shieldCost() = 0;
 	std::shared_ptr<Nation> m_Nation(){return m_nationality;}
+	bool m_homeCity();
 };
 
 inline bool Figure::m_IsVeteran(){return m_isVeteran;}
@@ -86,6 +88,7 @@ class TurnEndsTooEarly{
 #define IS_NORMAL_VISIBILITY ::m_visibilityRange(){return 1;}
 #define WEAK 1/1000000
 #define THE_END_OF_TURN_FOR void
+#define SHIELD_COST(CLASS, COST) int CLASS::m_shieldCost(){return COST;}
 #define ONE_MOVEMENT_POINT 3
 #define GOES_UNEVENTFUL ::m_finishMove(){std::cout<<"m_finishMove(), x = "<<m_image->getPosition().x<<", y = "<<m_image->getPosition().y<<std::endl;\
 	m_figureState = DONE_WITH_TURN; \

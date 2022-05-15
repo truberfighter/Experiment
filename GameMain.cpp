@@ -57,6 +57,7 @@ void GameMain::m_initGame(){
 	IMG_Init(imgflags);
 	TTF_Init();
 	theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 15);
+	citySizeFont = TTF_OpenFont("Fonts/FT88-Regular.ttf",35);
 	fieldTextures = new shared_ptr<Texture>[30];
 	Window* theWindow = new Window ("Game Main, Window 0", SCREEN_WIDTH, SCREEN_HEIGHT);
 	m_currentRenderer = theRenderer = theWindow->m_Renderer();

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <random>
 #include <functional>
+#include "City.hpp"
 
 class
 
@@ -41,6 +42,9 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 			std::make_shared<Trireme>(fieldPointer->m_getNeighbouringField(LEFT), nationPointer);
 			nation.m_addFigure(theTriremePointer);
 			fieldPointer->m_getNeighbouringField(LEFT)->m_takeFigure(theTriremePointer);
+			std::stringstream stream; stream<<"City of "<<nation.m_Nation();stream.flush();
+			std::cout<<"stream: "<<stream.str();
+	fieldPointer->m_cityContained = std::make_shared<City>(fieldPointer, m_nationsPlaying[0], stream.str());
 		}
 	}
 }
@@ -52,8 +56,16 @@ Game::Year::Year(unsigned int yearNumberRaw):m_yearNumberRaw(yearNumberRaw)
 
 //New turn
 void Game::m_startNewTurn(){
-	int temp = m_nationAtCurrentTurnIndex;;
+	int temp = m_nationAtCurrentTurnIndex;
 	try{std::cout<<"Nationcount: "<<m_nationsPlaying.size()<<std::endl;
+	for(std::shared_ptr<Figure> currentFigureToCheck: m_NationAtCurrentTurn()->m_Figures()){
+		if(currentFigureToCheck->m_FigureState()==MOVING){
+			throw(TurnEndsTooEarly());
+		}
+	}
+	if(m_NationAtCurrentTurn()->m_activeFiguresSize()!=0){
+		throw(TurnEndsTooEarly());
+	}
 	(++m_nationAtCurrentTurnIndex)%= (m_nationsPlaying.size());
 	m_NationAtCurrentTurn()->m_startNewTurn();
 	if(m_nationAtCurrentTurnIndex==0){

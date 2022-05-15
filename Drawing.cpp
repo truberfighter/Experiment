@@ -165,6 +165,9 @@ int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnSh
 		if(it->m_draw(rowShift, columnShift, renderer) == true){
 			//std::cout<<"draw this = "<<it<<std::endl;
 			whatToReturn--;
+			if(whatToReturn % 200 == 0){
+				SDL_RenderPresent(theRenderer);
+			}
 		}
 	}
 	return whatToReturn + (
@@ -203,7 +206,7 @@ void Drawing::m_putOver(shared_ptr<DrawingElement>& drElToUpdate, Layer layer){
 //list<DrawingElement*>::iterator whereToErase = m_drawingList.begin();
 m_drawingList.remove_if([&drElToUpdate](shared_ptr<DrawingElement> drawEl){bool whatToReturn = drawEl.get() == drElToUpdate.get();  return whatToReturn;});
 list<std::shared_ptr<DrawingElement>>::iterator whereToInsert;
-cout<<"m_putOver";
+//cout<<"m_putOver";
 for(whereToInsert= m_drawingList.begin(); whereToInsert != m_drawingList.end(); whereToInsert++){
 		if((*whereToInsert)->m_getLayer() <= layer){
 			continue;
@@ -277,7 +280,7 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 			cout<<"No SDL_texture in the texture!"<<endl;
 		}
 		if(SDL_RenderCopy(renderer, m_texture->theTexture(), NULL, &rect)!=0){
-			cout<<"SDL_Error: %s\n"<<SDL_GetError()<<endl;
+			//cout<<"SDL_Error: %s\n"<<SDL_GetError()<<endl;
 			return 0;
 		}
 		//SDL_RenderPresent(m_renderer);
@@ -288,7 +291,7 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 		//SDL_Delay(STANDARD_DRAWING_TIME);
 		if(m_Draw){
 			if(m_Draw(m_rowWhereLastDrawn, m_columnWhereLastDrawn, renderer)==0)
-				return 0;
+				return 1;
 		}
 		return 1;
 
@@ -317,14 +320,16 @@ LambdaDrawingElement::~LambdaDrawingElement(){
 void DrawingElement::m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Renderer*)){
 	cout<<"m_setAdditionalInstructions"<<m_Draw<<" for this = "<<this<<endl;
 this->m_Draw = *Draw;
-	m_draw(0,0,theRenderer);
+	//m_draw(0,0,theRenderer);
 }
 
 void DrawingElement::m_drawAsRemembered(SDL_Renderer* renderer){
 	SDL_Renderer* rendererToUse = (renderer ? renderer : (m_renderer ? m_renderer : theRenderer));
 	m_updatePosition();
-	if(m_draw(m_rowWhereLastDrawn - m_row, m_columnWhereLastDrawn - m_column, rendererToUse) != 1)
+	if(int a = m_draw(m_rowWhereLastDrawn - m_row, m_columnWhereLastDrawn - m_column, rendererToUse) != 1){
+		std::cout<<"returned value of "<<a<<std::endl;
 		throw(DrawingFail("Blinking goes wrong!"));
+	}
 }
 
 

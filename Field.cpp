@@ -29,7 +29,7 @@ int Field::m_X() const{return m_x;}
 
 int Field::m_Y() const {return m_y;}
 
-std::shared_ptr<DrawingElement> Field::m_DrawingElement(){return m_drawingElement;}
+std::shared_ptr<ImmovableDrawingElement> Field::m_DrawingElement(){return m_drawingElement;}
 
 RoadStatus Field::m_RoadStatus(){
 	return m_roadStatus;
@@ -240,6 +240,7 @@ void Field::m_drawField(){
 	m_drawingElement->m_drawAsRemembered(theRenderer);
 	}
 	catch(DrawingFail& theDrawingFail){
+		std::cout<<"catch in field"<<std::endl;
 		throw(theDrawingFail);
 	}
 }

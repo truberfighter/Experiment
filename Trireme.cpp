@@ -10,6 +10,7 @@ STRENGTH_OF Trireme WHEN_ATTACKING(1)
 STRENGTH_OF Trireme WHEN_DEFENDING(WEAK)
 DEFAULT_MOVING_POINTS(Trireme, 3)
 CARGO_COUNT_MAX(Trireme, 2)
+SHIELD_COST(Trireme, 40)
 
 std::shared_ptr<MovableThing> Trireme::m_createImage(){
 	int x = m_whereItStands->m_X(), y  = m_whereItStands->m_Y();

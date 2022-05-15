@@ -19,6 +19,7 @@ private:
 	short int m_workStepsCount;
 	SettlersWork m_currentWork = NONE;
 public:
+	bool m_startFoundingNewCity();
 	FigureType m_FigureType() override;
 	void m_loseOneWorkPoint();
 	Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
@@ -37,9 +38,10 @@ public:
 	void m_finishMove() override;
 	short unsigned int m_defaultMovementPoints();
 	FigureCategory m_FigureCategory()override;
-	void m_foundNewCity(std::string name);
+	std::shared_ptr<City> m_foundNewCity(std::string name);
 	void m_addToCity(std::string name);
 	std::shared_ptr<MovableThing> m_createImage() override;
+	int m_shieldCost();
 	bool m_canBuildRailroad();
 	bool m_canBuildBridges();
 };

@@ -9,6 +9,7 @@
 #include "sdltypes.hpp"
 #include <string>
 #include "FieldContainer.hpp"
+#include "City.hpp"
 
 using namespace std;
 
@@ -119,7 +120,12 @@ bool Nation::m_addToQueue(std::shared_ptr<Figure> newFigure){
 
 void Nation::m_startNewTurn(){
 	try{
-	this->m_activeFigures = std::list<std::shared_ptr<Figure>>();
+		for(std::shared_ptr<Figure>& currentFigureToCheck : m_figures){
+			if(currentFigureToCheck->m_FigureState()==MOVING){
+				throw(TurnEndsTooEarly());
+			}
+		}
+	m_activeFigures = std::list<std::shared_ptr<Figure>>();
 	cout<<"Nation::m_startNewTurn(), m_figures.size() = "<<m_figures.size()<<", m_activeFiguresSize = "<<m_activeFigures.size()<<std::endl;
 	for(std::shared_ptr<Figure>& currentFigure : m_figures){
 		if(!currentFigure->m_startMove()){
@@ -144,14 +150,19 @@ void Nation::m_startNewTurn(){
 bool Nation::m_destroyFigure(std::shared_ptr<Figure> figureToRemove){
 	std::cout<<"m_destroyFigure: figure.this = "<<figureToRemove<<std::endl;
 	figureToRemove->m_WhereItStands().m_releaseFigure(figureToRemove);
+	if(figureToRemove->m_Home()){
+		if(!figureToRemove->m_Home()->m_releaseFigure(figureToRemove))
+			throw 1111;
+	}
 	int previousListSize = m_figures.size();
 	m_activeFigures.remove(figureToRemove);
 	for(int i(0); i<previousListSize; i++){
 		if(m_figures[i].get()==figureToRemove.get()){
 			for(int j=i; j<previousListSize - 1; j++){
-				m_figures[i] = m_figures[i+1];
+				m_figures[j] = m_figures[j+1];
 			}
-					}
+			break;
+		}
 	}
 	m_figures.pop_back();
 	std::cout<<"previousListSize (destroyFigure): "<<previousListSize<<", listSize: "<<m_figures.size()<<std::endl;
@@ -190,4 +201,41 @@ std::string Nation::m_colorString(){
 		return "FrenchGerman.png";
 	}
 	return "Some mistake!";
+}
+
+SDL_Color Nation::standardNationColor(Nationality nationalityToDraw){
+	switch(nationalityToDraw){
+	case ROMAN:
+		return SDL_Color{170,170,170};
+	case RUSSIAN:
+		return SDL_Color{220,220,220};
+	case BABYLONIAN:
+		return SDL_Color{0,255,0,0};
+	case ZULU:
+		return SDL_Color{0,255,0,0};
+	case EGYPTIAN:
+		return SDL_Color{120,255,30,0};
+	case AZTEC:
+		return SDL_Color{120,255,30,0};
+	case MONGOL:
+		return SDL_Color{50,40,50,0};
+	case INDIAN:
+		return SDL_Color{50,40,50,0};
+	case AMERICAN:
+		return SDL_Color{0,30,255,0};
+	case CHINESE:
+		return SDL_Color{0,30,255,0};
+	case ENGLISH:
+		return SDL_Color{180,20,80,0};
+	case GREEK:
+		return SDL_Color{180,20,80,0};
+	case FRENCH:
+		return SDL_Color{0,0,255,0};
+	case GERMAN:
+		return SDL_Color{0,0,255,0};
+	case BARBARIAN:
+		return SDL_Color{255,0,0,0};
+	}
+	//This color should NEVER appear
+	return SDL_Color{100,0,100,0};
 }
