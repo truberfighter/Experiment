@@ -223,5 +223,10 @@ std::ostream& operator<<(std::ostream& os, MovementPoints mp){
 	if(mp.m_movementPoints<0)os<<"MOVE PROHIBITED!";
 	return os;
 }
+Coordinate Coordinates::leftCornerCoordinate(){return Coordinate(leftCornerX(),leftCornerY());}
 
-
+std::ostream & operator <<(std::ostream & os, Coordinate & co)
+{
+	os << "(" << co.x << "," << co.y << ")";
+	return os;
+}

@@ -1,0 +1,9 @@
+city growing
+city shrinking
+shield and food system
+special resources
+improvements -> wonders
+technology
+scrolling
+clicking at some unit
+discovering

@@ -77,12 +77,11 @@ void GameMain::m_initGame(){
 	cout<<"Kevin"<<endl;
 	theWindow->m_InitWindowSurface();
 	someDrawing = theWindow->m_CurrentDrawing();
-	//someDrawing->m_draw();
+	m_setCurrentDrawing(someDrawing);
+//someDrawing->m_draw();
     	//SDL_RenderPresent(m_currentRenderer);
 	//SDL_Delay(2000);
-	cout<<"m_initInfoDrawing"<<std::endl;
-	m_initInfoDrawing();
-	cout<<"m_initInfoDrawing"<<std::endl;
+
 }
 
 void GameMain::m_createFieldTexture(Landscape ls, string filename){
@@ -116,7 +115,6 @@ void GameMain::m_initInfoDrawing(){
 	0,FIGURE_INFO_Y,STANDARD_LAYER + 50);
 	m_currentFigureInfo->m_add(rectPointer);
 	auto& r = m_currentFigureInfo;
-	m_setCurrentDrawing(someDrawing);
 	//cout<<m_currentFigureInfo<<std::endl;
 	m_currentDrawing->m_add(r);
 }
@@ -213,4 +211,19 @@ void GameMain::m_makeBlinkingStep(){
 	//change blinking state
 	m_currentBlinkingState = !m_currentBlinkingState;
 	m_whatToMove->m_drawFigure(m_currentBlinkingState);
+}
+
+bool GameMain::m_scrollAfterClick(const SDL_MouseButtonEvent& currentEvent){
+	std::cout<<"Mouse leftclicked on Board: x = "<<currentEvent.x<<", y = "<<currentEvent.y<<", topLeftCorner: "<<m_topLeftCorner<<std::endl;
+	if(currentEvent.x > Coordinates::leftCornerX() && currentEvent.y > Coordinates::leftCornerY() && currentEvent.x < SCREEN_WIDTH && currentEvent.y < SCREEN_HEIGHT){
+		//Centralize around the clicked spot
+	m_topLeftCorner.x = xModulo(m_topLeftCorner.x + currentEvent.x - (SCREEN_WIDTH + Coordinates::leftCornerX())/2);
+	m_topLeftCorner.y = m_topLeftCorner.y + currentEvent.y - (SCREEN_HEIGHT + Coordinates::leftCornerY())/2;
+		//Scroll pole hit
+	m_topLeftCorner.y = max(-3*STANDARD_FIELD_SIZE,m_topLeftCorner.y);
+	m_topLeftCorner.y = min(m_topLeftCorner.y, WORLD_HEIGHT*STANDARD_FIELD_SIZE - SCREEN_HEIGHT + 3*STANDARD_FIELD_SIZE);
+	std::cout<<"scrolling done"<<std::endl;
+	return true;
+	}
+	return false;
 }

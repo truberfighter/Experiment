@@ -11,8 +11,12 @@
 #include "Settlers.hpp"
 #include <queue>
 
+class City;
+
 class Nation: public std::enable_shared_from_this<Nation>{
 private:
+
+	std::vector<std::shared_ptr<City>> m_cities;
 	GovernmentType m_government = DESPOTISM;
 	Nationality m_nation;
 	std::string m_leaderName;
@@ -20,6 +24,7 @@ private:
 	std::list<std::shared_ptr<Figure>> m_activeFigures;
 	bool m_directlyMakingFiguresActive = false;
 public:
+	std::vector<std::shared_ptr<City>> m_Cities(){return m_cities;}
 	~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 	static Coordinate getStandardCoordinateForNation(Nationality n);
 	Nation(Nationality n = ROMAN, std::string leaderName = "", bool directlyMakingFiguresActive = false);

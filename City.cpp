@@ -9,9 +9,9 @@
 #include "Settlers.hpp"
 #include "Field.hpp"
 #include "Drawing.hpp"
+#include "Game.hpp"
 
 City::~City() {
-	m_whereItStands->m_DrawingElement()->m_climbToTop(CITY_LAYER);
 	// TODO Auto-generated destructor stub
 }
 
@@ -22,6 +22,11 @@ int drawCity(int x, int y, SDL_Renderer* renderer){
 City::City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNation, std::string name)
 : m_owningNation(owningNation), m_whereItStands(whereToPlace), m_name(name)
 {
+	//Imprecise. But I do not care that much about limiting the cities right now.
+	m_whereItStands->m_DrawingElement()->m_climbToTop(CITY_LAYER);
+	if(m_owningNation->m_Cities().size()>=CITIES_PER_NATION){
+		throw(TooManyCities());
+	}
 	m_citizens.push_back(Citizen(*this,m_whereItStands->m_getNeighbouringField(UP)));
 	/*SDL_Surface* surface = SDL_CreateRGBSurface(0, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE, 8,0,0,0,0);
 	std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;

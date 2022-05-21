@@ -26,6 +26,7 @@ public:
 	std::vector<std::shared_ptr<NationTurn>> m_turns;
 };
 private:
+	std::vector<std::shared_ptr<City>> m_allCities;
 	std::random_device m_theRandomDevice;
 	std::vector<std::shared_ptr<City>> m_cities;
 	void m_beginNewYear();
@@ -34,6 +35,7 @@ private:
 	std::vector<std::shared_ptr<Nation>> m_nationsPlaying;
 	void m_startNewTurn();
 public:
+	std::vector<std::shared_ptr<City>>& m_AllCities(){return m_allCities;}
 	std::vector<std::shared_ptr<Nation>>& m_NationsPlaying(){return m_nationsPlaying;}
 	Game(std::vector<Nationality>& nationsToPlay);
 	Game(std::vector<std::shared_ptr<Nation>>& nationsToPlay);

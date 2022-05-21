@@ -16,7 +16,13 @@
 Game* theGame;
 
 void EventHandler::m_showFigureInfo(){
-		std::stringstream theStringstream;
+	SDL_Color& backgroundColor = infoTextBackgroundColor;
+	SDL_SetRenderDrawColor(theRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+	SDL_Rect rectToFill{0,FIGURE_INFO_Y,FIGURE_INFO_WIDTH, SCREEN_HEIGHT-INFO_TEXT_Y};
+	//std::cout<<"yCoordinate: rectToFill.y = " <<rectToFill.y<<", y = "<<y<<std::endl;
+	SDL_RenderFillRect(theRenderer, &rectToFill);
+
+	std::stringstream theStringstream;
 	std::string stringOfInterest = "";
 	std::list<int> f;
 	if(!m_whatToMove){
@@ -40,7 +46,6 @@ void EventHandler::m_showFigureInfo(){
 		}
 		else{
 			SDL_Surface* surface = TTF_RenderText_Blended(theFont, temporaryString.c_str(), whiteColor);
-			std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
 				SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, surface);
 				SDL_Rect theRect{0, whereToPlaceYCoordinate, surface->w, surface->h};
 				SDL_RenderCopy(theRenderer, texture, NULL, &theRect);
@@ -78,14 +83,21 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 			NO_EVENT_HANDLING_FOUND
 		}
 		m_setWhatToMove(theGame->m_getCurrentFigure());
-		m_currentDrawing->m_draw();
-		m_showFigureInfo();
+		m_drawMainDrawing();
 		std::cout<<"\n currentNatiodn: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
 		for(std::shared_ptr<Nation> nationToPrint: theGame->m_NationsPlaying()){
 			std::cout<<nationToPrint->m_Nation()<<": "<<nationToPrint->m_activeFiguresSize()<<" active figures; "<<nationToPrint->m_Figures().size()<<" figures in general"<<std::endl;
 		}
 		std::cout<<"Z.51"<<std::endl;
 		SDL_RenderPresent(theRenderer);
+	}
+	if(event.type==SDL_MOUSEBUTTONDOWN ){
+		if(event.button.button == SDL_BUTTON_LEFT){
+			if(m_scrollAfterClick(event.button)){
+				m_drawMainDrawing();
+				SDL_RenderPresent(theRenderer);
+			}
+		}
 	}
 	return false;
 }
@@ -154,4 +166,15 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 
 void EventHandler::m_setCurrentDrawing(std::shared_ptr<Drawing> drawing){
 	m_currentDrawing = drawing;
+}
+
+int EventHandler::m_drawMainDrawing(){
+	SDL_SetRenderDrawColor(theRenderer,30,30,30,0);
+	SDL_RenderClear(theRenderer);
+	int whatToReturn = 0;
+	if(m_currentDrawing)
+	whatToReturn = m_currentDrawing->m_draw(-m_topLeftCorner.x, -m_topLeftCorner.y);
+	std::cout<<"nor show figureinfo"<<std::endl;
+	m_showFigureInfo();
+	return whatToReturn;
 }

@@ -49,10 +49,11 @@ enum{STANDARD_LINE_THICKNESS = STANDARD_FIELD_SIZE / 8, INFO_TEXT_X = 200, INFO_
 enum{FIGURE_INFO_WIDTH = SCREEN_WIDTH/5, FIGURE_INFO_HEIGHT = 160, FIGURE_INFO_FONT_SIZE = SCREEN_WIDTH/30, FIGURE_INFO_Y = SCREEN_HEIGHT*4/10};
 enum DrawState {NOT_IN_ANY_DRAWING, BLINKING, NORMAL_DRAWING, SOMETHING_OTHER};
 enum BlinkingTime{STANDARD_BLINKING_INTERVAL_TIME = 1500};
-enum{MAX_CITY_NAME_LENGTH = 12};
+enum{MAX_CITY_NAME_LENGTH = 12, CITIES_PER_NATION = 15, ADDITIONAL_CITIES = 20};
 typedef bool BlinkingState;
 constexpr BlinkingState VISIBLE(){return true;}
 constexpr BlinkingState INVISIBLE(){return false;}
+
 
 typedef short unsigned int ContinentID;
 const ContinentID NO_CONTINENT_ID_GIVEN = WORLD_LENGTH*WORLD_HEIGHT;
@@ -163,6 +164,10 @@ class CityFounded{
 
 };
 
+class TooManyCities{
+
+};
+
 namespace Graphics{
 int drawSquareLines(SDL_Renderer*, int, int, SDL_Color);
 int drawSquareStarLines(SDL_Renderer*, int, int, SDL_Color);
@@ -189,8 +194,14 @@ extern unsigned int settlersCount;
 
 std::ostream& operator<<(std::ostream& os, FigureType figureType);
 std::ostream& operator<<(std::ostream& os, MovementPoints mp);
+std::ostream& operator<<(std::ostream& os, Coordinate &co);
 
 #define PRINT_I_J 			cout<<"i = "<<i<<", j = "<<j<<endl;
 
+namespace Coordinates{
+constexpr int leftCornerX(){return FIGURE_INFO_WIDTH;}
+constexpr int leftCornerY(){return 0;}
+Coordinate leftCornerCoordinate();
+}
 
 #endif

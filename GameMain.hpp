@@ -16,6 +16,8 @@
 #include "Game.hpp"
 
 class GameMain: public EventHandler{
+protected:
+	bool m_scrollAfterClick(const SDL_MouseButtonEvent& currentEvent);
 private:
 	void doSomething();
 	std::unique_ptr<Game> m_theGame;
@@ -42,8 +44,6 @@ public:
 	void m_makeBlinkingStep();
 };
 
-extern SDL_Renderer *theRenderer;
-extern SDL_Texture *theTexture;
 extern SDL_Texture *theTexture;
 extern SDL_Event currentEvent;
 extern GameMain* theEventHandler;

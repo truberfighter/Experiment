@@ -212,7 +212,14 @@ bool Settlers::m_startFoundingNewCity(){
 }
 
 std::shared_ptr<City> Settlers::m_foundNewCity(std::string name){
+	try{
 	m_whereItStands->m_cityContained = std::make_shared<City>(m_whereItStands, m_nationality, name);
 	m_nationality->m_destroyFigure(shared_from_this());
+	theGame->m_AllCities().push_back(m_whereItStands->m_CityContained());
+	m_nationality->m_Cities().push_back(m_whereItStands->m_CityContained());
 	return m_whereItStands->m_CityContained();
+	}
+	catch(TooManyCities& exception){
+		return nullptr;
+	}
 }

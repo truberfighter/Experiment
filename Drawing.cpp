@@ -90,7 +90,7 @@ int MovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer* r
 	figureToDraw = m_figure;
 	Coordinate c = m_content->getPosition();
 	int whatToReturn = 0;
-	m_rowWhereLastDrawn = rowShift + c.x;
+	m_rowWhereLastDrawn = xModulo(rowShift + c.x);
 	m_columnWhereLastDrawn = columnShift + c.y;
 	if(renderer!=nullptr){
 		whatToReturn = m_content->m_drawNew(m_rowWhereLastDrawn, m_columnWhereLastDrawn, renderer) ? 1 : 0;
@@ -163,11 +163,9 @@ int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnSh
 	//cout<<"whatToReturn: "<<whatToReturn<<endl;
 	for(auto &it: m_drawingList){
 		if(it->m_draw(rowShift, columnShift, renderer) == true){
+			it->m_updatePosition();
 			//std::cout<<"draw this = "<<it<<std::endl;
 			whatToReturn--;
-			if(whatToReturn % 200 == 0){
-				SDL_RenderPresent(theRenderer);
-			}
 		}
 	}
 	return whatToReturn + (
@@ -269,7 +267,7 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 		//m_texture->m_Height();
 		//cout<<"m_texture ist schonmal vorhanden in ImmovableDrawingElement to draw"<<endl;
  		rect.x = xModulo(m_row+rowShift);
-		rect.y = yModulo(m_column + columnShift);
+		rect.y = m_column + columnShift;
 		//cout<<"Guenther"<<m_texture->m_Height()<<endl;
 		rect.h = m_texture->m_Height();
 		rect.w = m_texture->m_Width();

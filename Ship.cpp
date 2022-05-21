@@ -94,6 +94,12 @@ void Ship::m_finishMove(){
 	m_figureState = m_figureState == SENTRYING ? SENTRIED : (m_figureState == FORTIFIED ? COMPLETELY_FORTIFIED : DONE_WITH_TURN);
 	m_nationality->m_removeFromQueue(shared_from_this());
 	if(m_FigureType()==TRIREME){
+		Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,RIGHT, UP_LEFT, UP, UP_RIGHT};
+		for(int i(0); i<8;i++){
+			if(m_whereItStands->m_getNeighbouringField(directions[i])->m_Landscape()!=OCEAN){
+				return;
+			}
+		}
 		bool lostAtSea = theGame->m_getRandomNumberBetween(0, 1) == 0;
 		if(lostAtSea){
 			m_nationality->m_destroyFigure(shared_from_this());
