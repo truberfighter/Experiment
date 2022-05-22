@@ -24,7 +24,7 @@ class EventHandler{
 protected:
 	int m_drawMainDrawing();
 	Coordinate m_topLeftCorner = Coordinate(0,0);
-	virtual bool m_scrollAfterClick(const SDL_MouseButtonEvent& currentEvent) = 0;
+	virtual bool m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent) = 0;
 	std::shared_ptr<Figure> m_whatToMove;
 	//Direction m_directionFromKeyPressed(unsigned int keysym);
 	bool m_handleKeyboardEvent(const SDL_Event& event);

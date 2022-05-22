@@ -98,6 +98,9 @@ bool Figure::m_startMove(bool activateSentried){
 		}
 		return true;
 	}
+	case PILLAGE_IN_PROGRESS:{
+		goto activate;
+	}
 	case COMPLETELY_FORTIFIED: return true;
 	case SETTLERS_AT_WORK: {
 		if(m_FigureType()!=SETTLERS)
@@ -337,6 +340,9 @@ ostream& operator<<(ostream& os, Field& field){
 	os<<", this = ";
 	os<<&field;
 	os<<"\n";
+	if(field.m_cityContained){
+		os<<"cityContained! ";
+	}
 	if(field.m_hasSpecialResource)os<<"Special resource!\n";
 	os<<(field.m_isMined ? std::string("It's mined!") :  field.m_isIrrigated ? string("It's irrigated!") : string(""))<<"\n";
 	return os;

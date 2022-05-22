@@ -44,6 +44,7 @@ public:
 	int m_shieldCost();
 	bool m_canBuildRailroad();
 	bool m_canBuildBridges();
+	friend class Figurebutton;
 };
 
 

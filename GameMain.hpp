@@ -17,7 +17,7 @@
 
 class GameMain: public EventHandler{
 protected:
-	bool m_scrollAfterClick(const SDL_MouseButtonEvent& currentEvent);
+	bool m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent);
 private:
 	void doSomething();
 	std::unique_ptr<Game> m_theGame;

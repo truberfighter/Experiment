@@ -14,6 +14,7 @@
 #include "Window.hpp"
 #include "movableThing.hpp"
 #include "Figure.hpp"
+#include "Figurebutton.hpp"
 #include <sstream>
 
 #define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ \
@@ -213,15 +214,40 @@ void GameMain::m_makeBlinkingStep(){
 	m_whatToMove->m_drawFigure(m_currentBlinkingState);
 }
 
-bool GameMain::m_scrollAfterClick(const SDL_MouseButtonEvent& currentEvent){
+bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 	std::cout<<"Mouse leftclicked on Board: x = "<<currentEvent.x<<", y = "<<currentEvent.y<<", topLeftCorner: "<<m_topLeftCorner<<std::endl;
-	if(currentEvent.x > Coordinates::leftCornerX() && currentEvent.y > Coordinates::leftCornerY() && currentEvent.x < SCREEN_WIDTH && currentEvent.y < SCREEN_HEIGHT){
-		//Centralize around the clicked spot
+	Coordinate meantCoordinate {xModulo(m_topLeftCorner.x + currentEvent.x - Coordinates::leftCornerX()), m_topLeftCorner.y + currentEvent.y - Coordinates::leftCornerY()};
+	if(currentEvent.x > Coordinates::leftCornerX() && currentEvent.y > Coordinates::leftCornerY() && currentEvent.x < SCREEN_WIDTH && currentEvent.y < SCREEN_HEIGHT && meantCoordinate.x>=0 && meantCoordinate.y>=0){
+	if(meantCoordinate.x < WORLD_LENGTH*STANDARD_FIELD_SIZE && meantCoordinate.y<WORLD_HEIGHT*STANDARD_FIELD_SIZE){
+	std::shared_ptr<Field> fieldClickedOn = (*theContainer->m_getFieldsOfTheWorld())[meantCoordinate.x/STANDARD_FIELD_SIZE][meantCoordinate.y/STANDARD_FIELD_SIZE];
+	std::cout<<*fieldClickedOn<<std::endl;
+	if(fieldClickedOn->m_CityContained()){
+		std::cout<<"city hit!"<<std::endl;
+		return false;
+	}
+	if(!fieldClickedOn->m_FiguresOnField().empty() && fieldClickedOn->m_FiguresOnField().front()->m_Nationality() == theGame->m_NationAtCurrentTurn()->m_Nation()){
+		Figurebutton theButton(fieldClickedOn->m_FiguresOnField());
+		std::shared_ptr<Figure> figureToMove = theButton();
+		//figureToMove is not active
+		if(figureToMove==nullptr){
+			std::cout<<"Z.233, GameMain"<<std::endl;
+			return true;
+		}
+		std::cout<<"figureToMoveNow: "<<figureToMove->m_figureOverview()<<std::endl;
+		while(theGame->m_getCurrentFigure().get()!=figureToMove.get()){
+			std::cout<<"waiting"<<std::endl;
+		theGame->m_getCurrentFigure()->m_wait();
+		}
+		return true;
+	}
+	}
+
+		//Centralize arou nd the clicked spot
 	m_topLeftCorner.x = xModulo(m_topLeftCorner.x + currentEvent.x - (SCREEN_WIDTH + Coordinates::leftCornerX())/2);
 	m_topLeftCorner.y = m_topLeftCorner.y + currentEvent.y - (SCREEN_HEIGHT + Coordinates::leftCornerY())/2;
 		//Scroll pole hit
-	m_topLeftCorner.y = max(-3*STANDARD_FIELD_SIZE,m_topLeftCorner.y);
-	m_topLeftCorner.y = min(m_topLeftCorner.y, WORLD_HEIGHT*STANDARD_FIELD_SIZE - SCREEN_HEIGHT + 3*STANDARD_FIELD_SIZE);
+	m_topLeftCorner.y = max(0,m_topLeftCorner.y);
+	m_topLeftCorner.y = min(m_topLeftCorner.y, WORLD_HEIGHT*STANDARD_FIELD_SIZE - SCREEN_HEIGHT);
 	std::cout<<"scrolling done"<<std::endl;
 	return true;
 	}

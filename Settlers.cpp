@@ -158,11 +158,7 @@ bool Settlers::m_startFoundingNewCity(){
 		bool renderText = false;
 		while(SDL_PollEvent(&currentEvent)!=0){
 			if(currentEvent.type == SDL_QUIT){
-				std::cout<<"uncontained closing failure!"<<std::endl;
-				class except: public std::exception{
-				public: char* what(){return "Uncontained closing failure!";}
-				};
-				throw(except());
+				throw(SDLQuitException());
 			}
 			else if(currentEvent.type == SDL_KEYDOWN){
 				if(currentEvent.key.keysym.sym==SDLK_BACKSPACE && cityNameSuggestion.length()>0){

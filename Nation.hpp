@@ -44,6 +44,7 @@ public:
 	int m_activeFiguresSize(){return m_activeFigures.size();}
 	int m_queueSize(){return m_activeFigures.size();}
 	std::string m_colorString();
+	friend class Figurebutton;
 	static SDL_Color standardNationColor(Nationality nationalityToDraw);
 };
 

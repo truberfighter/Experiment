@@ -22,8 +22,8 @@ bool Ship::m_takeOrder(char order){
 		bool whatToReturn = false;
 		for(std::shared_ptr<Figure> currentFigure: m_getCargo()){
 			if(currentFigure->m_FigureState()==SENTRIED){
-				m_nationality->m_addToQueue(currentFigure);
 				currentFigure->m_startMove(true);
+				m_nationality->m_addToQueue(currentFigure);
 				whatToReturn = true;
 			}
 		}

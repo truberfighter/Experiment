@@ -73,6 +73,7 @@ public:
 	virtual int m_shieldCost() = 0;
 	std::shared_ptr<Nation> m_Nation(){return m_nationality;}
 	bool m_homeCity();
+	friend class Figurebutton;
 };
 
 inline bool Figure::m_IsVeteran(){return m_isVeteran;}

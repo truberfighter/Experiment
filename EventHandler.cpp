@@ -93,7 +93,8 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 	}
 	if(event.type==SDL_MOUSEBUTTONDOWN ){
 		if(event.button.button == SDL_BUTTON_LEFT){
-			if(m_scrollAfterClick(event.button)){
+			if(m_handleLeftClick(event.button)){
+				m_setWhatToMove(theGame->m_getCurrentFigure());
 				m_drawMainDrawing();
 				SDL_RenderPresent(theRenderer);
 			}

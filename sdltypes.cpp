@@ -230,3 +230,7 @@ std::ostream & operator <<(std::ostream & os, Coordinate & co)
 	os << "(" << co.x << "," << co.y << ")";
 	return os;
 }
+
+int SDL_SetRenderDrawColor(SDL_Renderer* renderer, SDL_Color& color){
+	return SDL_SetRenderDrawColor(renderer, (unsigned char) color.r,(unsigned char)color.g,(unsigned char)color.b,(unsigned char)color.a);
+}
