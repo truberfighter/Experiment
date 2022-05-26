@@ -52,7 +52,19 @@ std::cout<<"SDL_Errorstr: "<<stream.str()<<std::endl;
 
 Citizen::	Citizen(City& home, std::shared_ptr<Field> whereToWork):m_home(home)
 {
-
+	m_whereItWorks = nullptr;
+	Nation& myNation = *m_home.m_OwningNation();
+	int production = 0;
+	int temp;
+	for(std::shared_ptr<Field> currentField: m_home.m_WhereItStands()->m_cityFieldsAround()){
+		temp = currentField->m_shields(myNation) + currentField->m_trade(myNation) + currentField->m_food(myNation);
+		if(production < temp && currentField != m_home.m_WhereItStands()){
+			currentField->m_setCitizenWorking(this);
+			production = temp;
+			m_whereItWorks = currentField;
+		}
+	}
+	m_state = CONTENT;
 }
 
 int City::m_drawCity(int x, int y, SDL_Renderer* renderer){
@@ -119,3 +131,195 @@ bool City::m_takeFigure(std::shared_ptr<Figure> figureToTake){
 	return true;
 }
 
+std::vector<CitizenState> City::m_applyCitizenStateVector(){
+	std::vector<CitizenState> whatToReturn;
+	int i(0);
+	int contentByUnitCount = 0;
+	int unhappyByUnitCount = 0;
+	for(UnitCostingResources& cost: m_unitCostVector()){
+		(cost.unhappyFaces < 0 ? contentByUnitCount : unhappyByUnitCount) -= cost.unhappyFaces;
+	}
+	for(Citizen& citizen: m_citizens){
+		if(++i<=CONTENT_BASE){
+		citizen.m_state = CONTENT;
+		}
+		else{
+			citizen.m_state = UNHAPPY;
+		}
+	}
+	int contentApplied = 0;
+	for(Citizen& citizen: m_citizens){
+		try{
+		if(contentApplied >= contentByUnitCount){
+			break;
+		}
+		if(citizen.m_state == CONTENT){
+			throw(InertCitizenState(CONTENT));
+		}
+		if(citizen.m_state!=CONTENT){
+			++citizen.m_state;
+			contentApplied++;
+		}
+		}
+		catch(InertCitizenState& exception){
+			std::cout<<"InertCitizenState when making content! ";
+			std::cout.flush();
+			continue;
+		}
+	}
+	int unhappyApplied = 0;
+	for(Citizen& citizen: m_citizens){
+		try{
+		if(unhappyApplied >= contentByUnitCount){
+			break;
+		}
+			--citizen.m_state;
+			unhappyApplied++;
+		}
+		catch(InertCitizenState& exception){
+			std::cout<<"InertCitizenState when making unhappy! ";
+			std::cout.flush();
+			continue;
+		}
+	}
+	for(Citizen& citizen: m_citizens){
+		whatToReturn.push_back(citizen.m_state);
+	}
+	for(int i(0); i<m_citizens.size();i++){
+		for(int j(0); j < m_citizens.size() - i - 1;j++){
+			if((int) m_citizens[j].m_state > (int) m_citizens[j+1].m_state){
+				CitizenState temp = m_citizens[j].m_state;
+				m_citizens[j].m_state = m_citizens[i].m_state;
+				m_citizens[i].m_state = temp;
+			}
+		}
+	}
+	return whatToReturn;
+}
+
+int City::m_foodStorageSize(){
+	return (m_citizens.size()+1)*10;
+}
+
+int City::m_size(){
+	return m_citizens.size();
+}
+
+int City::m_foodCost(){
+	int whatToReturn = m_size()*2;
+	std::vector<UnitCostingResources> theVector(m_unitCostVector());
+	for(const UnitCostingResources& cost: theVector){
+		whatToReturn += cost.foodCost;
+	}
+	return whatToReturn;
+}
+
+int City::m_shieldCost(){
+	int whatToReturn = 0;
+	for(UnitCostingResources& cost: m_unitCostVector()){
+		whatToReturn += cost.shieldCost;
+	}
+	return whatToReturn;
+}
+
+template<typename T>
+bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2)){
+	for(T& t: theVector){
+		if(equals(whatToFind, t)){
+			return true;
+		}
+	}
+	return false;
+}
+
+std::vector<UnitCostingResources> City::m_unitCostVector(){
+	std::vector<UnitCostingResources> whatToReturn;
+	int foodPerSettlers = 2;
+	int freeUnits = 0;
+	std::vector<FigureType> freeFigureTypes;
+	freeFigureTypes.push_back(DIPLOMAT);
+	freeFigureTypes.push_back(CARAVAN);
+	int militaryLawMaximum;
+	int unhappyFacesPerUnit = 0;
+	switch(m_owningNation->m_Government()){
+	case DESPOTISM:
+	{
+		foodPerSettlers = 1;
+		freeUnits = m_size();
+		militaryLawMaximum = freeUnits;
+		break;
+	}
+	case ANARCHY:
+	{
+		militaryLawMaximum = 3;
+		freeUnits = m_size();
+		foodPerSettlers = 1;
+		break;
+	}
+	case COMMUNISM:
+	{
+		militaryLawMaximum = m_owningNation->m_Figures().size();
+		break;
+	}
+	case MONARCHY:
+	{
+		militaryLawMaximum = 3;
+		break;
+	}
+	case REPUBLIC:
+	{
+		unhappyFacesPerUnit = 1;
+		break;
+	}
+	case DEMOCRACY:
+	{
+		unhappyFacesPerUnit = 2;
+		break;
+	}
+	}
+	int militaryLawAppliedCount = 0;
+	for(std::shared_ptr<Figure> currentFigure: m_whereItStands->m_FiguresOnField()){
+		whatToReturn.push_back(UnitCostingResources{currentFigure.get(), 0, 0, 0});
+		if(militaryLawAppliedCount >= militaryLawMaximum){
+			break;
+		}
+		std::vector<FigureType> irrelevantTypes = freeFigureTypes;
+		irrelevantTypes.push_back(SETTLERS);
+		FigureType currentFigureType = currentFigure->m_FigureType();
+		if(!isInVector<FigureType>(irrelevantTypes, currentFigureType, [](FigureType& f1, FigureType& f2){return f1==f2;})){
+			whatToReturn.back().unhappyFaces = -1;
+			militaryLawAppliedCount++;
+		}
+	int freeUnitsCount = 0;
+	for(std::shared_ptr<Figure>& currentFigure: m_figuresOwned){
+		whatToReturn.push_back(UnitCostingResources{currentFigure.get(), 0, 0, 0});
+		FigureType currentFigureType = currentFigure->m_FigureType();
+		if(currentFigureType==SETTLERS){
+			whatToReturn.back().foodCost = foodPerSettlers;
+			whatToReturn.back().shieldCost = 1;
+		}
+		if(!isInVector<FigureType>(freeFigureTypes, currentFigureType, [](FigureType& f1, FigureType& f2){return f1==f2;})){
+			if(freeUnitsCount < freeUnits){
+				freeUnitsCount++;
+			}
+			else{
+				whatToReturn.back().shieldCost = 1;
+			}
+			if(&(currentFigure->m_WhereItStands())!=m_whereItStands.get()){
+				whatToReturn.back().unhappyFaces = unhappyFacesPerUnit;
+			}
+		}
+	}
+	}
+	return whatToReturn;
+}
+
+int City::m_foodProduction(){
+	int count = m_whereItStands->m_food(*m_owningNation);
+	for(Citizen& citizen: m_citizens){
+		if(citizen.m_whereItWorks){
+			count+=citizen.m_whereItWorks->m_food(*m_owningNation);
+		}
+	}
+	return count;
+}

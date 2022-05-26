@@ -16,6 +16,7 @@
 #include "Figure.hpp"
 #include "Figurebutton.hpp"
 #include <sstream>
+#include "City.hpp"
 
 #define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ \
 	  Uint32 currentTime = SDL_GetTicks();\
@@ -176,6 +177,7 @@ void GameMain::doSomething(){
 		  FieldContainer& fc = *theContainer;
 
 		someDrawing->m_draw();
+
 		m_showFigureInfo();
 		SDL_RenderPresent(m_currentRenderer);
 
@@ -223,6 +225,7 @@ bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 	std::cout<<*fieldClickedOn<<std::endl;
 	if(fieldClickedOn->m_CityContained()){
 		std::cout<<"city hit!"<<std::endl;
+		fieldClickedOn->m_CityContained()->m_createCitySurface().m_displaySurface(theRenderer);
 		return false;
 	}
 	if(!fieldClickedOn->m_FiguresOnField().empty() && fieldClickedOn->m_FiguresOnField().front()->m_Nationality() == theGame->m_NationAtCurrentTurn()->m_Nation()){

@@ -337,3 +337,20 @@ short unsigned int Field::m_getCargoCapability(Figure& figureToEnter){
 		}
 	return cargoCount;
 }
+
+std::vector<std::shared_ptr<Field>> Field::m_cityFieldsAround(){
+	std::vector<std::shared_ptr<Field>> whatToReturn;
+	Direction direction1[] = {UP,UP,UP,UP_LEFT,UP,UP_RIGHT,UP_LEFT,UP_RIGHT,LEFT,LEFT,RIGHT,RIGHT,STANDING_STILL,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN,DOWN};
+	Direction direction2[] = {UP_LEFT,UP,UP_RIGHT,STANDING_STILL,STANDING_STILL,STANDING_STILL,LEFT,
+RIGHT,LEFT,STANDING_STILL,STANDING_STILL,STANDING_STILL,
+RIGHT,LEFT,STANDING_STILL,STANDING_STILL,STANDING_STILL,RIGHT,UP_LEFT,UP,UP_RIGHT};
+	for(int i(9); i<21; i++){
+		try{
+			whatToReturn.push_back(m_getNeighbouringField(direction1[i])->m_getNeighbouringField(direction2[i]));
+		}
+		catch(PoleHitException& poleHit){
+
+		}
+	}
+	return whatToReturn;
+}

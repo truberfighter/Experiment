@@ -49,6 +49,9 @@ enum{SMALL_DRAWING_FAIL = -1};
 enum{STANDARD_LINE_THICKNESS = STANDARD_FIELD_SIZE / 8, INFO_TEXT_X = 200, INFO_TEXT_Y = 200};
 enum{FIGURE_INFO_WIDTH = SCREEN_WIDTH/5, FIGURE_INFO_HEIGHT = 160, FIGURE_INFO_FONT_SIZE = SCREEN_WIDTH/30, FIGURE_INFO_Y = SCREEN_HEIGHT*4/10};
 enum DrawState {NOT_IN_ANY_DRAWING, BLINKING, NORMAL_DRAWING, SOMETHING_OTHER};
+enum {CITIZENS_OVERVIEW_HEIGHT = STANDARD_FIELD_SIZE*2, IMPROVEMENTS_OVERVIEW_WIDTH = SCREEN_WIDTH / 3,
+ CITIZEN_SCALEFACTOR = STANDARD_FIELD_SIZE / 12, CITIZEN_HEIGHT = 13, CITIZEN_MAX_WIDTH = 8,FIRST_CITIZEN_X = CITIZEN_MAX_WIDTH, RESOURCES_TEXT_HEIGHT = STANDARD_FIELD_SIZE,
+RESOURCES_SCALEFACTOR = STANDARD_FIELD_SIZE/12, PRODUCTION_OVERVIEW_WIDTH = SCREEN_WIDTH - IMPROVEMENTS_OVERVIEW_WIDTH - 5*STANDARD_FIELD_SIZE};
 enum BlinkingTime{STANDARD_BLINKING_INTERVAL_TIME = 1500};
 enum{MAX_CITY_NAME_LENGTH = 12, CITIES_PER_NATION = 15, ADDITIONAL_CITIES = 20};
 typedef bool BlinkingState;
@@ -183,8 +186,10 @@ int drawThickerHorizontalLine(SDL_Renderer* renderer, int x, int y, int thicknes
 int drawThickerVerticalLine(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 int drawThickerDiagonalLineUp(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 namespace Civ{
+SDL_Color cityBackgroundColor();
 SDL_Color cityNameColor();
 SDL_Color cityOccupiedColor();
+int drawFood(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus = false);
 }
 extern DrawState m_whatsUpDrawingwise;
 };
@@ -193,6 +198,7 @@ char getSettlersOrder(SettlersWork work);
 
 std::ostream& operator<<(std::ostream& os, Nationality nationality);
 
+extern int CONTENT_BASE;
 extern TTF_Font* theFont, *citySizeFont;
 extern SDL_Color whiteColor, blackColor, brownColor, infoTextColor, infoTextBackgroundColor;
 extern Figure* figureToDraw;
@@ -210,5 +216,13 @@ constexpr int leftCornerX(){return FIGURE_INFO_WIDTH;}
 constexpr int leftCornerY(){return 0;}
 Coordinate leftCornerCoordinate();
 }
+class InertCitizenState{
+public:
+	CitizenState m_state;
+	InertCitizenState(CitizenState State): m_state(State){}
+};
+
+CitizenState operator++(CitizenState& state);
+CitizenState operator--(CitizenState& state);
 
 #endif

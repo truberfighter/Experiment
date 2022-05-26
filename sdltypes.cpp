@@ -26,7 +26,8 @@ SDL_Color infoTextColor{0,0,0};
 SDL_Color infoTextBackgroundColor{125,125,140};
 SDL_Color Graphics::Civ::cityNameColor(){return SDL_Color{30,200,200};}
 SDL_Color Graphics::Civ::cityOccupiedColor(){return blackColor;}
-
+SDL_Color Graphics::Civ::cityBackgroundColor(){return SDL_Color{50,50,255};}
+int CONTENT_BASE(2);
 
 Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000, SIDETEXT_LAYER = 2000, CITY_LAYER = 1500;
 DrawState Graphics::m_whatsUpDrawingwise = NOT_IN_ANY_DRAWING;
@@ -233,4 +234,130 @@ std::ostream & operator <<(std::ostream & os, Coordinate & co)
 
 int SDL_SetRenderDrawColor(SDL_Renderer* renderer, SDL_Color& color){
 	return SDL_SetRenderDrawColor(renderer, (unsigned char) color.r,(unsigned char)color.g,(unsigned char)color.b,(unsigned char)color.a);
+}
+
+CitizenState operator++(CitizenState& state){
+	switch(state){
+	case UNHAPPY:
+		return CONTENT;
+	case HAPPY:
+		throw InertCitizenState(HAPPY);
+	case CONTENT:
+		return HAPPY;
+	case TAX_COLLECTOR:
+		throw InertCitizenState(TAX_COLLECTOR);
+	case ENTERTAINER:
+		throw InertCitizenState(ENTERTAINER);
+	case SCIENTIST:
+		throw InertCitizenState(SCIENTIST);
+	default:
+		throw InertCitizenState((CitizenState) 0);
+	}
+}
+
+CitizenState operator--(CitizenState& state){
+	switch(state){
+	case UNHAPPY:
+		throw InertCitizenState(UNHAPPY);
+	case HAPPY:
+		return CONTENT;
+	case CONTENT:
+		return UNHAPPY;
+	case TAX_COLLECTOR:
+		throw InertCitizenState(TAX_COLLECTOR);
+	case ENTERTAINER:
+		throw InertCitizenState(ENTERTAINER);
+	case SCIENTIST:
+		throw InertCitizenState(SCIENTIST);
+	default:
+		throw InertCitizenState((CitizenState) 0);
+	}
+}
+
+int whiteOrYellow(int X, int Y, int relativeX, int relativeY, SDL_Renderer* renderer){
+	SDL_Color coloryellow{255,255,150};
+	SDL_Color colorwhite{235,235,235};int WhatToReturn = 0;
+	if((X-relativeX +Y -relativeY) % 2 ==0){
+		WhatToReturn += SDL_SetRenderDrawColor(renderer, coloryellow);
+	}
+	else{
+		WhatToReturn += SDL_SetRenderDrawColor(renderer, colorwhite);
+	}
+	SDL_Rect r{X,Y,1,1};
+	WhatToReturn +=SDL_RenderFillRect(renderer,&r);
+	return WhatToReturn;
+}
+
+
+int Graphics::Civ::drawFood(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus){
+	SDL_Color colorblack = blackColor;
+	int whatToReturn = 0;
+	whatToReturn += SDL_SetRenderDrawColor(renderer, blackColor);
+	if(minus == false){
+	SDL_Rect rectToFill{x,y,2*scaleFactor,scaleFactor};
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.x +=5*scaleFactor;
+	rectToFill.y+=scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.w = scaleFactor;
+	rectToFill.x -= 3*scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.w = 2*scaleFactor;
+	rectToFill.x += scaleFactor;
+	rectToFill.y+=scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.w = scaleFactor;
+	rectToFill.x = x;
+	rectToFill.y += scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.h += 3*scaleFactor;
+	rectToFill.x += 3*scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.h -= scaleFactor;
+	rectToFill.y += scaleFactor;
+	rectToFill.x -= 2*scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.x += 5*scaleFactor;
+	rectToFill.h -= 2*scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+	rectToFill.x -= scaleFactor;
+	rectToFill.h += scaleFactor;
+	rectToFill.y+=scaleFactor;
+	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
+
+	//Now, the white ad the yellow.
+
+	int xCoordinate[19]={0,1,0,1,2,5,6,1,2,4,5,6,2,4,5,2,4,2,4};
+	int yCoordinate[19]={1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,6,6};
+	for(int i(0); i<19; i++){
+		for(int j(0); j < scaleFactor; j++){
+			for(int k(0); k < scaleFactor; k++){
+				whatToReturn += whiteOrYellow(x+scaleFactor*xCoordinate[i]+j, y+scaleFactor*yCoordinate[i]+k, x, y, renderer);
+			}
+		}
+	}
+}
+	std::cout<<"food drawn"<<std::endl;
+	if(minus){
+		SDL_SetRenderDrawColor(theRenderer, blackColor);
+		int yCoordinateBlack[] = {0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6,6,6,6,6};
+		int xCoordinateBlack[] = {0,1,0,2,5,6,1,3,4,6,0,2,3,5,6,1,2,3,4,1,2,3,4,5,1,2,3,4,5};
+		for(int i(0); i<29; i++){
+			SDL_Rect rect{x + scaleFactor*xCoordinateBlack[i], y+scaleFactor*yCoordinateBlack[i], scaleFactor, scaleFactor};
+			whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+		}
+		int xCoordinateWhiteYellow[8]={1,0,2,1,5,4,6,5};
+		int yCoordinateWhiteYellow[8]={1,2,2,3,2,3,3,4};
+		for(int i(0); i<8; i++){
+			for(int j(0); j < scaleFactor; j++){
+				for(int k(0); k < scaleFactor; k++){
+					whatToReturn += whiteOrYellow(x+scaleFactor*xCoordinateWhiteYellow[i]+j, y+scaleFactor*yCoordinateWhiteYellow[i]+k, x, y, renderer);
+				}
+			}
+		}
+		std::cout<<"food drawn"<<std::endl;
+	}
+
+
+	return whatToReturn;
 }

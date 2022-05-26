@@ -42,7 +42,7 @@ int Grassland::m_shields(){
 }
 
 int Grassland::m_food(){
-	int count = 2;
+	int count = 6;
 		if(m_isIrrigated)
 			count++;
 		return count;

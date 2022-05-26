@@ -454,13 +454,13 @@ void Figure::m_drawFigureSomewhere(int row, int column){
 }
 
 bool Figure::m_homeCity(){
-if(m_whereItStands->m_CityContained()){
-			if(m_home){
-				m_home->m_releaseFigure(shared_from_this());
-			}
-			m_home = m_whereItStands->m_CityContained();
-			m_home->m_takeFigure(shared_from_this());
-			return true;
+	if(m_whereItStands->m_CityContained()){
+		if(m_home){
+			m_home->m_releaseFigure(shared_from_this());
 		}
-		return false;
+		m_home = m_whereItStands->m_CityContained();
+		m_home->m_takeFigure(shared_from_this());
+		return true;
+	}
+	return false;
 }

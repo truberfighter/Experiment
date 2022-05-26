@@ -16,6 +16,7 @@
 
 class City;
 class Settlers;
+class Citizen;
 class Figure;
 class DrawingElement;
 class ImmovableDrawingElement;
@@ -23,6 +24,7 @@ class FieldContainer;
 
 class Field{
 protected:
+	Citizen* m_citizenWorking = nullptr;
 	std::list<std::shared_ptr<Figure>> m_figuresOnField;
 	bool m_createRoadImage(SDL_Color& color);
 	ContinentID m_continentID = NO_CONTINENT_ID_GIVEN;
@@ -44,6 +46,8 @@ protected:
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
+	Citizen* m_CitizenWorking(){return m_citizenWorking;}
+	bool m_setCitizenWorking(Citizen* citizen){if(m_cityContained!=nullptr) return false; m_citizenWorking = (m_citizenWorking == nullptr ? citizen : m_citizenWorking); return m_citizenWorking == citizen;}
 	short unsigned int m_getCargoCapability(Figure& figureToEnter);
 	bool m_HasFortress(){return m_hasFortress;}
 	const std::list<std::shared_ptr<Figure>>& m_FiguresOnField(){return m_figuresOnField;}
@@ -76,6 +80,7 @@ public:
 	std::shared_ptr<City> m_CityContained();
 	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
 	void m_drawField();
+	std::vector<std::shared_ptr<Field>> m_cityFieldsAround();
 	friend std::ostream& operator<<(std::ostream&, Field&);
 	friend class FieldContainer;
 	friend class City;
