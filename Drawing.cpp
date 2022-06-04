@@ -23,10 +23,8 @@ for(auto current: m_whereToDraw){
 		current->m_delete(this);
 		//std::cout<<"DrawingElement-Destruktor4, this = "<<this<<",listSize = "<<m_whereToDraw.size()<<std::endl;
 		if(m_whereToDraw.size() == 0){
-			//std::cout<<"ende gelände"<<std::endl;
 			goto endeDestruktor;
 		}
-		//std::cout<<"lollll"<<std::endl;
 	}
 	endeDestruktor: std::cout<<"DrawingElement-Destruktor5, this = "<<this<<std::endl;
 }
@@ -57,12 +55,10 @@ bool DrawingElement::m_addDrawing(Drawing* newDrawing){
 
 void Drawing::m_delete(std::shared_ptr<DrawingElement> drElToDelete){
 	m_drawingList.remove(drElToDelete);
-	std::cout<<"m_delete: this = "<<this<<std::endl;
 }
 
 void Drawing::m_delete(DrawingElement* drElToDelete){
 	m_drawingList.remove_if([drElToDelete](std::shared_ptr<DrawingElement> drEl)->bool{return drEl.get()==drElToDelete;});
-	std::cout<<"pointerdelete: this = "<<this<<", pointer = "<<drElToDelete<<std::endl;
 }
 
 
@@ -137,9 +133,7 @@ void DrawingElement:: m_climbToTop(){
 }
 
 void Drawing::m_add(shared_ptr<DrawingElement> drawingElement){
-//cout<<"Z.97"<<endl;
 		if(drawingElement->m_DrawingElement() == DRAWING || m_drawingList.empty()){
-		//cout<<"lol"<<&m_drawingList<<std::endl;
 		}
 	if(m_drawingList.empty()){
 		m_drawingList.push_back(drawingElement);
@@ -153,7 +147,6 @@ void Drawing::m_add(shared_ptr<DrawingElement> drawingElement){
 
 int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnShift){
 	/*if(SDL_RenderClear(m_renderer) == 0)
-			cout<<"Renderer is cleared"<<endl;
 		else
 			std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
 			*/
@@ -164,7 +157,6 @@ int Drawing::m_drawAtRenderer(SDL_Renderer* renderer, int rowShift, int columnSh
 	for(auto &it: m_drawingList){
 		if(it->m_draw(rowShift, columnShift, renderer) == true){
 			it->m_updatePosition();
-			//std::cout<<"draw this = "<<it<<std::endl;
 			whatToReturn--;
 		}
 	}
@@ -204,7 +196,6 @@ void Drawing::m_putOver(shared_ptr<DrawingElement>& drElToUpdate, Layer layer){
 //list<DrawingElement*>::iterator whereToErase = m_drawingList.begin();
 m_drawingList.remove_if([&drElToUpdate](shared_ptr<DrawingElement> drawEl){bool whatToReturn = drawEl.get() == drElToUpdate.get();  return whatToReturn;});
 list<std::shared_ptr<DrawingElement>>::iterator whereToInsert;
-//cout<<"m_putOver";
 for(whereToInsert= m_drawingList.begin(); whereToInsert != m_drawingList.end(); whereToInsert++){
 		if((*whereToInsert)->m_getLayer() <= layer){
 			continue;
@@ -265,13 +256,10 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 					return 0;
 				}
 		//m_texture->m_Height();
-		//cout<<"m_texture ist schonmal vorhanden in ImmovableDrawingElement to draw"<<endl;
  		rect.x = xModulo(m_row+rowShift);
 		rect.y = m_column + columnShift;
-		//cout<<"Guenther"<<m_texture->m_Height()<<endl;
 		rect.h = m_texture->m_Height();
 		rect.w = m_texture->m_Width();
-		//cout<<"ImmovableDrawingElement.\n x: "<<rect.x<<", y: "<<rect.y<<"Height: "<<rect.h<<"Width: "<<rect.w<<endl;
 
 		SDL_Texture* textureToDraw = m_texture->theTexture();
 		if(!textureToDraw){
@@ -316,9 +304,8 @@ LambdaDrawingElement::~LambdaDrawingElement(){
 }
 
 void DrawingElement::m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Renderer*)){
-	cout<<"m_setAdditionalInstructions"<<m_Draw<<" for this = "<<this<<endl;
+	//cout<<"m_setAdditionalInstructions"<<m_Draw<<" for this = "<<this<<endl;
 this->m_Draw = *Draw;
-	//m_draw(0,0,theRenderer);
 }
 
 void DrawingElement::m_drawAsRemembered(SDL_Renderer* renderer){
@@ -330,4 +317,19 @@ void DrawingElement::m_drawAsRemembered(SDL_Renderer* renderer){
 	}
 }
 
+void DrawingElement::m_drawAt(int x,int y,SDL_Renderer* renderer){
+	int tempRow = this->m_row;
+	int tempColumn = m_column;
+	int tempRowWhereLastDrawn = m_rowWhereLastDrawn;
+	int tempColumnWhereLastDrawn = m_columnWhereLastDrawn;
+	m_row = 0;
+	m_column = 0;
+	m_rowWhereLastDrawn = 0;
+	m_columnWhereLastDrawn = 0;
+	m_draw(x,y,renderer);
+	this->m_row = tempRow;
+	m_column = tempColumn;
+	m_rowWhereLastDrawn = tempRowWhereLastDrawn;
+	m_columnWhereLastDrawn = tempColumnWhereLastDrawn;
+}
 

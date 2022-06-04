@@ -155,7 +155,6 @@ bool Field::m_Pillage(){
 std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 	int x = m_x/STANDARD_FIELD_SIZE;
 	int y = m_y/STANDARD_FIELD_SIZE;
-	//std::cout<<"Field::m_getNeighbouringField: x = "<<x<<", y = "<<y;
 	switch(whereToLook){
 		case UP:
 			{y--; break;}
@@ -177,7 +176,6 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 	x = modulo(x, WORLD_LENGTH);
 	//Tribut an Civi, man kann nicht vom Nord- oder Südpol weg
 	y = y % WORLD_HEIGHT;
-	//std::cout<<"; x = "<<x<<", y = "<<y<<std::endl;
 	//Pol getroffen
 
 	std::vector<Meridian>& fieldsOfTheWorld =  *theContainer->m_getFieldsOfTheWorld();
@@ -185,7 +183,6 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 }
 
 bool Field::m_createRoadImage(SDL_Color& color){
-	std::cout<<"road image created"<<std::endl;
 	m_drawingElement->m_setAdditionalInstructions
 	([](int x, int y, SDL_Renderer* renderer)->int{return Graphics::drawSquareStarLines(renderer, x, y, brownColor);});
 	return true;
@@ -240,7 +237,7 @@ void Field::m_drawField(){
 	m_drawingElement->m_drawAsRemembered(theRenderer);
 	}
 	catch(DrawingFail& theDrawingFail){
-		std::cout<<"catch in field"<<std::endl;
+		std::cout<<"catching DrawingFail in Field::_drawField()"<<std::endl;
 		throw(theDrawingFail);
 	}
 }
@@ -248,7 +245,6 @@ void Field::m_drawField(){
 void Field::m_releaseFigure(std::shared_ptr<Figure> movingFigure){
 	unsigned int listSize = m_figuresOnField.size();
 	m_figuresOnField.remove_if([&movingFigure](std::shared_ptr<Figure> f)->bool{return f.get()==movingFigure.get();});
-	std::cout<<"listSizePrevious: "<<listSize<<", now: "<<m_figuresOnField.size()<<std::endl;
 	if(listSize == m_figuresOnField.size())
 		std::cout<<("Fail: Released figure not removed!")<<std::endl;
 }
@@ -262,7 +258,6 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		m_figuresOnField.push_front(movingFigure);
 		return;
 	}
-		std::cout<<"FieldWhereToGo: "<<*this<<",previousField: \n"<<previousField;
 	std::shared_ptr<Figure> frontFigure = m_figuresOnField.front();
 	if(frontFigure->m_Nationality()==movingFigure->m_Nationality()){
 		std::cout<<"auf eigenen Stack"<<", listPrevious: "<<m_figuresOnField.size();
@@ -274,7 +269,6 @@ m_figuresOnField.push_front(movingFigure);
 	}
 	if(frontFigure->m_Nationality()!=movingFigure->m_Nationality()){
 		//Fight. Consider emitting some kind of signal and/or logging the random value.
-		std::cout<<"Fight coming!0"<<std::endl;
 		Nationality winningNationality = theGame->m_calculateWinnerInFight(movingFigure, m_figuresOnField.front());
 		std::cout<<"fightwinner is "<<winningNationality<<std::endl;
 		FightResult result;
@@ -324,27 +318,27 @@ short unsigned int Field::m_getCargoCapability(Figure& figureToEnter){
 		return 0;
 	if(m_figuresOnField.empty() || m_figuresOnField.front()->m_Nationality()!=figureToEnter.m_Nationality())
 		return 0;
-		short unsigned int cargoCount = 0;
-		for(std::shared_ptr<Figure> currentFigure: m_figuresOnField){
-			if((currentFigure->m_FigureCategory() == SEA) && figureToEnter.m_FigureCategory() == (currentFigure->m_FigureType() == CARRIER) ? FLIGHT : GROUND){
-				cargoCount += reinterpret_cast<Ship*>(currentFigure.get())->m_cargoCountMax();
-				continue;
-			}
-			if(currentFigure->m_FigureCategory()==figureToEnter.m_FigureCategory()){
-				cargoCount--;
-				continue;
-			}
+	short unsigned int cargoCount = 0;
+	for(std::shared_ptr<Figure> currentFigure: m_figuresOnField){
+		if((currentFigure->m_FigureCategory() == SEA) && figureToEnter.m_FigureCategory() == (currentFigure->m_FigureType() == CARRIER) ? FLIGHT : GROUND){
+			cargoCount += reinterpret_cast<Ship*>(currentFigure.get())->m_cargoCountMax();
+			continue;
 		}
+		if(currentFigure->m_FigureCategory()==figureToEnter.m_FigureCategory()){
+			cargoCount--;
+			continue;
+		}
+	}
 	return cargoCount;
 }
 
 std::vector<std::shared_ptr<Field>> Field::m_cityFieldsAround(){
 	std::vector<std::shared_ptr<Field>> whatToReturn;
-	Direction direction1[] = {UP,UP,UP,UP_LEFT,UP,UP_RIGHT,UP_LEFT,UP_RIGHT,LEFT,LEFT,RIGHT,RIGHT,STANDING_STILL,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN,DOWN};
+	Direction direction1[] = {UP,    UP,UP,UP_LEFT,UP,UP_RIGHT,UP_LEFT,UP_RIGHT,LEFT,LEFT,RIGHT,RIGHT,STANDING_STILL,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN,DOWN};
 	Direction direction2[] = {UP_LEFT,UP,UP_RIGHT,STANDING_STILL,STANDING_STILL,STANDING_STILL,LEFT,
-RIGHT,LEFT,STANDING_STILL,STANDING_STILL,STANDING_STILL,
-RIGHT,LEFT,STANDING_STILL,STANDING_STILL,STANDING_STILL,RIGHT,UP_LEFT,UP,UP_RIGHT};
-	for(int i(9); i<21; i++){
+RIGHT,LEFT,STANDING_STILL,STANDING_STILL,RIGHT,
+STANDING_STILL,LEFT,STANDING_STILL,STANDING_STILL,STANDING_STILL,RIGHT,DOWN_LEFT,DOWN,DOWN_RIGHT};
+	for(int i(0); i<21; i++){
 		try{
 			whatToReturn.push_back(m_getNeighbouringField(direction1[i])->m_getNeighbouringField(direction2[i]));
 		}
@@ -354,3 +348,18 @@ RIGHT,LEFT,STANDING_STILL,STANDING_STILL,STANDING_STILL,RIGHT,UP_LEFT,UP,UP_RIGH
 	}
 	return whatToReturn;
 }
+
+std::vector<Coordinate> Field::coordinatesAroundCity(){
+	int y[]={-2,-2,-2,-1,-1,-1,-1,-1,0,0,0,0,0,1,1,1,1,1,2,2,2};
+	int x[]={-1,0,1,-1,0,1,-2,2,-2,-1,1,2,0,-2,1,0,-1,2,-1,0,1};
+	std::vector<Coordinate> whatToReturn;
+	for(int i(0); i<21; i++){
+		whatToReturn.push_back(Coordinate(x[i],y[i]));
+	}
+	return whatToReturn;
+}
+
+bool Field::m_irrigationBonus(){
+	return m_isIrrigated || m_cityContained != nullptr;
+}
+

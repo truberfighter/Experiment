@@ -50,6 +50,7 @@ protected:
 	int m_columnWhereLastDrawn;
 public:
 	friend class MovableThing;
+	void m_drawAt(int x, int y, SDL_Renderer* renderer = nullptr);
 	virtual Drawing_Element m_DrawingElement() = 0;
 	DrawingElement(const DrawingElement&);
 	DrawingElement(int row, int column, SDL_Renderer* renderer, Layer layer = STANDARD_LAYER);

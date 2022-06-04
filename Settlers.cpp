@@ -69,7 +69,7 @@ bool Settlers::m_takeOrder(char order){
 	case 'h': return m_homeCity();
 	case 'm': return m_whereItStands->m_Mining(*this);
 	case ' ': {m_finishMove(); return true;}
-	case 'b': {return (!m_whereItStands->m_CityContained() ? m_startFoundingNewCity() : false);}
+	case 'b': {return (!m_whereItStands->m_CityContained() ? m_startFoundingNewCity() : m_addToCity());}
 	default: return false;
 	}
 }
@@ -107,7 +107,6 @@ std::shared_ptr<MovableThing> Settlers::m_createImage(){
 }
 
 int Settlers::m_drawSettlersWork(SDL_Rect& rectToDraw){
-	cout<<"m_drawSettlersWork"<<endl;
 #ifdef DRAW_LETTER
 #undef DRAW_LETTER
 #endif
@@ -213,9 +212,31 @@ std::shared_ptr<City> Settlers::m_foundNewCity(std::string name){
 	m_nationality->m_destroyFigure(shared_from_this());
 	theGame->m_AllCities().push_back(m_whereItStands->m_CityContained());
 	m_nationality->m_Cities().push_back(m_whereItStands->m_CityContained());
+	std::cout<<"nationCitiesSize: "<<m_nationality->m_Cities().size()<<std::endl;
+	if(m_nationality->m_Cities().size()==0){
+		m_nationality->m_setCapitalCity(m_whereItStands->m_CityContained());
+	}
+	if(m_whereItStands->m_citizenWorking){
+		m_whereItStands->m_citizenWorking->m_whereItWorks = nullptr;
+		m_whereItStands->m_citizenWorking->m_state = ENTERTAINER;
+	}
+	if(m_whereItStands->m_roadStatus==NONE){
+		m_whereItStands->m_roadStatus = ROAD;
+	}
+	m_whereItStands->m_isIrrigated = false;
+	m_whereItStands->m_isMined = false;
 	return m_whereItStands->m_CityContained();
 	}
 	catch(TooManyCities& exception){
 		return nullptr;
 	}
+}
+
+bool Settlers::m_addToCity(){
+	if(!m_whereItStands->m_CityContained()){
+		throw NullPointerException(std::string("m_addToCity"));
+	}
+	m_whereItStands->m_CityContained()->m_grow();
+	m_nationality->m_destroyFigure(shared_from_this());
+	return true;
 }

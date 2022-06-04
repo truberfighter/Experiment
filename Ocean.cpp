@@ -60,7 +60,6 @@ return 3;
 }
 std::string Ocean::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
 Landscape Ocean::m_Landscape() const{
-	//std::cout<<"Ocean::Landscape"<<std::endl;
 	return OCEAN;
 }
 short int Ocean::m_howLongToTake(SettlersWork work){

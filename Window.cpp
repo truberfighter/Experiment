@@ -10,7 +10,7 @@
 #include "movableThing.hpp"
 #include <iostream>
 #include <SDL2\SDL_image.h>
-#include "drawing.hpp"
+#include "Drawing.hpp"
 #include "EventHandler.hpp"
 #include "Window.hpp"
 #include <SDL2\SDL_image.h>
@@ -37,8 +37,8 @@ bool Window::m_Init()
 			  , SDL_WINDOWPOS_UNDEFINED
 			  , m_width, m_height, SDL_WINDOW_SHOWN );
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
-	cout<<"Window m_Init: m_renderer ="<<m_renderer<<endl;
-	SDL_Texture* t  = IMG_LoadTexture(m_renderer, "bilder/2022-01-03.png");cout<<"Window-Konstrktor: "<<SDL_GetError()<<endl;
+	SDL_Texture* t  = IMG_LoadTexture(m_renderer, "bilder/2022-01-03.png");
+	cout<<"Window-Konstruktor: "<<SDL_GetError()<<endl;
 
 	if(m_window == nullptr){
 		throw(WindowInitFail());
@@ -71,7 +71,6 @@ void Window::m_setCurrentDrawing(int drawingNr){
 }
 
 std::shared_ptr<Drawing>& Window::m_CurrentDrawing(){
-	cout<<"m_CurrentDrawing"<<endl;
 	return m_currentDrawing;
 }
 
@@ -86,17 +85,14 @@ void Window::m_InitWindowSurface(){
 			std::make_shared<Texture>(sdltexture[1], STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE)
 	};
 	 m_createNewDrawing();
-	 cout<<"NewDrawingCreated"<<endl;
 	 m_setCurrentDrawing( m_mainDrawings.size()-1);
 	//std::vector<unique_ptr<ImmovableDrawingElement>> v;
 	Drawing& currentDrawing = *( m_currentDrawing);
-	cout<<"currentDrawing initialized"<<endl;
 	for(int i(0); i < WORLD_LENGTH; i++){
 		for(int j(0); j<WORLD_HEIGHT; j++){
 
 			shared_ptr<DrawingElement> whatToAdd = ((*theContainer->m_getFieldsOfTheWorld())[i][j])->m_DrawingElement();
 			//früher: = make_shared<ImmovableDrawingElement>(currentDrawing.m_Renderer(), fieldTextures[modulo(i+j,2)], xModulo(i * STANDARD_FIELD_SIZE), yModulo(j * STANDARD_FIELD_SIZE));
-			//cout<<"m_add aufgerufen für i = "<<i<<", j = "<<j<<endl;
 			currentDrawing.m_add(whatToAdd);
 		}
 	}

@@ -42,17 +42,14 @@ MovableThing::MovableThing(SDL_Renderer* renderer, int width, int height, const 
 : MovableThing(renderer, nullptr, x % (STANDARD_FIELD_SIZE*WORLD_LENGTH), y % (STANDARD_FIELD_SIZE * WORLD_HEIGHT))
 {
 	SDL_Texture* newTexture = IMG_LoadTexture(renderer, filename);
-	if(!newTexture)cout<<"Fehler für "<<filename<<": \nSDL_Error: "<<SDL_GetError()<<endl;
-	//SDL_Rect r{100,100,200,50};
-	//SDL_RenderCopy(renderer, newTexture, NULL, &r);
-	//SDL_RenderPresent(renderer);
-	//SDL_Delay(3000);
+	if(!newTexture)
+		cout<<"Fehler für "<<filename<<": \nSDL_Error: "<<SDL_GetError()<<endl;
 	std::shared_ptr<Texture> s = std::make_shared<Texture>(newTexture, width, height);
 	m_texture = s;
-	if(!m_texture)cout<<"Fehler für "<<filename<<endl;
+	if(!m_texture)
+		cout<<"Fehler für "<<filename<<endl;
 	m_standardXVelocity = m_texture->m_Width();
 	m_standardYVelocity = m_texture->m_Height();
-	cout<<"movableThing-Konstruktor beendet"<<endl;
 }
 
 
@@ -71,7 +68,6 @@ bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, std::shared_p
 	rect.y = y% (STANDARD_FIELD_SIZE * WORLD_HEIGHT);
 	rect.h = texture->m_Height();
 	rect.w = texture->m_Width();
-	//cout<<"x: "<<x% (STANDARD_FIELD_SIZE * WORLD_LENGTH)<<", y: "<<y% (STANDARD_FIELD_SIZE * WORLD_HEIGHT)<<"Height: "<<rect.h<<"Width: "<<rect.w<<endl;
 	SDL_Texture* textureToDraw = m_texture->theTexture();
 	if(!textureToDraw){
 		cout<<"No SDL_texture in the texture!\n"<<SDL_GetError()<<endl;
@@ -145,14 +141,12 @@ bool MovableThing::m_drawRight(){
 void MovableThing::m_move(bool moveFurther){
 	m_x=xModulo(m_xVelocity+m_x);
 	m_y=yModulo(m_y+ m_yVelocity);
-	//cout<<"m_move(): x: "<<m_x<<"y: "<<m_y<<endl;
 	if(!moveFurther){
 		 m_xVelocity = NOT_MOVING;
 		 m_yVelocity = NOT_MOVING;
 	 }
 	m_whenMoved = ++moveCount;
 	for(MovableDrawingElement* it: m_howDrawn){
-		//cout<<"Climbing to top!"<<endl;
 		it->m_climbToTop();
 	}
 
@@ -173,17 +167,14 @@ void MovableThing::m_setVelocity(Velocity v){
 
 void MovableThing::m_setMoveToDirection(Direction whereToGo, float howFar){
 	Velocity v = m_getStandardVelocity(whereToGo);
-	//cout<<"xVelocity: "<<v.s_xVelocity<<", yVelocity: "<<v.s_yVelocity<<endl;
 	float xVelocity = (float) v.s_xVelocity;
 	float yVelocity = (float) v.s_yVelocity;
 	xVelocity *= howFar;
 	yVelocity *= howFar;
 	m_setVelocity( (int) xVelocity, (int) yVelocity);
-	//cout<<"xVelocity: "<<v.s_xVelocity<<", yVelocity: "<<v.s_yVelocity<<endl;
 }
 
 Velocity MovableThing::m_getStandardVelocity(Direction d){//fehlerhaft!
-	cout<<"StandardVelocity:"<<m_standardXVelocity<<", "<<m_standardYVelocity<<endl;
 	switch (d){
 		case DOWN_LEFT:
 			return Velocity{- m_standardXVelocity, m_standardYVelocity};
@@ -209,10 +200,8 @@ Velocity MovableThing::m_getStandardVelocity(Direction d){//fehlerhaft!
 				return Velocity{0,- m_standardYVelocity};
 
 		case UP_RIGHT:
-				cout<<"UP_RIGHT"<<endl;
 				return Velocity{m_standardXVelocity,- m_standardYVelocity};
 		default:
-			cout<<"Default"<<endl;
 			return Velocity{0,0};
 		}
 }
@@ -243,7 +232,6 @@ unsigned int MovableThing::WhenMoved(){
 
 void MovableThing::m_setDrawingInstructions(int (*foo) (int, int, SDL_Renderer*)){
 	for(MovableDrawingElement* currentElement: m_howDrawn){
-		//cout<<"setDrawingInstructions in MovableThing"<<endl;
 		currentElement->m_setAdditionalInstructions(foo);
 	}
 }

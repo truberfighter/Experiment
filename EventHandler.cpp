@@ -19,7 +19,6 @@ void EventHandler::m_showFigureInfo(){
 	SDL_Color& backgroundColor = infoTextBackgroundColor;
 	SDL_SetRenderDrawColor(theRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
 	SDL_Rect rectToFill{0,FIGURE_INFO_Y,FIGURE_INFO_WIDTH, SCREEN_HEIGHT-INFO_TEXT_Y};
-	//std::cout<<"yCoordinate: rectToFill.y = " <<rectToFill.y<<", y = "<<y<<std::endl;
 	SDL_RenderFillRect(theRenderer, &rectToFill);
 
 	std::stringstream theStringstream;
@@ -56,7 +55,6 @@ void EventHandler::m_showFigureInfo(){
 				SDL_FreeSurface(surface);
 		}
 	}
-	std::cout<<"lol"<<stringOfInterest.length()<<std::endl;
 	//std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
 
 }
@@ -86,9 +84,9 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 		m_drawMainDrawing();
 		std::cout<<"\n currentNatiodn: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
 		for(std::shared_ptr<Nation> nationToPrint: theGame->m_NationsPlaying()){
+			if(nationToPrint == theGame->m_NationAtCurrentTurn())
 			std::cout<<nationToPrint->m_Nation()<<": "<<nationToPrint->m_activeFiguresSize()<<" active figures; "<<nationToPrint->m_Figures().size()<<" figures in general"<<std::endl;
 		}
-		std::cout<<"Z.51"<<std::endl;
 		SDL_RenderPresent(theRenderer);
 	}
 	if(event.type==SDL_MOUSEBUTTONDOWN ){
@@ -175,7 +173,6 @@ int EventHandler::m_drawMainDrawing(){
 	int whatToReturn = 0;
 	if(m_currentDrawing)
 	whatToReturn = m_currentDrawing->m_draw(-m_topLeftCorner.x, -m_topLeftCorner.y);
-	std::cout<<"nor show figureinfo"<<std::endl;
 	m_showFigureInfo();
 	return whatToReturn;
 }

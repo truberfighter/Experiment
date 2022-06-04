@@ -43,15 +43,14 @@ int Plains::m_shields(){
 
 int Plains::m_food(){
 	int count = 1;
-		if(m_isIrrigated)
-			count++;
-		return count;
+	if(m_irrigationBonus())
+		count++;
+	return count;
 }
 
 int Plains::m_trade()IS_CLASSICALLY_ROAD_BASED
 std::string Plains::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
 Landscape Plains::m_Landscape() const{
-	//std::cout<<"Plains::Landscape"<<std::endl;
 	return PLAINS;
 }
 short int Plains::m_howLongToTake(SettlersWork work){

@@ -58,7 +58,7 @@ void GameMain::m_initGame(){
 	int imgflags = IMG_INIT_PNG;
 	IMG_Init(imgflags);
 	TTF_Init();
-	theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 15);
+	theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 22);
 	citySizeFont = TTF_OpenFont("Fonts/FT88-Regular.ttf",35);
 	fieldTextures = new shared_ptr<Texture>[30];
 	Window* theWindow = new Window ("Game Main, Window 0", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -67,22 +67,18 @@ void GameMain::m_initGame(){
 	m_initFieldTextures();
 	initFieldContainer();
 	vector<Nationality> nationsToPlay{ROMAN, MONGOL, ZULU, CHINESE};
-	cout<<"Gameinitialisierung"<<endl;
 	m_theGame = make_unique<Game>(nationsToPlay);
 	theGame = m_theGame.get();
-	cout<<"Gameinitialisierung abgeschlossen"<<endl;
 	m_whatToMove = theGame->m_getCurrentFigure(theGame->m_NationAtCurrentTurn().get());
 	FieldContainer::getTheContainer()->initContinentIDs();
 	m_theWindows.push_back(unique_ptr<Window>());
 	m_theWindows[0].reset(theWindow);
 	//TTF_Init();
-	cout<<"Kevin"<<endl;
 	theWindow->m_InitWindowSurface();
 	someDrawing = theWindow->m_CurrentDrawing();
 	m_setCurrentDrawing(someDrawing);
 //someDrawing->m_draw();
     	//SDL_RenderPresent(m_currentRenderer);
-	//SDL_Delay(2000);
 
 }
 
@@ -93,7 +89,6 @@ void GameMain::m_createFieldTexture(Landscape ls, string filename){
 
 void GameMain::m_initFieldTextures(){
 	m_createFieldTexture(GRASSLAND, "bilder/Landscapes/Grassland.png");
-	cout<<"SDL_Error: "<<SDL_GetError()<<endl;
 	m_createFieldTexture(PLAINS, "bilder/Landscapes/Plains.png");
 	m_createFieldTexture(OCEAN, "bilder/Landscapes/Ocean.png");
 }
@@ -110,14 +105,12 @@ void GameMain::m_initInfoDrawing(){
 	SDL_Color& backgroundColor = infoTextBackgroundColor;
 		SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
 		SDL_Rect rectToFill{x,y,FIGURE_INFO_WIDTH, SCREEN_HEIGHT};
-		//std::cout<<"yCoordinate: rectToFill.y = " <<rectToFill.y<<", y = "<<y<<std::endl;
 		SDL_RenderFillRect(renderer, &rectToFill);
 		return 0;
 	},
 	0,FIGURE_INFO_Y,STANDARD_LAYER + 50);
 	m_currentFigureInfo->m_add(rectPointer);
 	auto& r = m_currentFigureInfo;
-	//cout<<m_currentFigureInfo<<std::endl;
 	m_currentDrawing->m_add(r);
 }
 
@@ -127,40 +120,19 @@ int GameMain::operator()(){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
  doSomething();
-    MAIN_LOOP_BEGIN
+ MAIN_LOOP_BEGIN
 
 
-  /*if(currentEvent.type == SDL_KEYDOWN){
-	  cout<<"SDL_KEYDOWN, nämlich: "<<currentEvent.key.keysym.sym<<endl;
-  		switch(currentEvent.key.keysym.sym){
-  			case SDLK_9_UP_RIGHT:{
-  				theMovableThing->m_setMoveToDirection(UP_RIGHT);
-  				theMovableThing->m_move();
-  				constexpr bool JUST_DELETE_ALL = true;
-  				someDrawing.m_draw(JUST_DELETE_ALL);
-
-  				break;
-  			}
-  		}
-  	}*/
 	if(m_handleEvent(currentEvent)){
-	    std::cout<<"gewaltig"<<std::endl;
-		//TTF_Font* theFont = TTF_OpenFont("Fonts/javatext.ttf", 24);
-		//SDL_Color theColor {233, 46, 56};
-	//	screenSurface = TTF_RenderText_Blended(theFont, "Komischer Text in komischer Schrift",  theColor);
-	}
+true;	}
   MAIN_LOOP_END
   //theMovableThing2->m_setMoveToDirection(UP_RIGHT);
   //theMovableThing2->m_move();
- }			//SDL_Delay(1000);
-  //Texture* texture =new Texture(theTexture,someColoredRect.w, someColoredRect.h);
-  //MovableThing* theMovableThing = new MovableThing(theRenderer, texture, 200, 350, true);
-  //SDL_Delay(3000);
-  //theMovableThing->m_drawRight();
+ }			//
 
  TTF_Quit();
  IMG_Quit();
- SDL_Quit();  //Quit SDL subsystems
+ SDL_Quit();
  return 0;
 }
 
@@ -233,13 +205,11 @@ bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 		std::shared_ptr<Figure> figureToMove = theButton();
 		//figureToMove is not active
 		if(figureToMove==nullptr){
-			std::cout<<"Z.233, GameMain"<<std::endl;
 			return true;
 		}
 		std::cout<<"figureToMoveNow: "<<figureToMove->m_figureOverview()<<std::endl;
 		while(theGame->m_getCurrentFigure().get()!=figureToMove.get()){
-			std::cout<<"waiting"<<std::endl;
-		theGame->m_getCurrentFigure()->m_wait();
+			theGame->m_getCurrentFigure()->m_wait();
 		}
 		return true;
 	}

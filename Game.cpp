@@ -33,7 +33,7 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 		Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
 		std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
 		std::shared_ptr<Field> fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y];
-		for(int i(0); i<2; i++){
+		for(int i(0); i<9; i++){
 			std::shared_ptr<Settlers> theSettlersPointer =
 			std::make_shared<Settlers>(fieldPointer, nationPointer);
 			nation.m_addFigure(theSettlersPointer);
@@ -44,7 +44,6 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 			fieldPointer->m_getNeighbouringField(LEFT)->m_takeFigure(theTriremePointer);
 			std::stringstream stream; stream<<"City of "<<nation.m_Nation();stream.flush();
 			std::cout<<"stream: "<<stream.str();
-	fieldPointer->m_cityContained = std::make_shared<City>(fieldPointer, m_nationsPlaying[0], stream.str());
 		}
 	}
 }
@@ -57,13 +56,15 @@ Game::Year::Year(unsigned int yearNumberRaw):m_yearNumberRaw(yearNumberRaw)
 //New turn
 void Game::m_startNewTurn(){
 	int temp = m_nationAtCurrentTurnIndex;
-	try{std::cout<<"Nationcount: "<<m_nationsPlaying.size()<<std::endl;
+	try{
 	for(std::shared_ptr<Figure> currentFigureToCheck: m_NationAtCurrentTurn()->m_Figures()){
 		if(currentFigureToCheck->m_FigureState()==MOVING){
+			std::cout<<"turnendstooearly by figurestate, nation at fault: "<<currentFigureToCheck->m_Nationality()<<std::endl;
 			throw(TurnEndsTooEarly());
 		}
 	}
 	if(m_NationAtCurrentTurn()->m_activeFiguresSize()!=0){
+		std::cout<<"turnendstooearly by activefigures"<<std::endl;
 		throw(TurnEndsTooEarly());
 	}
 	(++m_nationAtCurrentTurnIndex)%= (m_nationsPlaying.size());
@@ -81,6 +82,7 @@ void Game::m_startNewTurn(){
 	catch(TurnEndsTooEarly& theException){
 		std::cout<<theException.what()<<std::endl;
 		m_nationAtCurrentTurnIndex = temp;
+		return;
 	}
 }
 

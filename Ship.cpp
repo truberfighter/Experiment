@@ -71,16 +71,13 @@ Ship::~Ship(){
 		}
 		if(cargoCapability >= 0){
 			lol = false;
-		std::cout<<"lol"<<std::endl;
 			goto destructorend;
 		}
 		else{
 			for(std::shared_ptr<Figure> currentFigure: m_whereItStands->m_FiguresOnField()){
 				if(currentFigure->m_FigureCategory()==GROUND){
 					lol = true;
-					std::cout<<"deleting begun of "<<currentFigure->m_FigureType()<<std::endl;
 					currentFigure->m_Nation()->m_destroyFigure(currentFigure);
-					std::cout<<"deleting complete of "<<currentFigure->m_FigureType()<<std::endl;
 					goto whilebegin;
 				}
 			}

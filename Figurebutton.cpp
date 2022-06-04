@@ -70,7 +70,6 @@ std::shared_ptr<Figure> Figurebutton::operator()(){
 					else{
 						quit = true;
 					}
-					std::cout<<"for to entry"<<std::endl;
 					for(Subbutton& currentSubbutton: subbuttons){
 						currentSubbutton.figure->m_drawFigureSomewhere(currentRectToDraw.x,currentSubbutton.yToDraw);
 					}
@@ -82,13 +81,11 @@ std::shared_ptr<Figure> Figurebutton::operator()(){
 	}
 	std::cout<<"nr = "<<nr<<", size = "<<size<<std::endl;
 	for(std::shared_ptr<Figure> comparedFigure: theGame->m_NationAtCurrentTurn()->m_activeFigures){
-		std::cout<<"Z.83"<<std::endl;
 		if(subbuttons[nr].figure.get()==comparedFigure.get()){
-std::cout<<"Z.85"<<std::endl;
 			return comparedFigure;
 		}
 	}
-	std::cout<<"nullptr-return"<<std::endl;
+	std::cout<<"nullptr-return in figurebutton"<<std::endl;
 	return nulll;
 }
 

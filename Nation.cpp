@@ -127,17 +127,18 @@ void Nation::m_startNewTurn(){
 		}
 	m_activeFigures = std::list<std::shared_ptr<Figure>>();
 	cout<<"Nation::m_startNewTurn(), m_figures.size() = "<<m_figures.size()<<", m_activeFiguresSize = "<<m_activeFigures.size()<<std::endl;
+	for(std::shared_ptr<City> currentCityStarting: m_cities){
+		currentCityStarting->m_startNewTurn();
+	}
 	for(std::shared_ptr<Figure>& currentFigure : m_figures){
 		if(!currentFigure->m_startMove()){
 			cout<<"Not what I wanted!"<<std::endl;
 			throw(MoveStartFail("not yet defined"));
 		}
 		if(currentFigure->m_FigureState()==MOVING){
-
-
 		cout<<"m_startNewTurn"<<endl<<"m_activeFiguresSize: "<<m_activeFigures.size();
 			if(m_addToQueue(currentFigure))
-			cout<< m_activeFigures.front()<<std::endl;
+				cout<< m_activeFigures.front()<<std::endl;
 //			cout<<", m_activeFigures.size() = "<<m_activeFigures.size()<<", &m_activeFigures = "<<&m_activeFigures<<", nation = "<<this<<endl;
 		}
 	}

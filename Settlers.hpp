@@ -39,7 +39,7 @@ public:
 	short unsigned int m_defaultMovementPoints();
 	FigureCategory m_FigureCategory()override;
 	std::shared_ptr<City> m_foundNewCity(std::string name);
-	void m_addToCity(std::string name);
+	bool m_addToCity();
 	std::shared_ptr<MovableThing> m_createImage() override;
 	int m_shieldCost();
 	bool m_canBuildRailroad();

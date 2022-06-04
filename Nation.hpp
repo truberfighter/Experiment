@@ -15,7 +15,7 @@ class City;
 
 class Nation: public std::enable_shared_from_this<Nation>{
 private:
-
+	std::shared_ptr<City> m_capitalCity;
 	std::vector<std::shared_ptr<City>> m_cities;
 	GovernmentType m_government = DESPOTISM;
 	Nationality m_nation;
@@ -24,7 +24,9 @@ private:
 	std::list<std::shared_ptr<Figure>> m_activeFigures;
 	bool m_directlyMakingFiguresActive = false;
 public:
-	std::vector<std::shared_ptr<City>> m_Cities(){return m_cities;}
+	std::shared_ptr<City> m_CapitalCity(){return m_capitalCity;}
+	void m_setCapitalCity(std::shared_ptr<City> city){m_capitalCity = city;}
+	std::vector<std::shared_ptr<City>>& m_Cities(){return m_cities;}
 	~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 	static Coordinate getStandardCoordinateForNation(Nationality n);
 	Nation(Nationality n = ROMAN, std::string leaderName = "", bool directlyMakingFiguresActive = false);

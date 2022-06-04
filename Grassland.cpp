@@ -42,16 +42,15 @@ int Grassland::m_shields(){
 }
 
 int Grassland::m_food(){
-	int count = 6;
-		if(m_isIrrigated)
-			count++;
-		return count;
+	int count = 2;
+	if(m_irrigationBonus())
+		count++;
+	return count;
 }
 
 int Grassland::m_trade() IS_CLASSICALLY_ROAD_BASED
 std::string Grassland::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
 Landscape Grassland::m_Landscape() const{
-	//std::cout<<"Grassland::Landscape"<<std::endl;
 	return GRASSLAND;
 }
 short int Grassland::m_howLongToTake(SettlersWork work){

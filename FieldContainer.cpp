@@ -31,27 +31,23 @@ FieldContainer::FieldContainer(int howHigh, int howWide)
 		Meridian newMeridian;
 		for(int j(0); j<howHigh; j++){
 			if((i+j)%2==0)
-				newMeridian.push_back(make_unique<Grassland>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
+				newMeridian.push_back(make_unique<Plains>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
 			else
 				newMeridian.push_back(make_unique<Ocean>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
 
 		}
-	//	cout<<"Zeile 27"<<endl;
 m_fieldsOfTheWorld->push_back(newMeridian);
 }
 	theContainer = this;
 }
 
 std::vector<Meridian>* FieldContainer::m_getFieldsOfTheWorld(){
-	//if(m_fieldsOfTheWorld) cout <<"kein nullptr"<<endl;
-	//cout<<"bla"<<g.size()<<endl;
 	return m_fieldsOfTheWorld;
 }
 
 void initFieldContainer(){
 theContainer = new FieldContainer(WORLD_HEIGHT, WORLD_LENGTH);
-//FieldContainer &d = *FieldContainer::theContainer;cout<<"defined reference"<<endl;
-if(FieldContainer::getTheContainer()->m_fieldsOfTheWorld) cout<<"kein nullptr Z. 41"<<endl;
+//FieldContainer &d = *FieldContainer::theContainer;
 }
 
 FieldContainer::FieldContainer(): FieldContainer(WORLD_HEIGHT, WORLD_LENGTH){}
@@ -90,7 +86,7 @@ void FieldContainer::initContinentIDs(){
 	}
 	for(unsigned int i(0); i< xsize;i++){
 		for(unsigned int j(0); j<ysize; j++){
-			//cout<<"i = "<<i<<", j = "<<j<<", m_continentID = "<<vectorToWorkWith[i][j]->m_continentID<<endl;
+			0;
 		}
 	}
 }

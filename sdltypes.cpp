@@ -80,7 +80,8 @@ bool Coordinate::operator!=(const Coordinate& other){
 }
 
 int Graphics::drawSquareLines(SDL_Renderer* renderer, int x, int y, SDL_Color color){
-	if(SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a)!=0) std::cout<<"SDL_Error in DrawSquareLines: \n"<<SDL_GetError()<<std::endl;
+	if(SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a)!=0)
+		std::cout<<"SDL_Error in DrawSquareLines: \n"<<SDL_GetError()<<std::endl;
 	int whatToReturn = 0;
 	whatToReturn+=Graphics::drawThickerVerticalLine(renderer, x,y);
 	whatToReturn+=Graphics::drawThickerVerticalLine(renderer, x+STANDARD_FIELD_SIZE-STANDARD_LINE_THICKNESS,y);
@@ -90,7 +91,8 @@ int Graphics::drawSquareLines(SDL_Renderer* renderer, int x, int y, SDL_Color co
 }
 
 int Graphics::drawSquareStarLines(SDL_Renderer* renderer, int x, int y, SDL_Color color){
-	if(SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a)!=0) std::cout<<"SDL_Error in DrawSquareLines: \n"<<SDL_GetError()<<std::endl;
+	if(SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a)!=0)
+		std::cout<<"SDL_Error in DrawSquareLines: \n"<<SDL_GetError()<<std::endl;
 	int whatToReturn = 0;
 		whatToReturn+=Graphics::drawThickerVerticalLine(renderer, x+STANDARD_FIELD_SIZE/2-STANDARD_LINE_THICKNESS/2,y);
 		whatToReturn+=Graphics::drawThickerDiagonalLineDown(renderer, x,y);
@@ -232,18 +234,18 @@ std::ostream & operator <<(std::ostream & os, Coordinate & co)
 	return os;
 }
 
-int SDL_SetRenderDrawColor(SDL_Renderer* renderer, SDL_Color& color){
+int SDL_SetRenderDrawColor(SDL_Renderer* renderer, SDL_Color color){
 	return SDL_SetRenderDrawColor(renderer, (unsigned char) color.r,(unsigned char)color.g,(unsigned char)color.b,(unsigned char)color.a);
 }
 
 CitizenState operator++(CitizenState& state){
 	switch(state){
 	case UNHAPPY:
-		return CONTENT;
+		return state = CONTENT;
 	case HAPPY:
 		throw InertCitizenState(HAPPY);
 	case CONTENT:
-		return HAPPY;
+		return state = HAPPY;
 	case TAX_COLLECTOR:
 		throw InertCitizenState(TAX_COLLECTOR);
 	case ENTERTAINER:
@@ -260,9 +262,9 @@ CitizenState operator--(CitizenState& state){
 	case UNHAPPY:
 		throw InertCitizenState(UNHAPPY);
 	case HAPPY:
-		return CONTENT;
+		return state = CONTENT;
 	case CONTENT:
-		return UNHAPPY;
+		return state = UNHAPPY;
 	case TAX_COLLECTOR:
 		throw InertCitizenState(TAX_COLLECTOR);
 	case ENTERTAINER:
@@ -275,8 +277,9 @@ CitizenState operator--(CitizenState& state){
 }
 
 int whiteOrYellow(int X, int Y, int relativeX, int relativeY, SDL_Renderer* renderer){
-	SDL_Color coloryellow{255,255,150};
-	SDL_Color colorwhite{235,235,235};int WhatToReturn = 0;
+	SDL_Color coloryellow = Graphics::Civ::yellowColor();
+	SDL_Color colorwhite = Graphics::Civ::resourcesWhiteColor();
+	int WhatToReturn = 0;
 	if((X-relativeX +Y -relativeY) % 2 ==0){
 		WhatToReturn += SDL_SetRenderDrawColor(renderer, coloryellow);
 	}
@@ -337,7 +340,6 @@ int Graphics::Civ::drawFood(SDL_Renderer* renderer, int x, int y, int scaleFacto
 		}
 	}
 }
-	std::cout<<"food drawn"<<std::endl;
 	if(minus){
 		SDL_SetRenderDrawColor(theRenderer, blackColor);
 		int yCoordinateBlack[] = {0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6,6,6,6,6};
@@ -355,9 +357,101 @@ int Graphics::Civ::drawFood(SDL_Renderer* renderer, int x, int y, int scaleFacto
 				}
 			}
 		}
-		std::cout<<"food drawn"<<std::endl;
 	}
 
 
+	return whatToReturn;
+}
+
+SDL_Color Graphics::Civ::brightCityBackgroundColor(){
+	return SDL_Color{125,125,255};
+}
+
+SDL_Color Graphics::Civ::shieldGreyColor(){return SDL_Color{138,138,142};}
+SDL_Color Graphics::Civ::resourcesWhiteColor(){return SDL_Color{235,235,235};}
+int Graphics::Civ::drawShield(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus){
+	int whatToReturn = 0;
+	SDL_Color colorblack = blackColor;
+	SDL_Color colorgrey = Graphics::Civ::shieldGreyColor();
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, colorgrey);
+	int xCoordinateGrey[]={2,3,4,3,3};
+	int yCoordinateGrey[]={1,1,1,3,4};
+	for(int i(0); i<5; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateGrey[i], y+scaleFactor*yCoordinateGrey[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_SetRenderDrawColor(theRenderer, blackColor);
+	int xCoordinateBlack[]={1,2,3,4,5,0,6,0,6,0,6,0,6,1,5,2,3,4};
+	int yCoordinateBlack[]={0,0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,6};
+	for(int i(0); i<18; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateBlack[i], y+scaleFactor*yCoordinateBlack[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	if(!minus){
+		SDL_Color colorwhite = Graphics::Civ::resourcesWhiteColor();
+		whatToReturn+=SDL_SetRenderDrawColor(renderer, colorwhite);
+	}
+	int xCoordinateWhite[] = {1,5,1,2,3,4,5,1,2,4,5,1,2,4,5,2,3,4};
+	int yCoordinateWhite[] = {1,1,2,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5};
+	for(int i(0); i<18; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateWhite[i], y+scaleFactor*yCoordinateWhite[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	return whatToReturn;
+}
+
+int Graphics::Civ::drawTrade(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool corruption){
+	int whatToReturn = 0;
+	SDL_Color colorblack = blackColor;
+	SDL_Color coloryellow = Graphics::Civ::yellowColor();
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, coloryellow);
+	int xCoordinateYellow[]={6,5,2,4,2,3,2,3,4};
+	int yCoordinateYellow[]={2,3,4,4,5,5,6,6,6};
+	for(int i(0); i<9; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateYellow[i], y+scaleFactor*yCoordinateYellow[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_SetRenderDrawColor(theRenderer, blackColor);
+	int xCoordinateBlack[]={5,2,5,1,3,5,0,2,4,6,1,3,5,1,4,1};
+	int yCoordinateBlack[]={0,1,1,2,2,2,3,3,3,3,4,4,4,5,5,6};
+	for(int i(0); i<16; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateBlack[i], y+scaleFactor*yCoordinateBlack[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	if(!corruption){
+		SDL_Color colorwhite = Graphics::Civ::resourcesWhiteColor();
+		whatToReturn+=SDL_SetRenderDrawColor(renderer, colorwhite);
+	}
+	int xCoordinateWhite[] = {2,3,4,3,4,2,4,1,0};
+	int yCoordinateWhite[] = {0,0,0,1,1,2,2,3,4};
+	for(int i(0); i<9; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateWhite[i], y+scaleFactor*yCoordinateWhite[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	return whatToReturn;
+}
+
+SDL_Color Graphics::Civ::yellowColor(){
+	return SDL_Color{255,255,150};
+}
+
+int Graphics::Civ::drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int scaleFactor){
+	int whatToReturn = 0;
+	SDL_Color colorblack = blackColor;
+	SDL_Color coloryellow = Graphics::Civ::yellowColor();
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, coloryellow);
+	int xCoordinateYellow[]={2,4};
+	int yCoordinateYellow[]={2,2};
+	for(int i(0); i<2; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateYellow[i], y+scaleFactor*yCoordinateYellow[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_SetRenderDrawColor(theRenderer, blackColor);
+	int xCoordinateBlack[]={1,2,3,4,5,0,1,2,3,4,5,6,0,1,3,5,6,0,1,2,3,4,5,6,0,1,5,6,0,2,3,4,6,1,2,3,4,5};
+	int yCoordinateBlack[]={0,0,0,0,0,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5,5,6,6,6,6,6};
+	for(int i(0); i<38; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateBlack[i], y+scaleFactor*yCoordinateBlack[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
 	return whatToReturn;
 }

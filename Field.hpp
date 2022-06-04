@@ -46,6 +46,8 @@ protected:
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
+	bool m_irrigationBonus();
+	static std::vector<Coordinate> coordinatesAroundCity();
 	Citizen* m_CitizenWorking(){return m_citizenWorking;}
 	bool m_setCitizenWorking(Citizen* citizen){if(m_cityContained!=nullptr) return false; m_citizenWorking = (m_citizenWorking == nullptr ? citizen : m_citizenWorking); return m_citizenWorking == citizen;}
 	short unsigned int m_getCargoCapability(Figure& figureToEnter);

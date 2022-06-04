@@ -24,6 +24,8 @@ class Nation;
 class Improvement;
 class TradeRoute;
 class City;
+class Subsurface;
+class CitySurface;
 
 struct UnitCostingResources{
 	Figure* figure;
@@ -42,18 +44,37 @@ public:
 
 };
 
+class Subsurface{
+public:
+	CitySurface* m_surface;
+	Subsurface(CitySurface* surface);
+	SubSurfaceState m_state = SUBSURFACE_INFO;
+	void m_draw();
+	void m_drawFigures();
+	void m_drawHappy();
+	void m_handleMouseClick(int x, int y);
+};
+
 class CitySurface{
 private:
 	City* m_associatedCity;
+	std::unique_ptr<Subsurface> m_subsurface;
 public:
 	CitySurface(City* city);
+	void m_drawSubsurfaceButtons();
 	void m_displaySurface(SDL_Renderer* renderer);
-	void m_drawCitizens(SDL_Renderer* renderer, int x, int y);
+	void m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backgroundWidth = SCREEN_WIDTH - IMPROVEMENTS_OVERVIEW_WIDTH);;
 	void m_drawFoodProduction();
 	void m_drawShieldProduction();
 	void m_drawTradeProduction();
 	void m_drawProduction();
+	void m_drawFoodStorage();
+	void m_drawCityFields();
+	void m_drawFigures();
+	friend class Subsurface;
 };
+
+
 
 class City: public std::enable_shared_from_this<City> {
 public:
@@ -64,8 +85,8 @@ private:
 	std::string m_name;
 	std::vector<Citizen> m_citizens;
 	std::list<std::shared_ptr<Figure>> m_figuresOwned;
-	unsigned int m_shields = 0;
-	unsigned int m_food = 0;
+	int m_shields = 0;
+	int m_food = 0;
 	std::vector<std::shared_ptr<TradeRoute>> m_tradeRoutes;
 
 public:
@@ -81,7 +102,7 @@ public:
 	friend class CitySurface;
 	CitySurface m_createCitySurface(){return CitySurface(this);}
 	int m_foodStorageSize();
-	std::vector<CitizenState> m_applyCitizenStateVector();
+	std::vector<CitizenState> m_applyCitizenStateVector(HappyVectorType flag = HAPPY_ALL);
 	int m_foodCost();
 	int m_shieldCost();
 	std::vector<UnitCostingResources> m_unitCostVector();
@@ -92,7 +113,14 @@ public:
 	int m_corruptionProduction();
 	int m_goldProduction();
 	int m_sciencdProduction();
-	int m_luxuriesPRoduction();
+	int m_luxuriesProduction();
+	void m_startNewTurn();
+	void m_sortFiguresByValue();
+	void m_grow();
 };
+
+template<typename T>
+bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2));
+
 
 #endif /* CITY_HPP_ */
