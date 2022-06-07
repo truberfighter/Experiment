@@ -56,7 +56,7 @@ enum CitySurfaceSize{FOOD_STORAGE_HEIGHT = 138*8*RESOURCES_SCALEFACTOR/12, FOOD_
 RESOURCE_TEXT_SHIELD_DIFFERENCE = RESOURCES_SCALEFACTOR*8, FIGURE_OVERVIEW_HEIGHT = 2*STANDARD_FIELD_SIZE,
 SHIELD_OVERVIEW_WIDTH = 10*8*RESOURCES_SCALEFACTOR};
 enum SubSurfaceSize{
-	SUBSURFACE_BUTTON_HEIGHT = 30, SUBSURFACE_HEIGHT = FOOD_STORAGE_HEIGHT + CITIZENS_OVERVIEW_HEIGHT, SUBSURFACE_WIDTH = SCREEN_WIDTH - FOOD_STORAGE_WIDTH - SHIELD_OVERVIEW_WIDTH
+	SUBSURFACE_BUTTON_HEIGHT = 30, SUBSURFACE_HEIGHT = FOOD_STORAGE_HEIGHT, SUBSURFACE_WIDTH = SCREEN_WIDTH - FOOD_STORAGE_WIDTH - SHIELD_OVERVIEW_WIDTH
 };
 enum CitizenDrawingContext{CITIZENCONTEXT_SURFACE,CITIZENCONTEXT_SUBSURFACE};
 enum HappyVectorType{HAPPY_ALL = 0, HAPPY_1 = 1, HAPPY_2 = 2, HAPPY_3 = 3, HAPPY_4 = 4};
@@ -227,7 +227,7 @@ std::ostream& operator<<(std::ostream& os, FigureType figureType);
 std::ostream& operator<<(std::ostream& os, MovementPoints mp);
 std::ostream& operator<<(std::ostream& os, Coordinate &co);
 
-#define PRINT_I_J 			cout<<"i = "<<i<<", j = "<<j<<endl;
+#define PRINT_I_J 			std::cout<<"i = "<<i<<", j = "<<j<<std::endl;
 
 namespace Coordinates{
 constexpr int leftCornerX(){return FIGURE_INFO_WIDTH;}

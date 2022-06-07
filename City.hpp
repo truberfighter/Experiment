@@ -63,7 +63,7 @@ public:
 	CitySurface(City* city);
 	void m_drawSubsurfaceButtons();
 	void m_displaySurface(SDL_Renderer* renderer);
-	void m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backgroundWidth = SCREEN_WIDTH - IMPROVEMENTS_OVERVIEW_WIDTH);;
+	void m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backgroundWidth = SCREEN_WIDTH - IMPROVEMENTS_OVERVIEW_WIDTH, int backgroundHeight = CITIZENS_OVERVIEW_HEIGHT, HappyVectorType flag = HAPPY_ALL);
 	void m_drawFoodProduction();
 	void m_drawShieldProduction();
 	void m_drawTradeProduction();

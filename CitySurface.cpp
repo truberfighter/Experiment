@@ -20,17 +20,17 @@ Subsurface::Subsurface(CitySurface* surface):m_surface(surface)
 	m_state = SUBSURFACE_HAPPY;
 }
 
-void CitySurface::m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backgroundWidth){
+void CitySurface::m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backgroundWidth, int backgroundHeight, HappyVectorType flag){
 	SDL_Color backgroundColor (Graphics::Civ::cityBackgroundColor());
 	SDL_SetRenderDrawColor(theRenderer, backgroundColor);
-	SDL_Rect backgroundRect{x,y,backgroundWidth, CITIZENS_OVERVIEW_HEIGHT};
+	SDL_Rect backgroundRect{x,y,backgroundWidth, backgroundHeight};
 	SDL_RenderFillRect(theRenderer, &backgroundRect);
-	int currentX = x + FIRST_CITIZEN_X;
-	int yToDraw = y + CITIZENS_OVERVIEW_HEIGHT - CITIZEN_HEIGHT*CITIZEN_SCALEFACTOR;
+	unsigned int currentX = x + FIRST_CITIZEN_X;
+	unsigned int yToDraw = y + backgroundHeight - CITIZEN_HEIGHT*CITIZEN_SCALEFACTOR;
 	bool female = false;
-	std::vector<CitizenState> citizenVector = m_associatedCity->m_applyCitizenStateVector();
+	std::vector<CitizenState> citizenVector = m_associatedCity->m_applyCitizenStateVector(flag);
 	CitizenState currentState;
-	for(int i(0); i<citizenVector.size(); i++){
+	for(unsigned int i(0); i<citizenVector.size(); i++){
 		if(i==0 || currentState!=citizenVector[i-1]){
 			female = false;
 		}
@@ -73,9 +73,9 @@ void CitySurface::m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backg
 		filenameStream<<".png";
 		filenameStream.flush();
 		SDL_Texture* textureToDraw = IMG_LoadTexture(theRenderer, filenameStream.str().c_str());
-		SDL_Rect rectToFill{currentX, yToDraw, CITIZEN_SCALEFACTOR*(currentState == ENTERTAINER ? 8 : 7), CITIZEN_SCALEFACTOR*CITIZEN_HEIGHT};
+		SDL_Rect rectToFill{currentX, (int) yToDraw, CITIZEN_SCALEFACTOR*(currentState == ENTERTAINER ? 8 : 7), CITIZEN_SCALEFACTOR*CITIZEN_HEIGHT};
 		SDL_RenderCopy(theRenderer, textureToDraw, NULL, &rectToFill);
-		currentX+=CITIZEN_MAX_WIDTH;
+		currentX+=CITIZEN_MAX_WIDTH*CITIZEN_SCALEFACTOR;
 		SDL_DestroyTexture(textureToDraw);
 	}
 }
@@ -313,7 +313,6 @@ void Subsurface::m_drawHappy(){
 	int xToStart = FOOD_STORAGE_WIDTH;
 	int yToStart = SCREEN_HEIGHT - SUBSURFACE_HEIGHT + SUBSURFACE_BUTTON_HEIGHT + 2;
 	for(int i(0); i<5;i++){
-		m_surface->m_associatedCity->m_applyCitizenStateVector(flag[i]);
-		m_surface->m_drawCitizens(theRenderer, xToStart, yToStart+CITIZENS_OVERVIEW_HEIGHT*i, SUBSURFACE_WIDTH);
+		m_surface->m_drawCitizens(theRenderer, xToStart, yToStart+((SUBSURFACE_HEIGHT - SUBSURFACE_BUTTON_HEIGHT)/5)*i - 1, SUBSURFACE_WIDTH, (SUBSURFACE_HEIGHT -SUBSURFACE_BUTTON_HEIGHT)/5, flag[i]);
 	}
 }

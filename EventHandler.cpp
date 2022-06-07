@@ -9,13 +9,20 @@
 #include <iostream>
 #include "sdltypes.hpp"
 #include "Figure.hpp"
+#include "GameMain.hpp"
 #include <sstream>
 #include <list>
 #define NO_EVENT_HANDLING_FOUND return true;
 
 Game* theGame;
 
-void EventHandler::m_showFigureInfo(){
+void EventHandler::m_setCurrentDrawing(std::shared_ptr<Drawing> drawing){
+	m_currentDrawing = drawing;
+}
+EventHandler::EventHandler()
+:  m_currentDrawing(nullptr)
+{}
+void GameMain::m_showFigureInfo(){
 	SDL_Color& backgroundColor = infoTextBackgroundColor;
 	SDL_SetRenderDrawColor(theRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
 	SDL_Rect rectToFill{0,FIGURE_INFO_Y,FIGURE_INFO_WIDTH, SCREEN_HEIGHT-INFO_TEXT_Y};
@@ -59,7 +66,7 @@ void EventHandler::m_showFigureInfo(){
 
 }
 
-void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
+void GameMain::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	if(!whatToMove)
 		std::cout<<"Nun kann man sich nicht mehr bewegen!"<<std::endl;
 	m_whatToMove = whatToMove;
@@ -70,11 +77,8 @@ void EventHandler::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 	}
 }
 
-EventHandler::EventHandler()
-: m_whatToMove(nullptr), m_currentDrawing(nullptr)
-{}
 
-bool EventHandler::m_handleEvent(const SDL_Event& event){
+bool GameMain::m_handleEvent(const SDL_Event& event){
 	if(event.type == SDL_KEYDOWN){
 		if(!m_handleKeyboardEvent(event)){
 			std::cout<<"No EventHandling found!"<<std::endl;
@@ -101,7 +105,7 @@ bool EventHandler::m_handleEvent(const SDL_Event& event){
 	return false;
 }
 
-bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
+bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){
 	m_setWhatToMove(theGame->m_getCurrentFigure());
 	KeyCode keyCode = event.key.keysym.sym;
 	std::cout<<"Man hat den KeyCode "<<keyCode<<std::endl;
@@ -163,11 +167,8 @@ bool EventHandler::m_handleKeyboardEvent(const SDL_Event& event){
 	return true;
 }
 
-void EventHandler::m_setCurrentDrawing(std::shared_ptr<Drawing> drawing){
-	m_currentDrawing = drawing;
-}
 
-int EventHandler::m_drawMainDrawing(){
+int GameMain::m_drawMainDrawing(){
 	SDL_SetRenderDrawColor(theRenderer,30,30,30,0);
 	SDL_RenderClear(theRenderer);
 	int whatToReturn = 0;

@@ -22,25 +22,18 @@ class Figure;
 
 class EventHandler{
 protected:
-	int m_drawMainDrawing();
-	Coordinate m_topLeftCorner = Coordinate(0,0);
-	virtual bool m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent) = 0;
-	std::shared_ptr<Figure> m_whatToMove;
-	//Direction m_directionFromKeyPressed(unsigned int keysym);
-	bool m_handleKeyboardEvent(const SDL_Event& event);
 	std::list<Drawing*> m_currentDrawings;//Oder so. Damit "Wait" funktioniert.
 	std::shared_ptr<Drawing> m_currentDrawing;
 	void m_showFigureInfo();
 public:
-	virtual void m_initInfoDrawing() = 0;
+	virtual ~EventHandler(){}
+	virtual bool m_handleKeyboardEvent(const SDL_Event& event) = 0;
 	virtual void lol(){std::cout<<"virtual EventHandler::lol"<<std::endl;}
 	EventHandler();
-	bool m_handleEvent(const SDL_Event& event);
-	void m_setWhatToMove(std::shared_ptr<Figure> whatToMove);
+	virtual bool m_handleEvent(const SDL_Event& event) = 0;
 	bool m_deleteDrawing(Drawing* drawingToDelete);
 	bool m_addDrawing(Drawing* drawingToAdd);
 	void m_setCurrentDrawing(std::shared_ptr<Drawing> drawing);
-	void m_draw();
 };
 
 extern Game* theGame;

@@ -10,6 +10,7 @@
 #include "Field.hpp"
 #include "Drawing.hpp"
 #include "Game.hpp"
+#include <algorithm>
 
 City::~City() {
 	// TODO Auto-generated destructor stub
@@ -61,6 +62,9 @@ Citizen::Citizen(City& home, std::shared_ptr<Field> whereToWork):m_home(home)
 		if(production < temp && !currentField->m_CityContained() && currentField!=m_home.m_WhereItStands()&& !currentField->m_CitizenWorking()){
 			currentField->m_setCitizenWorking(this);
 			production = temp;
+			if(m_whereItWorks){
+				m_whereItWorks->m_setCitizenWorking(nullptr);
+			}
 			m_whereItWorks = currentField;
 		}
 	}
@@ -131,40 +135,46 @@ bool City::m_takeFigure(std::shared_ptr<Figure> figureToTake){
 }
 
 std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
+	int size = m_size();
 	int contentApplied = 0;
 	int luxuriesToApply = m_luxuriesProduction()/2;
 	int luxuriesApplied = 0;
 	int unhappyApplied = 0;
+	int contentBaseApplied = 0;
 	std::vector<CitizenState> whatToReturn;
-	int i(0);
 	int contentByUnitCount = 0;
 	int unhappyByUnitCount = 0;
 	for(UnitCostingResources& cost: m_unitCostVector()){
 		(cost.unhappyFaces < 0 ? contentByUnitCount : unhappyByUnitCount) -= cost.unhappyFaces;
 	}
 	for(Citizen& citizen: m_citizens){
-		if(++i<=CONTENT_BASE){
+		if(contentBaseApplied<CONTENT_BASE && citizen.m_state != ENTERTAINER && citizen.m_state != TAX_COLLECTOR && citizen.m_state != SCIENTIST){
 		citizen.m_state = CONTENT;
+			contentBaseApplied++;
 		}
 		else{
 			citizen.m_state = UNHAPPY;
 		}
 	}
 	if(flag==HAPPY_1){
+		std::cout<<"happy1goto"<<std::endl;
 		goto beginReturn;
 	}
-	for(Citizen& citizen: m_citizens){
+	for(unsigned int i(0);i<m_citizens.size();i++){
+		Citizen& citizen = m_citizens[size-1-i];
 		try{
 			if(luxuriesApplied>=luxuriesToApply){
 				break;
 			}
 			++citizen.m_state;
 			luxuriesApplied++;
+			std::cout<<"luxuriesApplied = "<<luxuriesApplied<<", luxuriesToApply = "<<luxuriesToApply<<std::endl;
 			if(luxuriesApplied>=luxuriesToApply){
 				break;
 			}
 			++citizen.m_state;
 			luxuriesApplied++;
+			std::cout<<"luxuriesApplied = "<<luxuriesApplied<<", luxuriesToApply = "<<luxuriesToApply<<std::endl;
 		}
 		catch(InertCitizenState& exception){
 			std::cout<<"inert luxury state ";
@@ -173,9 +183,11 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 		}
 	}
 	if(flag==HAPPY_2){
+		std::cout<<"happy2goto"<<std::endl;
 		goto beginReturn;
 	}
-	for(Citizen& citizen: m_citizens){
+	for(int i(0);i<m_citizens.size();i++){
+		Citizen& citizen = m_citizens[size-1-i];
 		try{
 		if(contentApplied >= contentByUnitCount){
 			break;
@@ -194,7 +206,9 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 			continue;
 		}
 	}
+
 	if(flag==HAPPY_3){
+		std::cout<<"happy3goto"<<std::endl;
 		goto beginReturn;
 	}
 	for(Citizen& citizen: m_citizens){
@@ -211,18 +225,17 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 			continue;
 		}
 	}
-	beginReturn:
-	for(Citizen& citizen: m_citizens){
-		whatToReturn.push_back(citizen.m_state);
-	}
-	for(unsigned int i(0); i<m_citizens.size();i++){
-		for(unsigned int j(0); j < m_citizens.size() - i - 1;j++){
+	beginReturn:	for(unsigned int i(0); i<m_citizens.size();i++){
+		for(unsigned int j(0); j < m_citizens.size() - 1;j++){
 			if((int) m_citizens[j].m_state > (int) m_citizens[j+1].m_state){
 				CitizenState temp = m_citizens[j].m_state;
-				m_citizens[j].m_state = m_citizens[i].m_state;
-				m_citizens[i].m_state = temp;
+				m_citizens[j].m_state = m_citizens[j+1].m_state;
+				m_citizens[j+1].m_state = temp;
 			}
 		}
+	}
+	for(Citizen& citizen: m_citizens){
+		whatToReturn.push_back(citizen.m_state);
 	}
 	return whatToReturn;
 }

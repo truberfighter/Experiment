@@ -49,7 +49,7 @@ public:
 	bool m_irrigationBonus();
 	static std::vector<Coordinate> coordinatesAroundCity();
 	Citizen* m_CitizenWorking(){return m_citizenWorking;}
-	bool m_setCitizenWorking(Citizen* citizen){if(m_cityContained!=nullptr) return false; m_citizenWorking = (m_citizenWorking == nullptr ? citizen : m_citizenWorking); return m_citizenWorking == citizen;}
+	bool m_setCitizenWorking(Citizen* citizen){if(m_cityContained!=nullptr) return false; m_citizenWorking = citizen; return true;}
 	short unsigned int m_getCargoCapability(Figure& figureToEnter);
 	bool m_HasFortress(){return m_hasFortress;}
 	const std::list<std::shared_ptr<Figure>>& m_FiguresOnField(){return m_figuresOnField;}

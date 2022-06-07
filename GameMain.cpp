@@ -43,7 +43,7 @@ SDL_Event currentEvent;
 shared_ptr<Drawing> someDrawing;
 
 
-GameMain::GameMain(): EventHandler()
+GameMain::GameMain(): EventHandler(), m_whatToMove(nullptr)
 {
 	m_theWindows.push_back(unique_ptr<Window>());
 	m_initGame();

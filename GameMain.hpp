@@ -18,6 +18,9 @@
 class GameMain: public EventHandler{
 protected:
 	bool m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent);
+	int m_drawMainDrawing();
+	Coordinate m_topLeftCorner = Coordinate(0,0);
+	std::shared_ptr<Figure> m_whatToMove;
 private:
 	void doSomething();
 	std::unique_ptr<Game> m_theGame;
@@ -28,7 +31,11 @@ private:
 	BlinkingState m_currentBlinkingState = VISIBLE();
 	BlinkingTime m_blinkingIntervalTime = STANDARD_BLINKING_INTERVAL_TIME;
 public:
-	void m_initInfoDrawing() override;
+	void _setWhatToMove(std::shared_ptr<Figure> whatToMove);
+	bool m_handleEvent(const SDL_Event& event) override;
+	bool m_handleKeyboardEvent(const SDL_Event& event) override;
+	void m_showFigureInfo();
+	void m_initInfoDrawing();
 	void lol(){this->EventHandler::lol(); std::cout<<"GameMain::lol()"<<std::endl;}
 	GameMain();
 	void m_initLetterTextures();
@@ -42,6 +49,10 @@ public:
 	void gameMainDebug(std::list<SDL_Event>& eventList);
 	std::unique_ptr<Window>& m_currentWindow(){return m_theWindows[m_currentWindowIndex];}
 	void m_makeBlinkingStep();
+	void m_setWhatToMove(std::shared_ptr<Figure> whatToMove);
+	bool m_deleteDrawing(Drawing* drawingToDelete);
+	bool m_addDrawing(Drawing* drawingToAdd);
+	void m_draw();
 };
 
 extern SDL_Texture *theTexture;
