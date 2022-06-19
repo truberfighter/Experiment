@@ -8,11 +8,26 @@
 #include "Field.hpp"
 #include "Drawing.hpp"
 #include "City.hpp"
+#include "CitySurface.hpp"
 #include "sstream"
+
+class IrrelevantClick{
+
+};
+
+template<typename T>
+bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2)){
+	for(T& t: theVector){
+		if(equals(whatToFind, t)){
+			return true;
+		}
+	}
+	return false;
+}
 
 CitySurface::CitySurface(City* city): m_associatedCity(city)
 {
-	m_subsurface = std::make_unique<Subsurface>(this);
+	m_subsurface = std::make_shared<Subsurface>(this);
 }
 
 Subsurface::Subsurface(CitySurface* surface):m_surface(surface)
@@ -73,7 +88,7 @@ void CitySurface::m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backg
 		filenameStream<<".png";
 		filenameStream.flush();
 		SDL_Texture* textureToDraw = IMG_LoadTexture(theRenderer, filenameStream.str().c_str());
-		SDL_Rect rectToFill{currentX, (int) yToDraw, CITIZEN_SCALEFACTOR*(currentState == ENTERTAINER ? 8 : 7), CITIZEN_SCALEFACTOR*CITIZEN_HEIGHT};
+		SDL_Rect rectToFill{(int) currentX, (int) yToDraw, CITIZEN_SCALEFACTOR*(currentState == ENTERTAINER ? 8 : 7), CITIZEN_SCALEFACTOR*CITIZEN_HEIGHT};
 		SDL_RenderCopy(theRenderer, textureToDraw, NULL, &rectToFill);
 		currentX+=CITIZEN_MAX_WIDTH*CITIZEN_SCALEFACTOR;
 		SDL_DestroyTexture(textureToDraw);
@@ -81,17 +96,29 @@ void CitySurface::m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backg
 }
 
 void CitySurface::m_displaySurface(SDL_Renderer* renderer){
-	SDL_SetRenderDrawColor(theRenderer, brownColor);
-	SDL_RenderClear(renderer);
-	m_drawFoodProduction();
-	m_drawShieldProduction();
-	m_drawFoodStorage();
-	m_drawCitizens(renderer, 0,0);
-	m_drawCityFields();
-	m_drawFigures();
-	m_drawSubsurfaceButtons();
-	m_subsurface->m_draw();
-	SDL_RenderPresent(theRenderer);
+	m_drawSurface(theRenderer);
+	std::cout<<"displaySurface"<<std::endl;
+	SDL_Event e;
+	bool quitSurface = false;
+	while(!quitSurface){
+		try{
+		while(SDL_PollEvent(&e)){
+			if(e.type == SDL_QUIT){
+				throw SDLQuitException();
+			}
+			if(m_handleEvent(e)){
+				m_drawSurface(theRenderer);
+			}
+		}
+		}
+		catch(QuitSurface &qs){
+			quitSurface = true;
+		}
+		catch(SDLQuitException& sdlqe){
+			throw sdlqe;
+		}
+}
+	std::cout<<"displaySurfaceEnd"<<std::endl;
 }
 
 void CitySurface::m_drawFoodProduction(){
@@ -196,16 +223,17 @@ void CitySurface::m_drawCityFields(){
 		int productionIconIndex = 0;
 		int productionTotal = fieldVector[i]->m_food(nation)+fieldVector[i]->m_shields(nation)+fieldVector[i]->m_trade(nation);
 		int iconsPerRow = std::min(4,std::max((productionTotal+1)/2,2));
+		int distance = 8*2/iconsPerRow;
 		for(int j(0); j<fieldVector[i]->m_food(nation); j++){
-			Graphics::Civ::drawFood(theRenderer, fieldX + (productionIconIndex % iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, fieldY + (productionIconIndex / iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, RESOURCES_SCALEFACTOR_CITY_OVERVIEW, false);
+			Graphics::Civ::drawFood(theRenderer, fieldX + (productionIconIndex % iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*distance, fieldY + (productionIconIndex / iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, RESOURCES_SCALEFACTOR_CITY_OVERVIEW, false);
 			productionIconIndex++;
 		}
 		for(int j(0); j<fieldVector[i]->m_shields(nation); j++){
-			Graphics::Civ::drawShield(theRenderer, fieldX + (productionIconIndex % iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, fieldY + (productionIconIndex / iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, RESOURCES_SCALEFACTOR_CITY_OVERVIEW);
+			Graphics::Civ::drawShield(theRenderer, fieldX + (productionIconIndex % iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*distance, fieldY + (productionIconIndex / iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, RESOURCES_SCALEFACTOR_CITY_OVERVIEW);
 			productionIconIndex++;
 		}
 		for(int j(0); j<fieldVector[i]->m_trade(nation); j++){
-			Graphics::Civ::drawTrade(theRenderer, fieldX + (productionIconIndex % iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, fieldY + (productionIconIndex / iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, RESOURCES_SCALEFACTOR_CITY_OVERVIEW, false);
+			Graphics::Civ::drawTrade(theRenderer, fieldX + (productionIconIndex % iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*distance, fieldY + (productionIconIndex / iconsPerRow)*RESOURCES_SCALEFACTOR_CITY_OVERVIEW*8, RESOURCES_SCALEFACTOR_CITY_OVERVIEW, false);
 			productionIconIndex++;
 		}
 		if(productionTotal==0){
@@ -243,8 +271,9 @@ void CitySurface::m_drawFigures(){
 					cost = currentCost;
 				}
 			}
-			std::cout<<"figure: "<<cost.figure<<", foodCost: "<<cost.foodCost<<", shieldCost = "<<cost.shieldCost<<", unhappyFaces: "<<cost.unhappyFaces<<std::endl;
+			std::cout<<"figure: "<<cost.figure<<", foodCost: "<<cost.foodCost<<", shieldCost = "<<cost.shieldCost<<", unhappyFaces: "<<cost.unhappyFaces<<", unitCostVector.sizw() = "<<costVector.size()<<std::endl;
 			if(cost.figure!=nullptr){
+				std::cout<<"figure keine nullptr"<<std::endl;
 				int itemCount = 0;
 				for(;itemCount<cost.foodCost;itemCount++){
 					Graphics::Civ::drawFood(theRenderer, x+(itemCount%2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), y+(itemCount/2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), RESOURCES_SCALEFACTOR_CITY_OVERVIEW);
@@ -264,8 +293,7 @@ void CitySurface::m_drawSubsurfaceButtons(){
 	for(int i(0); i<4;i++){
 		SDL_SetRenderDrawColor(theRenderer, (i==(int) m_subsurface->m_state) ? Graphics::Civ::resourcesWhiteColor() : Graphics::Civ::brightCityBackgroundColor());
 		SDL_Rect buttonRect{FOOD_STORAGE_WIDTH + i*(SUBSURFACE_WIDTH/4),SCREEN_HEIGHT - SUBSURFACE_HEIGHT,SUBSURFACE_WIDTH/4,SUBSURFACE_BUTTON_HEIGHT};
-		std::cout<<SDL_RenderFillRect(theRenderer, &buttonRect)<<std::endl;
-		std::cout<<"buttonRect.x = "<<buttonRect.x<<", buttonRect.y = "<<buttonRect.y<<", buttonRect.w = "<<buttonRect.w<<", buttonRect.h = "<<buttonRect.h<<std::endl;
+		SDL_RenderFillRect(theRenderer, &buttonRect);
 		std::string text;
 		switch(i){
 		case (int)SUBSURFACE_INFO:{text="INFO"; break;}
@@ -304,7 +332,7 @@ void Subsurface::m_drawFigures(){
 		int y = yToStart + figuresDrawn*STANDARD_FIELD_SIZE*(figuresDrawn/figuresPerRow);
 		currentFigure->m_drawFigureSomewhere(x,y);
 		figuresDrawn++;
-		std::cout<<"x = "<<x<<", y = "<<y<<", figuresDrawn = "<<figuresDrawn<<std::endl;
+		//std::cout<<"x = "<<x<<", y = "<<y<<", figuresDrawn = "<<figuresDrawn<<std::endl;
 	}
 }
 
@@ -314,5 +342,199 @@ void Subsurface::m_drawHappy(){
 	int yToStart = SCREEN_HEIGHT - SUBSURFACE_HEIGHT + SUBSURFACE_BUTTON_HEIGHT + 2;
 	for(int i(0); i<5;i++){
 		m_surface->m_drawCitizens(theRenderer, xToStart, yToStart+((SUBSURFACE_HEIGHT - SUBSURFACE_BUTTON_HEIGHT)/5)*i - 1, SUBSURFACE_WIDTH, (SUBSURFACE_HEIGHT -SUBSURFACE_BUTTON_HEIGHT)/5, flag[i]);
+	}
+}
+
+bool CitySurface::m_handleEvent(const SDL_Event& event){
+	try{
+		if(event.type == SDL_KEYDOWN){
+	std::cout<<"Man hat den SurfaceKeyCode "<<event.key.keysym.sym<<std::endl;
+		if(m_handleKeyboardEvent(event)){
+			m_drawSurface(theRenderer);
+			return true;
+		}
+		else{
+			throw(QuitSurface());
+		}
+	}
+	if(event.type == SDL_MOUSEBUTTONDOWN){
+		if(event.button.button == SDL_BUTTON_LEFT){
+			if (m_handleLeftClick(event.button)){
+				m_drawSurface(theRenderer);
+				return true;
+			}
+		}
+	}
+	return false;
+	}
+	catch(QuitSurface& qs){
+	throw qs;
+	}
+	catch(SDLQuitException& sdlqe){
+		throw sdlqe;
+	}
+}
+
+
+void CitySurface::m_drawSurface(SDL_Renderer* renderer){
+	SDL_SetRenderDrawColor(theRenderer, brownColor);
+	SDL_RenderClear(renderer);
+	m_drawFoodProduction();
+	m_drawShieldProduction();
+	m_drawFoodStorage();
+	m_drawCitizens(renderer, 0,0);
+	m_drawCityFields();
+	m_drawFigures();
+	m_drawSubsurfaceButtons();
+	m_subsurface->m_draw();
+	SDL_RenderPresent(theRenderer);
+}
+
+bool CitySurface::m_handleKeyboardEvent(const SDL_Event& event){
+	KeyCode subsurfaceKeycode[] = {SDLK_i,SDLK_h, SDLK_m, SDLK_v};
+	SubSurfaceState subSurfaceState[] = {SUBSURFACE_INFO, SUBSURFACE_HAPPY, SUBSURFACE_MAP, SUBSURFACE_VIEW};
+	for(int i(0); i<4; i++){
+		if(event.key.keysym.sym == subsurfaceKeycode[i]){
+			m_subsurface->m_state = subSurfaceState[i];
+			m_subsurface->m_draw();
+			return true;
+		}
+	}
+	std::cout<<"false keyboardhandling "<<std::endl;
+	return false;
+}
+
+bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
+	std::cout<<"CitySurface::m_handleLeftClick(), x = "<<event.x<<", y = "<<event.y<<std::endl;
+	try
+	{
+		if (m_subsurface->m_handleMouseClick(event.x, event.y)){
+			return true;
+		}
+	else{
+		int xToStart = PRODUCTION_OVERVIEW_WIDTH;
+		int yToStart = CITIZENS_OVERVIEW_HEIGHT;
+		if(event.x <= xToStart + 5* STANDARD_FIELD_SIZE && std::abs(5*STANDARD_FIELD_SIZE/2 + yToStart - event.y) <= 5*STANDARD_FIELD_SIZE/2
+		&& event.x > xToStart){
+			std::vector<Coordinate> coordinateVector = Field::coordinatesAroundCity();
+			Coordinate differenceCoordinate((event.x - xToStart -1)/STANDARD_FIELD_SIZE - 2,(event.y - yToStart - 1)/STANDARD_FIELD_SIZE -2) ;
+			std::cout<<"differenceCoordinate: "<<differenceCoordinate<<std::endl;
+			if(isInVector<Coordinate>(coordinateVector, differenceCoordinate, [](Coordinate& x, Coordinate& y){return x==y;})){
+				std::cout<<"ruft gleich m_placeCitizen auf"<<std::endl;
+				std::shared_ptr<Field> fieldClickedOn = m_associatedCity->m_whereItStands->m_getNeighbouringField(differenceCoordinate);
+				std::cout<<"*fieldClickedOn: "<<*fieldClickedOn<<std::endl;
+				return m_associatedCity->m_placeCitizen(fieldClickedOn);
+			}
+		}
+		if(event.y <= CITIZENS_OVERVIEW_HEIGHT && event.x <= CITIZENS_OVERVIEW_WIDTH){
+			return m_handleCitizenClick(event);
+		}
+	}
+	throw(QuitSurface());
+	}
+	catch (QuitSurface& theException){
+		throw theException;
+	}
+	catch(IrrelevantClick& icl){
+		return false;
+	}
+}
+
+
+bool Subsurface::m_handleMouseClick(int x, int y){
+	if(y<SCREEN_HEIGHT-SUBSURFACE_HEIGHT || x<FOOD_STORAGE_WIDTH || x >= SUBSURFACE_WIDTH + FOOD_STORAGE_WIDTH){
+		return false;
+	}
+	if(y<=SUBSURFACE_BUTTON_HEIGHT + SCREEN_HEIGHT - SUBSURFACE_HEIGHT){
+		switch((x-FOOD_STORAGE_WIDTH)/(SUBSURFACE_WIDTH/4)){
+		case 0: m_state = SUBSURFACE_INFO; break;
+		case 1: m_state = SUBSURFACE_HAPPY; break;
+		case 2: m_state = SUBSURFACE_MAP; break;
+		case 3: m_state = SUBSURFACE_VIEW; break;
+		default: m_state = SUBSURFACE_INFO; break;
+		}
+		return true;
+	}
+	switch(m_state){
+	case SUBSURFACE_VIEW:
+	{
+		m_state = SUBSURFACE_INFO;
+		return true;
+	}
+	case SUBSURFACE_MAP:
+	{
+		throw IrrelevantClick();
+	}
+	case SUBSURFACE_HAPPY: {
+		throw IrrelevantClick();
+	}
+	case SUBSURFACE_INFO:{
+		const int figuresPerRow = SUBSURFACE_WIDTH/STANDARD_FIELD_SIZE;
+		int indexX = (x-FOOD_STORAGE_WIDTH)/STANDARD_FIELD_SIZE;
+		int indexY = (y-SCREEN_HEIGHT + SUBSURFACE_HEIGHT - 1 - SUBSURFACE_BUTTON_HEIGHT)/STANDARD_FIELD_SIZE;
+		int index = figuresPerRow*indexY+indexX;
+		int i(0);
+		if(index < 0){
+			std::cout<<"weird index calculation, result: "<<index<<std::endl;
+			throw QuitSurface();
+		}
+		for(const std::shared_ptr<Figure>& currentFigure: m_surface->m_associatedCity->m_WhereItStands()->m_FiguresOnField()){
+			if(index!=i++){
+				continue;
+			}
+			switch(currentFigure->m_FigureState()){
+			case SENTRIED:{
+				currentFigure->m_startMove(true);
+				return true;
+			}
+			case FORTIFIED: {
+				currentFigure->m_setFigureState(DONE_WITH_TURN);
+				return true;
+			}
+			case SENTRYING: {
+				currentFigure->m_setFigureState(DONE_WITH_TURN);
+				return true;
+			}
+			case COMPLETELY_FORTIFIED:{
+				currentFigure->m_startMove(true);
+				return true;
+			}
+			default:{
+				throw IrrelevantClick();
+			}
+			}
+		}
+		break;
+	}
+	default:
+	{
+		std::cout<<"I do not know what that subsurfacestate is!"<<std::endl;
+		return false;
+	}
+}
+	throw IrrelevantClick();
+
+}
+
+bool CitySurface::m_handleCitizenClick(const SDL_MouseButtonEvent& event){
+#ifdef CHANGETO
+#undef CHANGETO
+#endif
+#define CHANGETO(x,y) case x: {(m_associatedCity->m_citizens)[quotientX].m_state = y; return true;}
+	int xToStart = FIRST_CITIZEN_X;
+	int quotientX = (event.x - FIRST_CITIZEN_X)/(CITIZEN_MAX_WIDTH*CITIZEN_SCALEFACTOR);
+	if(quotientX < 0){
+		return false;
+	}
+	if(quotientX >= m_associatedCity->m_size()){
+		return false;
+	}
+	switch(m_associatedCity->m_citizens[quotientX].m_state){
+	CHANGETO(ENTERTAINER, TAX_COLLECTOR)
+	CHANGETO(TAX_COLLECTOR, SCIENTIST)
+	CHANGETO(SCIENTIST, ENTERTAINER)
+	default:{
+		return false;
+	}
 	}
 }

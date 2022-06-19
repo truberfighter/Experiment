@@ -27,6 +27,7 @@ protected:
 	void m_showFigureInfo();
 public:
 	virtual ~EventHandler(){}
+	virtual bool m_handleLeftClick(const SDL_MouseButtonEvent& event) = 0;
 	virtual bool m_handleKeyboardEvent(const SDL_Event& event) = 0;
 	virtual void lol(){std::cout<<"virtual EventHandler::lol"<<std::endl;}
 	EventHandler();

@@ -19,7 +19,7 @@
 Ocean::Ocean(int x, int y, bool hasSpecialResource)
 :Field(x,y,STANDARD_FIELD_LAYER), m_hasSpecialResource(hasSpecialResource)
 {
-	m_drawingElement = std::make_shared<ImmovableDrawingElement>(theRenderer, fieldTextures[OCEAN], x, y, STANDARD_FIELD_LAYER);
+	m_drawingElement = std::make_shared<FieldElement>(theRenderer, fieldTextures[OCEAN], x, y, STANDARD_FIELD_LAYER);
 	m_drawingElement->m_setField(this);
 }
 
@@ -34,7 +34,6 @@ MovementPoints Ocean::m_movementPoints(){
 float Ocean::m_defenseBonus(){
 	return 0;
 }
-
 //returns false if it can't be mined or if it is already mined
 //returns true in amy other case, along with making the settlers mine
 bool Ocean::m_Mining(Settlers& settlers){

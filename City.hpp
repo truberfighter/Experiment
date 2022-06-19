@@ -16,6 +16,7 @@
 #include <list>
 #include "movableThing.hpp"
 #include <memory>
+#include "CitySurface.hpp"
 //#include "Nation.hpp"
 //#include "Field.hpp"
 
@@ -52,34 +53,14 @@ public:
 	void m_draw();
 	void m_drawFigures();
 	void m_drawHappy();
-	void m_handleMouseClick(int x, int y);
+	bool m_handleMouseClick(int x, int y);
 };
-
-class CitySurface{
-private:
-	City* m_associatedCity;
-	std::unique_ptr<Subsurface> m_subsurface;
-public:
-	CitySurface(City* city);
-	void m_drawSubsurfaceButtons();
-	void m_displaySurface(SDL_Renderer* renderer);
-	void m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backgroundWidth = SCREEN_WIDTH - IMPROVEMENTS_OVERVIEW_WIDTH, int backgroundHeight = CITIZENS_OVERVIEW_HEIGHT, HappyVectorType flag = HAPPY_ALL);
-	void m_drawFoodProduction();
-	void m_drawShieldProduction();
-	void m_drawTradeProduction();
-	void m_drawProduction();
-	void m_drawFoodStorage();
-	void m_drawCityFields();
-	void m_drawFigures();
-	friend class Subsurface;
-};
-
-
 
 class City: public std::enable_shared_from_this<City> {
 public:
 
 private:
+	ImprovementType m_whatIsBuilt = IMPROVEMENT_SETTLERS;
 	std::shared_ptr<Nation> m_owningNation;
 	std::shared_ptr<Field> m_whereItStands;
 	std::string m_name;
@@ -90,6 +71,7 @@ private:
 	std::vector<std::shared_ptr<TradeRoute>> m_tradeRoutes;
 
 public:
+	ImprovementType m_WhatIsBuilt(){return m_whatIsBuilt;}
 	std::shared_ptr<Field> m_WhereItStands(){return m_whereItStands;}
 	std::shared_ptr<Nation> m_OwningNation(){return m_owningNation;}
 	bool m_takeFigure(std::shared_ptr<Figure> figureToTake);
@@ -100,7 +82,7 @@ public:
 	int m_drawCityName(int x, int y,SDL_Renderer* renderer);
 	std::string m_Name(){return this->m_name;}
 	friend class CitySurface;
-	CitySurface m_createCitySurface(){return CitySurface(this);}
+	CitySurface m_createCitySurface();
 	int m_foodStorageSize();
 	std::vector<CitizenState> m_applyCitizenStateVector(HappyVectorType flag = HAPPY_ALL);
 	int m_foodCost();
@@ -116,7 +98,9 @@ public:
 	int m_luxuriesProduction();
 	void m_startNewTurn();
 	void m_sortFiguresByValue();
+	bool m_maybeFinishProduction();
 	void m_grow();
+	bool m_placeCitizen(std::shared_ptr<Field> fieldClickedOn);
 };
 
 template<typename T>

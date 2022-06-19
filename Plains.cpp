@@ -12,7 +12,7 @@
 Plains::Plains(int x, int y, bool hasSpecialResource)
 :Field(x,y,STANDARD_FIELD_LAYER, hasSpecialResource)
 {
-	m_drawingElement = std::make_shared<ImmovableDrawingElement>(theRenderer, fieldTextures[PLAINS], x, y, STANDARD_FIELD_LAYER);
+	m_drawingElement = std::make_shared<FieldElement>(theRenderer, fieldTextures[PLAINS], x, y, STANDARD_FIELD_LAYER);
 	m_drawingElement->m_setField(this);
 }
 

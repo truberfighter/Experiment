@@ -79,12 +79,14 @@ void GameMain::m_setWhatToMove(std::shared_ptr<Figure> whatToMove){
 
 
 bool GameMain::m_handleEvent(const SDL_Event& event){
+	try{
 	if(event.type == SDL_KEYDOWN){
 		if(!m_handleKeyboardEvent(event)){
 			std::cout<<"No EventHandling found!"<<std::endl;
 			NO_EVENT_HANDLING_FOUND
 		}
 		m_setWhatToMove(theGame->m_getCurrentFigure());
+		std::cout<<"looolll"<<std::endl;
 		m_drawMainDrawing();
 		std::cout<<"\n currentNatiodn: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
 		for(std::shared_ptr<Nation> nationToPrint: theGame->m_NationsPlaying()){
@@ -103,6 +105,10 @@ bool GameMain::m_handleEvent(const SDL_Event& event){
 		}
 	}
 	return false;
+	}
+	catch(SDLQuitException& exception){
+		throw exception;
+	}
 }
 
 bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){

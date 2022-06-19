@@ -17,7 +17,7 @@ class Nation: public std::enable_shared_from_this<Nation>{
 private:
 	std::shared_ptr<City> m_capitalCity;
 	std::vector<std::shared_ptr<City>> m_cities;
-	GovernmentType m_government = DESPOTISM;
+	GovernmentType m_government = DEMOCRACY;
 	Nationality m_nation;
 	std::string m_leaderName;
 	std::vector<std::shared_ptr<Figure>> m_figures;

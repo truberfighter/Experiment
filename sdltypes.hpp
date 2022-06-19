@@ -54,7 +54,7 @@ enum {CITIZENS_OVERVIEW_HEIGHT = STANDARD_FIELD_SIZE, IMPROVEMENTS_OVERVIEW_WIDT
 RESOURCES_SCALEFACTOR = CITIZEN_SCALEFACTOR, RESOURCES_SCALEFACTOR_CITY_OVERVIEW = STANDARD_FIELD_SIZE/15, PRODUCTION_OVERVIEW_WIDTH = SCREEN_WIDTH - IMPROVEMENTS_OVERVIEW_WIDTH - 5*STANDARD_FIELD_SIZE};
 enum CitySurfaceSize{FOOD_STORAGE_HEIGHT = 138*8*RESOURCES_SCALEFACTOR/12, FOOD_STORAGE_WIDTH = 13* RESOURCES_SCALEFACTOR*7,FOOD_STORAGE_Y = SCREEN_HEIGHT - FOOD_STORAGE_HEIGHT,
 RESOURCE_TEXT_SHIELD_DIFFERENCE = RESOURCES_SCALEFACTOR*8, FIGURE_OVERVIEW_HEIGHT = 2*STANDARD_FIELD_SIZE,
-SHIELD_OVERVIEW_WIDTH = 10*8*RESOURCES_SCALEFACTOR};
+SHIELD_OVERVIEW_WIDTH = 10*8*RESOURCES_SCALEFACTOR, CITIZENS_OVERVIEW_WIDTH = SCREEN_WIDTH - IMPROVEMENTS_OVERVIEW_WIDTH};
 enum SubSurfaceSize{
 	SUBSURFACE_BUTTON_HEIGHT = 30, SUBSURFACE_HEIGHT = FOOD_STORAGE_HEIGHT, SUBSURFACE_WIDTH = SCREEN_WIDTH - FOOD_STORAGE_WIDTH - SHIELD_OVERVIEW_WIDTH
 };
@@ -65,6 +65,7 @@ enum SubSurfaceState{
 };
 enum BlinkingTime{STANDARD_BLINKING_INTERVAL_TIME = 1500};
 enum{MAX_CITY_NAME_LENGTH = 12, CITIES_PER_NATION = 15, ADDITIONAL_CITIES = 20};
+enum ImprovementType{IMPROVEMENT_SETTLERS, IMPROVEMENT_TRIREME, TEMPLE, GRANARY, PALACE};
 typedef bool BlinkingState;
 constexpr BlinkingState VISIBLE(){return true;}
 constexpr BlinkingState INVISIBLE(){return false;}
@@ -208,6 +209,7 @@ int drawFood(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus =
 int drawShield(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus = false);
 int drawTrade(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool corruption = false);
 int drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int scaleFactor);
+extern Nationality currentNationality;
 }
 extern DrawState m_whatsUpDrawingwise;
 };
@@ -238,6 +240,10 @@ class InertCitizenState{
 public:
 	CitizenState m_state;
 	InertCitizenState(CitizenState State): m_state(State){}
+};
+
+class QuitSurface{
+
 };
 
 CitizenState operator++(CitizenState& state);

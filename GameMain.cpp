@@ -29,9 +29,9 @@
 		}\
 	}\
 while(SDL_PollEvent(&currentEvent)!=0){\
-	if(currentEvent.type == SDL_QUIT) quit = true;\
+	try{if(currentEvent.type == SDL_QUIT) quit = true;\
 
-#define MAIN_LOOP_END }}
+#define MAIN_LOOP_END 	}catch(SDLQuitException& exception){quit = true;}}}
 
 using namespace std;
 SDL_Renderer* theRenderer = nullptr;
@@ -120,6 +120,13 @@ int GameMain::operator()(){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
  doSomething();
+ /*SDL_Surface* arsenSurface = TTF_RenderText_Shaded(theFont, "Arsen, ich habe dich lieb! :)", SDL_Color{100,100,255}, SDL_Color{255, 120, 190});
+ 	 SDL_Texture* arsenTexture = SDL_CreateTextureFromSurface(theRenderer, arsenSurface);
+ 	 SDL_Rect arsenRect{200, 200, arsenSurface->w, arsenSurface->h};
+ 	 SDL_RenderCopy(theRenderer, arsenTexture,nullptr, &arsenRect);
+ 	 std::cout<<SDL_GetError()<<std::endl;
+ 	 SDL_RenderPresent(theRenderer);
+ 	 SDL_Delay(5000);*/
  MAIN_LOOP_BEGIN
 
 
@@ -189,16 +196,17 @@ void GameMain::m_makeBlinkingStep(){
 }
 
 bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
+	try{
 	std::cout<<"Mouse leftclicked on Board: x = "<<currentEvent.x<<", y = "<<currentEvent.y<<", topLeftCorner: "<<m_topLeftCorner<<std::endl;
 	Coordinate meantCoordinate {xModulo(m_topLeftCorner.x + currentEvent.x - Coordinates::leftCornerX()), m_topLeftCorner.y + currentEvent.y - Coordinates::leftCornerY()};
 	if(currentEvent.x > Coordinates::leftCornerX() && currentEvent.y > Coordinates::leftCornerY() && currentEvent.x < SCREEN_WIDTH && currentEvent.y < SCREEN_HEIGHT && meantCoordinate.x>=0 && meantCoordinate.y>=0){
 	if(meantCoordinate.x < WORLD_LENGTH*STANDARD_FIELD_SIZE && meantCoordinate.y<WORLD_HEIGHT*STANDARD_FIELD_SIZE){
 	std::shared_ptr<Field> fieldClickedOn = (*theContainer->m_getFieldsOfTheWorld())[meantCoordinate.x/STANDARD_FIELD_SIZE][meantCoordinate.y/STANDARD_FIELD_SIZE];
 	std::cout<<*fieldClickedOn<<std::endl;
-	if(fieldClickedOn->m_CityContained()){
+	if(fieldClickedOn->m_CityContained() && fieldClickedOn->m_CityContained()->m_OwningNation()==theGame->m_NationAtCurrentTurn()){
 		std::cout<<"city hit!"<<std::endl;
 		fieldClickedOn->m_CityContained()->m_createCitySurface().m_displaySurface(theRenderer);
-		return false;
+		return true;
 	}
 	if(!fieldClickedOn->m_FiguresOnField().empty() && fieldClickedOn->m_FiguresOnField().front()->m_Nationality() == theGame->m_NationAtCurrentTurn()->m_Nation()){
 		Figurebutton theButton(fieldClickedOn->m_FiguresOnField());
@@ -225,4 +233,8 @@ bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 	return true;
 	}
 	return false;
+	}
+	catch(SDLQuitException& exception){
+		throw exception;
+	}
 }

@@ -14,7 +14,7 @@
 #include "Ship.hpp"
 
 Field::Field(int x, int y, Layer layer, bool hasSpecialResource)
-: m_x(x), m_y(y), m_layer(layer), m_hasSpecialResource(hasSpecialResource)
+: enable_shared_from_this(),m_x(x), m_y(y), m_layer(layer), m_hasSpecialResource(hasSpecialResource)
 {
 
 }
@@ -29,7 +29,7 @@ int Field::m_X() const{return m_x;}
 
 int Field::m_Y() const {return m_y;}
 
-std::shared_ptr<ImmovableDrawingElement> Field::m_DrawingElement(){return m_drawingElement;}
+std::shared_ptr<FieldElement> Field::m_DrawingElement(){return m_drawingElement;}
 
 RoadStatus Field::m_RoadStatus(){
 	return m_roadStatus;
@@ -256,6 +256,7 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		std::cout<<"auf leeren Stack"<<std::endl;
 		previousField.m_releaseFigure(movingFigure);
 		m_figuresOnField.push_front(movingFigure);
+		m_makeVisibleAround();
 		return;
 	}
 	std::shared_ptr<Figure> frontFigure = m_figuresOnField.front();
@@ -363,3 +364,81 @@ bool Field::m_irrigationBonus(){
 	return m_isIrrigated || m_cityContained != nullptr;
 }
 
+std::shared_ptr<Field> Field::m_getNeighbouringField(Coordinate differenceCoordinate){
+	try{
+	std::shared_ptr<Field> whatToReturn = shared_from_this();
+	for(int i(0); i<differenceCoordinate.x;i++){
+		whatToReturn = whatToReturn->m_getNeighbouringField(RIGHT);
+	}
+	for(int i(0); i>differenceCoordinate.x;i--){
+			whatToReturn = whatToReturn->m_getNeighbouringField(LEFT);
+	}
+	for(int i(0); i<differenceCoordinate.y;i++){
+		whatToReturn = whatToReturn->m_getNeighbouringField(DOWN);
+	}
+	for(int i(0); i>differenceCoordinate.y;i--){
+		whatToReturn = whatToReturn->m_getNeighbouringField(UP);
+	}
+	return whatToReturn;
+	}
+	catch(PoleHitException& theException){
+		throw theException;
+	}
+}
+
+void Field::m_initNationFogInfo(std::vector<Nationality>& nationalities){
+	for(Nationality nationality: nationalities){
+		m_nationFogInfo.push_back(NationKnows{false,nationality});
+	}
+}
+
+FieldElement::FieldElement(SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row, int column, Layer layer):ImmovableDrawingElement(renderer, texture, row, column, layer)
+{
+
+}
+
+int FieldElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
+	if(m_field->m_isVisible(theGame->m_NationAtCurrentTurn()->m_Nation())){
+		return ImmovableDrawingElement::m_draw(rowShift, columnShift, renderer);
+	}
+	if(SDL_SetRenderDrawColor(theRenderer, blackColor)==0){
+		SDL_Rect rectToFill{m_row + rowShift, m_column + columnShift, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE};
+		if(SDL_RenderFillRect(theRenderer, &rectToFill)==0){
+			return 1;
+		}
+		else{
+			return 0;
+		}
+	}
+	return 0;
+}
+
+void Field::m_makeVisible(Nationality nationality){
+	for(NationKnows& nk: m_nationFogInfo){
+		if(nk.nationality==nationality){
+			std::cout<<"valuer becomes true for "<<nationality<<std::endl;
+			nk.value = true;
+			return;
+		}
+	}
+}
+
+void Field::m_makeVisibleAround(){
+	Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,STANDING_STILL,RIGHT, UP_LEFT, UP, UP_RIGHT};
+	for(int i(0); i<9;i++){
+		try{
+		m_getNeighbouringField(directions[i])->m_makeVisible(Graphics::Civ::currentNationality);
+		}
+		catch(PoleHitException& phe){
+		}
+	}
+}
+
+bool Field::m_isVisible(Nationality nationality){
+	for(NationKnows& nk: m_nationFogInfo){
+		if(nk.nationality==nationality){
+			return nk.value;
+		}
+	}
+	return false;
+}

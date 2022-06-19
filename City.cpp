@@ -20,6 +20,11 @@ int drawCity(int x, int y, SDL_Renderer* renderer){
 	fieldToDraw->m_CityContained()->m_drawCity(x, y, renderer);
 }
 
+
+CitySurface City::m_createCitySurface(){
+	return CitySurface(this);
+}
+
 City::City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNation, std::string name)
 : m_owningNation(owningNation), m_whereItStands(whereToPlace), m_name(name)
 {
@@ -135,12 +140,17 @@ bool City::m_takeFigure(std::shared_ptr<Figure> figureToTake){
 }
 
 std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
+	int contentBaseApplied = 0;
+	for(unsigned int index(0); index<m_citizens.size();index++){
+		if(m_citizens[index].m_state == ENTERTAINER && m_citizens[index].m_state == SCIENTIST && m_citizens[index].m_state == TAX_COLLECTOR){
+			contentBaseApplied++;
+		}
+	}
 	int size = m_size();
 	int contentApplied = 0;
 	int luxuriesToApply = m_luxuriesProduction()/2;
 	int luxuriesApplied = 0;
 	int unhappyApplied = 0;
-	int contentBaseApplied = 0;
 	std::vector<CitizenState> whatToReturn;
 	int contentByUnitCount = 0;
 	int unhappyByUnitCount = 0;
@@ -148,12 +158,16 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 		(cost.unhappyFaces < 0 ? contentByUnitCount : unhappyByUnitCount) -= cost.unhappyFaces;
 	}
 	for(Citizen& citizen: m_citizens){
-		if(contentBaseApplied<CONTENT_BASE && citizen.m_state != ENTERTAINER && citizen.m_state != TAX_COLLECTOR && citizen.m_state != SCIENTIST){
-		citizen.m_state = CONTENT;
-			contentBaseApplied++;
+		if(citizen.m_state != ENTERTAINER && citizen.m_state != TAX_COLLECTOR && citizen.m_state != SCIENTIST){
+			if(contentBaseApplied<CONTENT_BASE){
+				citizen.m_state = CONTENT;
+				contentBaseApplied++;
+			}
+			else{
+				citizen.m_state = UNHAPPY;
+			}
 		}
 		else{
-			citizen.m_state = UNHAPPY;
 		}
 	}
 	if(flag==HAPPY_1){
@@ -186,7 +200,7 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 		std::cout<<"happy2goto"<<std::endl;
 		goto beginReturn;
 	}
-	for(int i(0);i<m_citizens.size();i++){
+	for(unsigned int i(0);i<m_citizens.size();i++){
 		Citizen& citizen = m_citizens[size-1-i];
 		try{
 		if(contentApplied >= contentByUnitCount){
@@ -282,7 +296,7 @@ std::vector<UnitCostingResources> City::m_unitCostVector(){
 	std::vector<FigureType> freeFigureTypes;
 	freeFigureTypes.push_back(DIPLOMAT);
 	freeFigureTypes.push_back(CARAVAN);
-	int militaryLawMaximum;
+	int militaryLawMaximum = 0;
 	int unhappyFacesPerUnit = 0;
 	switch(m_owningNation->m_Government()){
 	case DESPOTISM:
@@ -320,38 +334,38 @@ std::vector<UnitCostingResources> City::m_unitCostVector(){
 		break;
 	}
 	}
-	int militaryLawAppliedCount = 0;
+		int militaryLawAppliedCount = 0;
+		std::vector<FigureType> irrelevantTypes = freeFigureTypes;
+		irrelevantTypes.push_back(SETTLERS);
 	for(std::shared_ptr<Figure> currentFigure: m_whereItStands->m_FiguresOnField()){
-		whatToReturn.push_back(UnitCostingResources{currentFigure.get(), 0, 0, 0});
 		if(militaryLawAppliedCount >= militaryLawMaximum){
 			break;
 		}
-		std::vector<FigureType> irrelevantTypes = freeFigureTypes;
-		irrelevantTypes.push_back(SETTLERS);
 		FigureType currentFigureType = currentFigure->m_FigureType();
 		if(!isInVector<FigureType>(irrelevantTypes, currentFigureType, [](FigureType& f1, FigureType& f2){return f1==f2;})){
+		whatToReturn.push_back(UnitCostingResources{currentFigure.get(), 0, 0, 0});
 			whatToReturn.back().unhappyFaces = -1;
 			militaryLawAppliedCount++;
 		}
-		int freeUnitsCount = 0;
-		for(std::shared_ptr<Figure>& currentFigure: m_figuresOwned){
-			whatToReturn.push_back(UnitCostingResources{currentFigure.get(), 0, 0, 0});
-			FigureType currentFigureType = currentFigure->m_FigureType();
-			if(currentFigureType==SETTLERS){
-				whatToReturn.back().foodCost = foodPerSettlers;
-				goto gonnaCostOneShield;
+	}
+	int freeUnitsCount = 0;
+	for(std::shared_ptr<Figure>& currentFigure: m_figuresOwned){
+		whatToReturn.push_back(UnitCostingResources{currentFigure.get(), 0, 0, 0});
+		FigureType currentFigureType = currentFigure->m_FigureType();
+		if(currentFigureType==SETTLERS){
+			whatToReturn.back().foodCost = foodPerSettlers;
+			goto gonnaCostOneShield;
+		}
+		if(!isInVector<FigureType>(freeFigureTypes, currentFigureType, [](FigureType& f1, FigureType& f2){return f1==f2;})){
+			gonnaCostOneShield: if(freeUnitsCount < freeUnits){
+				whatToReturn.back().shieldCost = 0;
+				freeUnitsCount++;
 			}
-			if(!isInVector<FigureType>(freeFigureTypes, currentFigureType, [](FigureType& f1, FigureType& f2){return f1==f2;})){
-				gonnaCostOneShield: if(freeUnitsCount < freeUnits){
-					whatToReturn.back().shieldCost = 0;
-					freeUnitsCount++;
-				}
-				else{
-					whatToReturn.back().shieldCost = 1;
-				}
-				if(&(currentFigure->m_WhereItStands())!=m_whereItStands.get()){
-					whatToReturn.back().unhappyFaces = unhappyFacesPerUnit;
-				}
+			else{
+				whatToReturn.back().shieldCost = 1;
+			}
+			if(&(currentFigure->m_WhereItStands())!=m_whereItStands.get()){
+				whatToReturn.back().unhappyFaces = unhappyFacesPerUnit;
 			}
 		}
 	}
@@ -421,4 +435,28 @@ int City::m_tradeProduction(){
 
 int City::m_luxuriesProduction(){
 	return m_tradeProduction();
+}
+
+bool City::m_placeCitizen(std::shared_ptr<Field> fieldClickedOn){
+	if(fieldClickedOn->m_CityContained() != nullptr)
+	{
+		return false;
+	}
+	for(int i(m_citizens.size()-1); i>=0;i--){
+		if(m_citizens[i].m_whereItWorks!=nullptr){
+			if(m_citizens[i].m_whereItWorks == fieldClickedOn){
+				m_citizens[i].m_whereItWorks->m_setCitizenWorking(nullptr);
+				m_citizens[i].m_whereItWorks = nullptr;
+				std::cout<<"make entertainer"<<std::endl;
+				m_citizens[i].m_state = ENTERTAINER;
+				return true;
+			}
+				continue;
+		}
+		m_citizens[i].m_whereItWorks = fieldClickedOn;
+		m_citizens[i].m_state = CONTENT;
+		std::cout<<"make fieldClickedOn"<<std::endl;
+		return true;
+	}
+	return false;
 }

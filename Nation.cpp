@@ -10,6 +10,7 @@
 #include <string>
 #include "FieldContainer.hpp"
 #include "City.hpp"
+#include "Game.hpp"
 
 using namespace std;
 
@@ -120,6 +121,7 @@ bool Nation::m_addToQueue(std::shared_ptr<Figure> newFigure){
 
 void Nation::m_startNewTurn(){
 	try{
+	Graphics::Civ::currentNationality = m_Nation();
 		for(std::shared_ptr<Figure>& currentFigureToCheck : m_figures){
 			if(currentFigureToCheck->m_FigureState()==MOVING){
 				throw(TurnEndsTooEarly());

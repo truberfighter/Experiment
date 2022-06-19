@@ -11,19 +11,30 @@
 #include "sdltypes.hpp"
 #include "Nation.hpp"
 #include "LetterTextureContainer.hpp"
+#include "Drawing.hpp"
 //#include "Drawing.cpp"
 #include <String>
 
+struct NationKnows{
+	bool value = false;
+	Nationality nationality;
+};
 class City;
 class Settlers;
 class Citizen;
 class Figure;
-class DrawingElement;
-class ImmovableDrawingElement;
 class FieldContainer;
 
-class Field{
+class FieldElement: public ImmovableDrawingElement{
+public:
+	FieldElement (SDL_Renderer* renderer, std::shared_ptr<Texture> texture, int row = 0, int column = 0, Layer layer = STANDARD_FIELD_LAYER);
+	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
+};
+
+class Field: public std::enable_shared_from_this<Field>{
 protected:
+	void m_makeVisibleAround();
+	std::vector<NationKnows> m_nationFogInfo;
 	Citizen* m_citizenWorking = nullptr;
 	std::list<std::shared_ptr<Figure>> m_figuresOnField;
 	bool m_createRoadImage(SDL_Color& color);
@@ -34,7 +45,7 @@ protected:
 	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
 	Layer m_layer;
 	bool m_hasSpecialResource = false;
-	std::shared_ptr<ImmovableDrawingElement> m_drawingElement;
+	std::shared_ptr<FieldElement> m_drawingElement;
 	int m_x;
 	int m_y;
 	bool m_isIrrigated = false;
@@ -46,6 +57,9 @@ protected:
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
+	bool m_isVisible(Nationality nationality);
+	void m_makeVisible(Nationality nationality);
+	void m_initNationFogInfo(std::vector<Nationality>& nationalities);
 	bool m_irrigationBonus();
 	static std::vector<Coordinate> coordinatesAroundCity();
 	Citizen* m_CitizenWorking(){return m_citizenWorking;}
@@ -57,7 +71,7 @@ public:
 	Field(int x, int y, Layer layer, bool hasSpecialResource = false);
 	int m_X() const;
 	int m_Y() const;
-	std::shared_ptr<ImmovableDrawingElement> m_DrawingElement();
+	std::shared_ptr<FieldElement> m_DrawingElement();
 	void m_takeFigure(std::shared_ptr<Figure> movingFigure);
 	void m_releaseFigure(std::shared_ptr<Figure> movingFigure);
 	virtual MovementPoints m_movementPoints() =0;
@@ -81,6 +95,7 @@ public:
 	bool m_Pillage();
 	std::shared_ptr<City> m_CityContained();
 	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
+	std::shared_ptr<Field> m_getNeighbouringField(Coordinate differenceCoordinate);
 	void m_drawField();
 	std::vector<std::shared_ptr<Field>> m_cityFieldsAround();
 	friend std::ostream& operator<<(std::ostream&, Field&);
@@ -92,7 +107,7 @@ public:
 std::ostream& operator<<(std::ostream& os, Landscape ls);
 std::ostream& operator<<(std::ostream&, Field&);
 #define ACKNOWLEDGE_RAILROAD m_railRoadProductionEffect(count);
-#define ACKNOWLEDGE_DEMOCRACY if(count>2 && (nation.m_Government()==REPUBLIC || nation.m_Government()==DEMOCRACY))count++;
+#define ACKNOWLEDGE_DEMOCRACY if(count>0 && (nation.m_Government()==REPUBLIC || nation.m_Government()==DEMOCRACY))count++;
 #define ACKNOWLEDGE_DESPOTISM if(count>2 && (nation.m_Government()==ANARCHY || nation.m_Government()==DESPOTISM))count--;
 #define IS_CLASSICALLY_ROAD_BASED 	{return m_roadTradeResult();}
 #define LANDMASS_SEPARATOR OCEAN

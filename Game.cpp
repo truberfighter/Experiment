@@ -14,7 +14,7 @@
 #include <functional>
 #include "City.hpp"
 
-class
+Nationality Graphics::Civ::currentNationality = ROMAN;
 
 std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 	std::cout<<"nation = "<<(nation ? nation : m_NationAtCurrentTurn().get())<<", settlersCount = "<<settlersCount<<std::endl;
@@ -25,7 +25,13 @@ std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 
 Game::Game(std::vector<Nationality>& nationsToPlay){
 	bool firstNation = true;
+	for(std::vector<std::shared_ptr<Field>>& currentMeridian: *theContainer->m_getFieldsOfTheWorld()){
+		for(std::shared_ptr<Field> currentField: currentMeridian){
+			currentField->m_initNationFogInfo(nationsToPlay);
+		}
+	}
 	for(Nationality currentNationality: nationsToPlay){
+		Graphics::Civ::currentNationality = currentNationality;
 		std::shared_ptr<Nation> nationPointer =  std::make_shared<Nation>(currentNationality, "", firstNation);
 		firstNation = false;
 		m_nationsPlaying.push_back(nationPointer);
@@ -46,6 +52,7 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 			std::cout<<"stream: "<<stream.str();
 		}
 	}
+	Graphics::Civ::currentNationality = nationsToPlay[0];
 }
 
 Game::Year::Year(unsigned int yearNumberRaw):m_yearNumberRaw(yearNumberRaw)
