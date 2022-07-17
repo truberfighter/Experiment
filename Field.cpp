@@ -256,16 +256,19 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		std::cout<<"auf leeren Stack"<<std::endl;
 		previousField.m_releaseFigure(movingFigure);
 		m_figuresOnField.push_front(movingFigure);
-		m_makeVisibleAround();
+		m_makeVisibleAround(movingFigure->m_visibilityRange());
+		movingFigure->m_makeVisibleAround(shared_from_this());
 		return;
 	}
 	std::shared_ptr<Figure> frontFigure = m_figuresOnField.front();
 	if(frontFigure->m_Nationality()==movingFigure->m_Nationality()){
 		std::cout<<"auf eigenen Stack"<<", listPrevious: "<<m_figuresOnField.size();
 		previousField.m_releaseFigure(movingFigure);
-m_figuresOnField.push_front(movingFigure);
+		m_figuresOnField.push_front(movingFigure);
 		m_figuresOnField.sort([](std::shared_ptr<Figure> figure1, std::shared_ptr<Figure> figure2)->bool {return figure1->m_defensiveStrength()<figure1->m_defensiveStrength();});
 		std::cout<<", newSize: "<<m_figuresOnField.size()<<std::endl;
+		m_makeVisibleAround(movingFigure->m_visibilityRange());
+		movingFigure->m_makeVisibleAround(shared_from_this());
 		return;
 	}
 	if(frontFigure->m_Nationality()!=movingFigure->m_Nationality()){
@@ -423,13 +426,14 @@ void Field::m_makeVisible(Nationality nationality){
 	}
 }
 
-void Field::m_makeVisibleAround(){
-	Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,STANDING_STILL,RIGHT, UP_LEFT, UP, UP_RIGHT};
-	for(int i(0); i<9;i++){
+void Field::m_makeVisibleAround(int visibilityRange){
+	std::vector<Coordinate> coordinates = coordinatesAroundField(visibilityRange);
+	for(Coordinate& currentCoordinate: coordinates){
 		try{
-		m_getNeighbouringField(directions[i])->m_makeVisible(Graphics::Civ::currentNationality);
+		m_getNeighbouringField(currentCoordinate)->m_makeVisible(Graphics::Civ::currentNationality);
 		}
 		catch(PoleHitException& phe){
+
 		}
 	}
 }
@@ -441,4 +445,19 @@ bool Field::m_isVisible(Nationality nationality){
 		}
 	}
 	return false;
+}
+
+bool Field::m_closeToOcean(){
+std::vector<Coordinate> coordinates = coordinatesAroundField();
+for(Coordinate& currentCoordinate: coordinates){
+	try{
+	if(m_getNeighbouringField(currentCoordinate)->m_Landscape()==OCEAN){
+		return true;
+	}
+	}
+	catch(PoleHitException& pex){
+		continue;
+	}
+}
+return false;
 }

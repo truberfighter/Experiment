@@ -74,7 +74,7 @@ bool Figure::m_sentry(){
 }
 //Start a turn. Sentried units are kinda ignored for the first part.
 bool Figure::m_startMove(bool activateSentried){
-	cout<<"Figure::m_startMove: figureState = "<<m_figureState<<", nationality = "<<m_nationality->m_Nation()<<"m_figureType = "<<m_FigureType()<<", this = "<<this<<std::endl;
+	cout<<"Figure::m_startMove: visibilitySize = "<<m_visibilityInfo.size()<<", figureState = "<<m_figureState<<", visibilityInfoSize = "<<m_visibilityInfo.size()<<"nationality = "<<m_nationality->m_Nation()<<"m_figureType = "<<m_FigureType()<<", this = "<<this<<std::endl;
 	switch(m_figureState){
 	case DONE_WITH_TURN:{
 	activate:	m_resetMovementPoints();
@@ -158,14 +158,14 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	Field& fieldWhereToGo = *(m_whereItStands->m_getNeighbouringField(whereToGo));
 	MovementPoints movementCost = m_calculateMoveCost(whereToGo);
 	std::cout<<"figure tries move to field: nation = "<<m_nationality->m_Nation()<<", this = "<<this<<"2, figureState = "<<m_figureState<<", figureType = "<<m_FigureType()<<endl;
+	if(movementCost == MOVE_PROHIBITED){
+		return false;
+	}
 	if(m_figureState == SENTRIED){
 		goto beginMove;
 	}
 	//cout<<*m_whereItStands<<(*(m_whereItStands->m_getNeighbouringField(whereToGo)))<<std::endl;
 	//cout<<"moveCost: "<<movementCost<<", MovementPoints: "<<m_movementPoints<<endl;
-	if(movementCost == MOVE_PROHIBITED){
-		return false;
-	}
 	if(movementCost.m_movementPoints > m_movementPoints.m_movementPoints){
 		return false;
 	}
@@ -390,7 +390,8 @@ void Figure::m_setInstructionsForDrawingElement(){
 }
 
 void Figure::m_integrateInto(Drawing& drawing){
-	drawing.m_add(m_image.get());
+	shared_ptr<DrawingElement> temp = make_shared<FigureElement>(theRenderer, m_image.get());
+	drawing.m_add(temp);
 	for(MovableDrawingElement* currentElement: m_image->m_HowDrawn()){
 		currentElement->m_setFigure(this);
 	}
@@ -461,4 +462,43 @@ bool Figure::m_homeCity(){
 	return false;
 }
 
+bool Figure::m_isVisible(Nationality nationality){
+	if(nationality == m_Nationality())
+		return true;
+	return isInVector<Nationality>(m_visibilityInfo, nationality, [](Nationality& n1, Nationality& n2){return n1==n2;});
+}
 
+void Figure::m_makeVisibleAround(std::shared_ptr<Field> fieldBase){
+	if(fieldBase == nullptr){
+		fieldBase = m_whereItStands;
+	}
+	std::vector<Coordinate> coordinates = coordinatesAroundField(m_visibilityRange());
+	for(Coordinate& currentCoordinate: coordinates){
+		std::cout<<*fieldBase->m_getNeighbouringField(currentCoordinate)<<std::endl;
+		for(const std::shared_ptr<Figure>& currentFigure: fieldBase->m_getNeighbouringField(currentCoordinate)->m_FiguresOnField()){
+			std::cout<<"aaaaa"<<currentFigure->m_Nationality()<<currentFigure->m_FigureType()<<std::endl;
+			if(currentFigure->m_Nationality()!=m_Nationality()){
+				currentFigure->m_makeVisible(m_Nationality());
+				m_makeVisible(currentFigure->m_Nationality());
+			}
+		}
+	}
+}
+
+void Figure::m_makeVisible(Nationality nationality){
+	if(!m_isVisible(nationality)){
+		std::cout<<"makeFigureVisible: figureType = "<<m_FigureType()<<", nation1 = "<<m_Nationality()<<", nation 2 = "<<nationality<<std::endl;
+		m_visibilityInfo.push_back(nationality);
+	}
+}
+
+FigureElement::FigureElement(SDL_Renderer* renderer, MovableThing* movableEntity):MovableDrawingElement(renderer, movableEntity){}
+
+int FigureElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
+	if(m_figure->m_isVisible(theGame->m_NationAtCurrentTurn()->m_Nation())){
+		return MovableDrawingElement::m_draw(rowShift, columnShift, renderer);
+	}
+	else{
+		return 0;
+	}
+}

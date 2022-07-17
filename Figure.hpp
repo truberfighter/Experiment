@@ -10,6 +10,7 @@
 
 #include "sdltypes.hpp"
 #include "movableThing.hpp"
+#include "Drawing.hpp"
 #include <exception>
 #include <stdexcept>
 #include "LetterTextureContainer.hpp"
@@ -22,6 +23,7 @@ class Drawing;
 
 class Figure: public std::enable_shared_from_this<Figure> {
 protected:
+	std::vector<Nationality> m_visibilityInfo;
 	std::shared_ptr<Field> m_whereItStands;
 	std::shared_ptr<City> m_home;
 	std::shared_ptr<Nation> m_nationality;
@@ -34,6 +36,9 @@ protected:
 	MovementPoints m_calculateStandardMoveCostGround(Field& fieldToVisit);
 	int m_drawFigureState(int, int, SDL_Renderer*);
 public:
+	bool m_isVisible(Nationality nationality);
+	void m_makeVisible(Nationality nationality);
+	virtual void m_makeVisibleAround(std::shared_ptr<Field> fieldBase = nullptr);
 	void m_setFigureState (FigureState newState){m_figureState = newState;}
 	Nationality m_Nationality();
 	Figure(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
@@ -80,6 +85,12 @@ inline bool Figure::m_IsVeteran(){return m_isVeteran;}
 
 class TurnEndsTooEarly{
 	public: std::string what() {return "Turn ends too early";}
+};
+
+class FigureElement: public MovableDrawingElement{
+public:
+	FigureElement(SDL_Renderer* renderer, MovableThing* movableEntity);
+	virtual int m_draw(int rowShift, int columnShift, SDL_Renderer* renderer = nullptr) override;
 };
 
 #define STRENGTH_OF float

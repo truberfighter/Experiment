@@ -198,12 +198,12 @@ bool Settlers::m_startFoundingNewCity(){
 					SDL_FreeSurface(cityNameSuggestionSurface);}
 			}
 		}
-
 	}
-
 	SDL_DestroyTexture(mainTextTexture);
 	SDL_FreeSurface(mainTextSurface);
-	m_foundNewCity(cityNameSuggestion);
+
+	SDL_StopTextInput();
+	return m_foundNewCity(cityNameSuggestion) != nullptr;
 }
 
 std::shared_ptr<City> Settlers::m_foundNewCity(std::string name){

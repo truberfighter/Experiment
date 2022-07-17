@@ -24,6 +24,7 @@ private:
 	std::list<std::shared_ptr<Figure>> m_activeFigures;
 	bool m_directlyMakingFiguresActive = false;
 public:
+	void m_setMakingActive(bool setting){m_directlyMakingFiguresActive = setting;}
 	std::shared_ptr<City> m_CapitalCity(){return m_capitalCity;}
 	void m_setCapitalCity(std::shared_ptr<City> city){m_capitalCity = city;}
 	std::vector<std::shared_ptr<City>>& m_Cities(){return m_cities;}

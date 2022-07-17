@@ -33,7 +33,7 @@ public:
 
 class Field: public std::enable_shared_from_this<Field>{
 protected:
-	void m_makeVisibleAround();
+	void m_makeVisibleAround(int visibilityRange = 1);
 	std::vector<NationKnows> m_nationFogInfo;
 	Citizen* m_citizenWorking = nullptr;
 	std::list<std::shared_ptr<Figure>> m_figuresOnField;
@@ -97,6 +97,7 @@ public:
 	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
 	std::shared_ptr<Field> m_getNeighbouringField(Coordinate differenceCoordinate);
 	void m_drawField();
+	bool m_closeToOcean();
 	std::vector<std::shared_ptr<Field>> m_cityFieldsAround();
 	friend std::ostream& operator<<(std::ostream&, Field&);
 	friend class FieldContainer;

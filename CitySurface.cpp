@@ -9,21 +9,16 @@
 #include "Drawing.hpp"
 #include "City.hpp"
 #include "CitySurface.hpp"
-#include "sstream"
-
+#include <sstream>
+#include "SelectorSurface.hpp"
+int selectionElementGlobalIndex = 0;
 class IrrelevantClick{
 
 };
 
-template<typename T>
-bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2)){
-	for(T& t: theVector){
-		if(equals(whatToFind, t)){
-			return true;
-		}
-	}
-	return false;
-}
+ButtonElement changeButton(SCREEN_WIDTH - SHIELD_OVERVIEW_WIDTH, SCREEN_HEIGHT - SHIELD_OVERVIEW_HEIGHT + NORMAL_FONT_HEIGHT, CHANGEBUTTON_WIDTH, SUBSURFACE_BUTTON_HEIGHT, Graphics::Civ::brightCityBackgroundColor(), Graphics::Civ::cityBackgroundColor(), "CHANGE");
+ButtonElement buyButton(SCREEN_WIDTH - BUYBUTTON_WIDTH, SCREEN_HEIGHT - SHIELD_OVERVIEW_HEIGHT + NORMAL_FONT_HEIGHT, BUYBUTTON_WIDTH, SUBSURFACE_BUTTON_HEIGHT, Graphics::Civ::brightCityBackgroundColor(), Graphics::Civ::cityBackgroundColor(), "BUY");
+
 
 CitySurface::CitySurface(City* city): m_associatedCity(city)
 {
@@ -305,9 +300,10 @@ void CitySurface::m_drawSubsurfaceButtons(){
 		SDL_Texture* textTexture = SDL_CreateTextureFromSurface(theRenderer, textSurface);
 		SDL_Rect textRect{buttonRect.x+(buttonRect.w-textSurface->w)/2,buttonRect.y+(buttonRect.h-textSurface->h)/2,textSurface->w,textSurface->h};
 		SDL_RenderCopy(theRenderer, textTexture, nullptr, &textRect);
+		SDL_DestroyTexture(textTexture);
+		SDL_FreeSurface(textSurface);
 	}
 	SDL_RenderPresent(theRenderer);
-	SDL_Delay(1000);
 }
 
 void Subsurface::m_draw(){
@@ -345,35 +341,7 @@ void Subsurface::m_drawHappy(){
 	}
 }
 
-bool CitySurface::m_handleEvent(const SDL_Event& event){
-	try{
-		if(event.type == SDL_KEYDOWN){
-	std::cout<<"Man hat den SurfaceKeyCode "<<event.key.keysym.sym<<std::endl;
-		if(m_handleKeyboardEvent(event)){
-			m_drawSurface(theRenderer);
-			return true;
-		}
-		else{
-			throw(QuitSurface());
-		}
-	}
-	if(event.type == SDL_MOUSEBUTTONDOWN){
-		if(event.button.button == SDL_BUTTON_LEFT){
-			if (m_handleLeftClick(event.button)){
-				m_drawSurface(theRenderer);
-				return true;
-			}
-		}
-	}
-	return false;
-	}
-	catch(QuitSurface& qs){
-	throw qs;
-	}
-	catch(SDLQuitException& sdlqe){
-		throw sdlqe;
-	}
-}
+
 
 
 void CitySurface::m_drawSurface(SDL_Renderer* renderer){
@@ -386,155 +354,78 @@ void CitySurface::m_drawSurface(SDL_Renderer* renderer){
 	m_drawCityFields();
 	m_drawFigures();
 	m_drawSubsurfaceButtons();
+	m_drawShields();
 	m_subsurface->m_draw();
 	SDL_RenderPresent(theRenderer);
 }
 
-bool CitySurface::m_handleKeyboardEvent(const SDL_Event& event){
-	KeyCode subsurfaceKeycode[] = {SDLK_i,SDLK_h, SDLK_m, SDLK_v};
-	SubSurfaceState subSurfaceState[] = {SUBSURFACE_INFO, SUBSURFACE_HAPPY, SUBSURFACE_MAP, SUBSURFACE_VIEW};
-	for(int i(0); i<4; i++){
-		if(event.key.keysym.sym == subsurfaceKeycode[i]){
-			m_subsurface->m_state = subSurfaceState[i];
-			m_subsurface->m_draw();
-			return true;
-		}
-	}
-	std::cout<<"false keyboardhandling "<<std::endl;
-	return false;
-}
-
-bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
-	std::cout<<"CitySurface::m_handleLeftClick(), x = "<<event.x<<", y = "<<event.y<<std::endl;
-	try
-	{
-		if (m_subsurface->m_handleMouseClick(event.x, event.y)){
-			return true;
-		}
-	else{
-		int xToStart = PRODUCTION_OVERVIEW_WIDTH;
-		int yToStart = CITIZENS_OVERVIEW_HEIGHT;
-		if(event.x <= xToStart + 5* STANDARD_FIELD_SIZE && std::abs(5*STANDARD_FIELD_SIZE/2 + yToStart - event.y) <= 5*STANDARD_FIELD_SIZE/2
-		&& event.x > xToStart){
-			std::vector<Coordinate> coordinateVector = Field::coordinatesAroundCity();
-			Coordinate differenceCoordinate((event.x - xToStart -1)/STANDARD_FIELD_SIZE - 2,(event.y - yToStart - 1)/STANDARD_FIELD_SIZE -2) ;
-			std::cout<<"differenceCoordinate: "<<differenceCoordinate<<std::endl;
-			if(isInVector<Coordinate>(coordinateVector, differenceCoordinate, [](Coordinate& x, Coordinate& y){return x==y;})){
-				std::cout<<"ruft gleich m_placeCitizen auf"<<std::endl;
-				std::shared_ptr<Field> fieldClickedOn = m_associatedCity->m_whereItStands->m_getNeighbouringField(differenceCoordinate);
-				std::cout<<"*fieldClickedOn: "<<*fieldClickedOn<<std::endl;
-				return m_associatedCity->m_placeCitizen(fieldClickedOn);
-			}
-		}
-		if(event.y <= CITIZENS_OVERVIEW_HEIGHT && event.x <= CITIZENS_OVERVIEW_WIDTH){
-			return m_handleCitizenClick(event);
-		}
-	}
-	throw(QuitSurface());
-	}
-	catch (QuitSurface& theException){
-		throw theException;
-	}
-	catch(IrrelevantClick& icl){
-		return false;
-	}
-}
 
 
-bool Subsurface::m_handleMouseClick(int x, int y){
-	if(y<SCREEN_HEIGHT-SUBSURFACE_HEIGHT || x<FOOD_STORAGE_WIDTH || x >= SUBSURFACE_WIDTH + FOOD_STORAGE_WIDTH){
-		return false;
+void CitySurface::m_drawShields(){
+	const int shieldsNeeded = City::shieldsNeeded(m_associatedCity->m_whatIsBuilt);
+	const int shieldWidth = RESOURCES_SCALEFACTOR*7;
+	const int shieldsPerRow = std::max(shieldsNeeded/100,1)*10;
+	const int rowCount = shieldsNeeded/shieldsPerRow;
+	const int distance = std::max(1*RESOURCES_SCALEFACTOR,(SHIELD_OVERVIEW_WIDTH-7*RESOURCES_SCALEFACTOR)/(shieldsPerRow-1));
+	SDL_Rect backgroundRect{SCREEN_WIDTH - SHIELD_OVERVIEW_WIDTH, SCREEN_HEIGHT - SHIELD_OVERVIEW_HEIGHT, SHIELD_OVERVIEW_WIDTH, SHIELD_OVERVIEW_HEIGHT};
+	SDL_SetRenderDrawColor(theRenderer, Graphics::Civ::cityBackgroundColor());
+	SDL_RenderFillRect(theRenderer, &backgroundRect);
+	SDL_Rect storageRect{SCREEN_WIDTH-SHIELD_OVERVIEW_WIDTH, SCREEN_HEIGHT-10*8*RESOURCES_SCALEFACTOR, SHIELD_OVERVIEW_WIDTH-shieldWidth, rowCount*RESOURCES_SCALEFACTOR*8};
+	SDL_SetRenderDrawColor(theRenderer, Graphics::Civ::brightCityBackgroundColor());
+	SDL_RenderFillRect(theRenderer, &storageRect);
+	int shieldCount = m_associatedCity->m_shieldProduction();
+	for(int shieldIndex(0); shieldIndex<shieldCount; shieldIndex++){
+		Graphics::Civ::drawShield(theRenderer, storageRect.x + distance*(shieldIndex%shieldsPerRow), storageRect.y + 8*RESOURCES_SCALEFACTOR*(shieldIndex/shieldsPerRow), RESOURCES_SCALEFACTOR);
 	}
-	if(y<=SUBSURFACE_BUTTON_HEIGHT + SCREEN_HEIGHT - SUBSURFACE_HEIGHT){
-		switch((x-FOOD_STORAGE_WIDTH)/(SUBSURFACE_WIDTH/4)){
-		case 0: m_state = SUBSURFACE_INFO; break;
-		case 1: m_state = SUBSURFACE_HAPPY; break;
-		case 2: m_state = SUBSURFACE_MAP; break;
-		case 3: m_state = SUBSURFACE_VIEW; break;
-		default: m_state = SUBSURFACE_INFO; break;
-		}
-		return true;
-	}
-	switch(m_state){
-	case SUBSURFACE_VIEW:
-	{
-		m_state = SUBSURFACE_INFO;
-		return true;
-	}
-	case SUBSURFACE_MAP:
-	{
-		throw IrrelevantClick();
-	}
-	case SUBSURFACE_HAPPY: {
-		throw IrrelevantClick();
-	}
-	case SUBSURFACE_INFO:{
-		const int figuresPerRow = SUBSURFACE_WIDTH/STANDARD_FIELD_SIZE;
-		int indexX = (x-FOOD_STORAGE_WIDTH)/STANDARD_FIELD_SIZE;
-		int indexY = (y-SCREEN_HEIGHT + SUBSURFACE_HEIGHT - 1 - SUBSURFACE_BUTTON_HEIGHT)/STANDARD_FIELD_SIZE;
-		int index = figuresPerRow*indexY+indexX;
-		int i(0);
-		if(index < 0){
-			std::cout<<"weird index calculation, result: "<<index<<std::endl;
-			throw QuitSurface();
-		}
-		for(const std::shared_ptr<Figure>& currentFigure: m_surface->m_associatedCity->m_WhereItStands()->m_FiguresOnField()){
-			if(index!=i++){
-				continue;
-			}
-			switch(currentFigure->m_FigureState()){
-			case SENTRIED:{
-				currentFigure->m_startMove(true);
-				return true;
-			}
-			case FORTIFIED: {
-				currentFigure->m_setFigureState(DONE_WITH_TURN);
-				return true;
-			}
-			case SENTRYING: {
-				currentFigure->m_setFigureState(DONE_WITH_TURN);
-				return true;
-			}
-			case COMPLETELY_FORTIFIED:{
-				currentFigure->m_startMove(true);
-				return true;
-			}
-			default:{
-				throw IrrelevantClick();
-			}
-			}
-		}
-		break;
-	}
-	default:
-	{
-		std::cout<<"I do not know what that subsurfacestate is!"<<std::endl;
-		return false;
-	}
+	SDL_Surface* infoSurface = TTF_RenderText_Solid(theFont, City::improvementString(m_associatedCity->m_WhatIsBuilt()).c_str(), whiteColor);
+	SDL_Texture* infoTexture = SDL_CreateTextureFromSurface(theRenderer, infoSurface);
+	int xToStart = SCREEN_WIDTH - SHIELD_OVERVIEW_WIDTH;
+	int yToStart = SCREEN_HEIGHT - SHIELD_OVERVIEW_HEIGHT;
+	SDL_Rect infoRect{ xToStart + (SHIELD_OVERVIEW_WIDTH - infoSurface->w)/2, yToStart, infoSurface->w, infoSurface->h};
+	SDL_RenderCopy(theRenderer, infoTexture, nullptr, &infoRect);
+	yToStart+= infoSurface->w;
+	SDL_DestroyTexture(infoTexture);
+	SDL_FreeSurface(infoSurface);
+	buyButton.m_draw(0,0);
+	changeButton.m_draw(0,0);
 }
-	throw IrrelevantClick();
+
+void ImprovementRightClick::operator ()(){
+	return;
+}
+
+ImprovementRightClick::ImprovementRightClick(std::string name):m_filename(name)
+{
 
 }
 
-bool CitySurface::m_handleCitizenClick(const SDL_MouseButtonEvent& event){
-#ifdef CHANGETO
-#undef CHANGETO
-#endif
-#define CHANGETO(x,y) case x: {(m_associatedCity->m_citizens)[quotientX].m_state = y; return true;}
-	int xToStart = FIRST_CITIZEN_X;
-	int quotientX = (event.x - FIRST_CITIZEN_X)/(CITIZEN_MAX_WIDTH*CITIZEN_SCALEFACTOR);
-	if(quotientX < 0){
-		return false;
-	}
-	if(quotientX >= m_associatedCity->m_size()){
-		return false;
-	}
-	switch(m_associatedCity->m_citizens[quotientX].m_state){
-	CHANGETO(ENTERTAINER, TAX_COLLECTOR)
-	CHANGETO(TAX_COLLECTOR, SCIENTIST)
-	CHANGETO(SCIENTIST, ENTERTAINER)
-	default:{
-		return false;
-	}
-	}
+ImprovementRightClick::ImprovementRightClick(ImprovementType imptype){
+	m_filename = "";
 }
+
+bool CitySurface::m_changeWhatIsBuilt(){
+	std::vector<std::shared_ptr<SelectionElement>> whatToSelectFrom;
+	std::vector<ImprovementType> whatIsPossible = m_associatedCity->m_whatCanBeBuilt();
+	for(ImprovementType imptype: whatIsPossible){
+		std::stringstream namestream;
+		bool isObsoleteWonder = false;
+			if(isObsoleteWonder){
+				namestream<<"<<";
+			}
+			namestream<< imptype;
+			namestream.flush();
+		ImprovementRightClick irc(imptype);
+		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(namestream.str(), ((int) imptype < 0 ? IMPROVEMENT_UNIT_LAYER : IMPROVEMENT_LAYER),irc);
+		whatToSelectFrom.push_back(selectionElement);
+	}
+	SelectorSurface improvementSelection(0,0,whatToSelectFrom);
+	SelectionReturn result = improvementSelection.m_fetchSelection();
+	m_associatedCity->m_whatIsBuilt = whatIsPossible[result.index];
+	std::cout<<result.content<<", index: "<<result.index<<", building: "<<m_associatedCity->m_whatIsBuilt<<std::endl;
+	return true;
+}
+
+
+
+
+

@@ -31,7 +31,7 @@ int CONTENT_BASE(2);
 
 Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000, SIDETEXT_LAYER = 2000, CITY_LAYER = 1500;
 DrawState Graphics::m_whatsUpDrawingwise = NOT_IN_ANY_DRAWING;
-int modulo (const int& i, const int& j){
+int modulo (int i, int j){
 	if(j <= 0)
 		return MODULO_FAIL;
 	if(i>=0)
@@ -43,10 +43,10 @@ int modulo (const int& i, const int& j){
 	}
 }
 
-int xModulo(const int& i){
+int xModulo(int i){
 	return modulo(i  + STANDARD_FIELD_SIZE - MODULO_WIDTH_FOR_NEGATIVE, WORLD_LENGTH*STANDARD_FIELD_SIZE) - STANDARD_FIELD_SIZE + MODULO_WIDTH_FOR_NEGATIVE;
 }
-int yModulo(const int& i){
+int yModulo(int i){
 	return modulo(i + STANDARD_FIELD_SIZE - MODULO_HEIGHT_FOR_NEGATIVE, WORLD_HEIGHT*STANDARD_FIELD_SIZE) - STANDARD_FIELD_SIZE + MODULO_HEIGHT_FOR_NEGATIVE;
 }
 
@@ -454,4 +454,26 @@ int Graphics::Civ::drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int sca
 		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
 	}
 	return whatToReturn;
+}
+
+std::vector<Coordinate> coordinatesAroundField(int visibilityRange){
+	std::vector<Coordinate> whatToReturn;
+	for(int i(-visibilityRange); i<=visibilityRange;i++){
+		for(int j(-visibilityRange); j<=visibilityRange;j++){
+			whatToReturn.push_back(Coordinate(i,j));
+		}
+	}
+	return whatToReturn;
+}
+
+std::ostream& operator<<(std::ostream& os, ImprovementType imptype){
+	switch(imptype){
+	case IMPROVEMENT_SETTLERS: os<<"Settlers"; break;
+	case IMPROVEMENT_TRIREME: os<<"Trireme"; break;
+	case PALACE: os<<"Palace"; break;
+	case TEMPLE: os<<"Temple"; break;
+	case GRANARY: os<<"Granary"; break;
+	default: os<<(int)imptype; break;
+	}
+	return os;
 }

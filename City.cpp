@@ -11,6 +11,7 @@
 #include "Drawing.hpp"
 #include "Game.hpp"
 #include <algorithm>
+#include "GameMain.hpp"
 
 City::~City() {
 	// TODO Auto-generated destructor stub
@@ -64,7 +65,7 @@ Citizen::Citizen(City& home, std::shared_ptr<Field> whereToWork):m_home(home)
 	int temp;
 	for(std::shared_ptr<Field> currentField: m_home.m_WhereItStands()->m_cityFieldsAround()){
 		temp = currentField->m_shields(myNation) + currentField->m_trade(myNation) + currentField->m_food(myNation);
-		if(production < temp && !currentField->m_CityContained() && currentField!=m_home.m_WhereItStands()&& !currentField->m_CitizenWorking()){
+		if(production < temp && currentField->m_isVisible(m_home.m_OwningNation()->m_Nation())&&!currentField->m_CityContained() && currentField!=m_home.m_WhereItStands()&& !currentField->m_CitizenWorking()){
 			currentField->m_setCitizenWorking(this);
 			production = temp;
 			if(m_whereItWorks){
@@ -82,7 +83,7 @@ int City::m_drawCity(int x, int y, SDL_Renderer* renderer){
 	std::stringstream stream;
 	stream<<m_citizensSize;
 	stream.flush();
-	SDL_Color newRenderColor = Nation::standardNationColor(m_owningNation->m_Nation());
+	SDL_Color newRenderColor = Nation::standardNationColor(m_OwningNation()->m_Nation());
 	SDL_Surface* textSurface = TTF_RenderText_Solid(citySizeFont, stream.str().c_str(), blackColor);
 	SDL_Rect rectToFill{x,y,STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE};
 	whatToReturn += SDL_SetRenderDrawColor(theRenderer, newRenderColor.r, newRenderColor.g, newRenderColor.b, newRenderColor.a);
@@ -171,7 +172,6 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 		}
 	}
 	if(flag==HAPPY_1){
-		std::cout<<"happy1goto"<<std::endl;
 		goto beginReturn;
 	}
 	for(unsigned int i(0);i<m_citizens.size();i++){
@@ -191,13 +191,10 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 			std::cout<<"luxuriesApplied = "<<luxuriesApplied<<", luxuriesToApply = "<<luxuriesToApply<<std::endl;
 		}
 		catch(InertCitizenState& exception){
-			std::cout<<"inert luxury state ";
-			std::cout.flush();
 			continue;
 		}
 	}
 	if(flag==HAPPY_2){
-		std::cout<<"happy2goto"<<std::endl;
 		goto beginReturn;
 	}
 	for(unsigned int i(0);i<m_citizens.size();i++){
@@ -215,14 +212,11 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 		}
 		}
 		catch(InertCitizenState& exception){
-			std::cout<<"InertCitizenState when making content! ";
-			std::cout.flush();
 			continue;
 		}
 	}
 
 	if(flag==HAPPY_3){
-		std::cout<<"happy3goto"<<std::endl;
 		goto beginReturn;
 	}
 	for(Citizen& citizen: m_citizens){
@@ -277,16 +271,6 @@ int City::m_shieldCost(){
 		whatToReturn += cost.shieldCost;
 	}
 	return whatToReturn;
-}
-
-template<typename T>
-bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2)){
-	for(T& t: theVector){
-		if(equals(whatToFind, t)){
-			return true;
-		}
-	}
-	return false;
 }
 
 std::vector<UnitCostingResources> City::m_unitCostVector(){
@@ -415,6 +399,7 @@ void City::m_startNewTurn(){
 		m_grow();
 	}
 	m_sortFiguresByValue();
+	m_maybeFinishProduction();
 	m_food = std::min((m_foodProduction()+m_food - m_foodCost()), m_foodStorageSize());
 	std::cout<<"food = "<<m_food<<std::endl;
 }
@@ -459,4 +444,71 @@ bool City::m_placeCitizen(std::shared_ptr<Field> fieldClickedOn){
 		return true;
 	}
 	return false;
+}
+
+int City::shieldsNeeded(ImprovementType imptype){
+	switch(imptype){
+	case IMPROVEMENT_SETTLERS: return 40;
+	case IMPROVEMENT_TRIREME: return 40;
+	case TEMPLE: return 40;
+	case PALACE: return 200;
+	case GRANARY: return 60;
+	default: return 30000;
+	}
+}
+
+std::vector<ImprovementType> City::buildingTypes(){
+	return std::vector<ImprovementType>{PALACE, GRANARY, TEMPLE};
+}
+
+std::vector<ImprovementType> City::figureTypes(){
+	return std::vector<ImprovementType>{IMPROVEMENT_SETTLERS, IMPROVEMENT_TRIREME};
+}
+
+std::vector<ImprovementType> City::wonderTypes(){
+	return std::vector<ImprovementType>{};
+}
+
+bool City::m_maybeFinishProduction(){
+	if((m_shields+=m_shieldProduction())<shieldsNeeded(m_whatIsBuilt)){
+		//return false;
+	}
+	m_shields = 0;
+	std::shared_ptr<Figure> newFigure;
+	bool gonnaBeVeteran  = false;
+	switch(m_whatIsBuilt){
+	case IMPROVEMENT_SETTLERS:
+	{
+		std::shared_ptr<Figure> newFigure = std::make_shared<Settlers>(m_whereItStands, m_owningNation, shared_from_this(), gonnaBeVeteran);
+		m_owningNation->m_addFigure(newFigure);
+		m_whereItStands->m_takeFigure(newFigure);
+		newFigure->m_integrateInto(*someDrawing);
+		return true;
+	}
+	default: return false;
+	}
+}
+#ifdef RETURN_FOR
+#undef RETURN_FOR
+#endif
+#define RETURN_FOR(A,B) case A: {return B;}
+std::string City::improvementString(ImprovementType imptype){
+	switch(imptype){
+	RETURN_FOR(IMPROVEMENT_SETTLERS, "Settlers")
+	RETURN_FOR(IMPROVEMENT_TRIREME, "Trireme")
+	RETURN_FOR(PALACE, "Palace")
+	RETURN_FOR(TEMPLE, "Temple")
+	RETURN_FOR(GRANARY, "Granary")
+	default: return "Hä?";
+	}
+	return "Hä????";
+}
+
+std::vector<ImprovementType> City::m_whatCanBeBuilt(){
+	std::vector<ImprovementType> whatToReturn;
+	for(int i(0); i<75;i++)
+	whatToReturn.push_back(IMPROVEMENT_SETTLERS);
+	whatToReturn.push_back(IMPROVEMENT_TRIREME);
+	whatToReturn.push_back(PALACE);
+	return whatToReturn;
 }

@@ -28,6 +28,11 @@ class City;
 class Subsurface;
 class CitySurface;
 
+struct LayerString{
+	int layer;
+	std::string content;
+};
+
 struct UnitCostingResources{
 	Figure* figure;
 	int foodCost;
@@ -71,6 +76,12 @@ private:
 	std::vector<std::shared_ptr<TradeRoute>> m_tradeRoutes;
 
 public:
+	static std::string improvementString(ImprovementType imptype);
+	static std::vector<ImprovementType> buildingTypes();
+	static std::vector<ImprovementType> figureTypes();
+	static std::vector<ImprovementType> wonderTypes();
+	static int shieldsNeeded(ImprovementType imptype);
+	std::vector<ImprovementType> m_whatCanBeBuilt();
 	ImprovementType m_WhatIsBuilt(){return m_whatIsBuilt;}
 	std::shared_ptr<Field> m_WhereItStands(){return m_whereItStands;}
 	std::shared_ptr<Nation> m_OwningNation(){return m_owningNation;}
@@ -105,6 +116,5 @@ public:
 
 template<typename T>
 bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2));
-
 
 #endif /* CITY_HPP_ */

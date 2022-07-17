@@ -9,6 +9,8 @@
 #define CITYSURFACE_HPP_
 #include "sdltypes.hpp"
 #include "EventHandler.hpp"
+#include "ButtonElement.hpp"
+#include <functional>
 
 class City;
 class Subsurface;
@@ -31,14 +33,29 @@ public:
 	void m_drawFoodProduction();
 	void m_drawShieldProduction();
 	void m_drawTradeProduction();
+	bool m_change();
+	bool m_sell();
+	bool m_buy();
 	void m_drawProduction();
 	void m_drawFoodStorage();
 	void m_drawCityFields();
 	void m_drawFigures();
+	void m_drawShields();
+	void m_drawShieldOverview();
+	bool m_changeWhatIsBuilt();
 	bool m_handleCitizenClick(const SDL_MouseButtonEvent& event);
 	friend class Subsurface;
 };
 
+class ImprovementRightClick: public std::function<void()>{
+public:
+	void operator()();
+	std::string m_filename;
+	ImprovementRightClick(std::string name = "");
+	ImprovementRightClick(ImprovementType imptype);
+};
 
+extern ButtonElement changeButton;
+extern ButtonElement buyButton;
 
 #endif /* CITYSURFACE_HPP_ */

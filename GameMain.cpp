@@ -133,9 +133,7 @@ int GameMain::operator()(){
 	if(m_handleEvent(currentEvent)){
 true;	}
   MAIN_LOOP_END
-  //theMovableThing2->m_setMoveToDirection(UP_RIGHT);
-  //theMovableThing2->m_move();
- }			//
+ }
 
  TTF_Quit();
  IMG_Quit();

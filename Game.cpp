@@ -51,6 +51,7 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 			std::stringstream stream; stream<<"City of "<<nation.m_Nation();stream.flush();
 			std::cout<<"stream: "<<stream.str();
 		}
+		nationPointer->m_setMakingActive(false);
 	}
 	Graphics::Civ::currentNationality = nationsToPlay[0];
 }
