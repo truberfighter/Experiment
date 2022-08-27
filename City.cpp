@@ -149,7 +149,7 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 	}
 	int size = m_size();
 	int contentApplied = 0;
-	int luxuriesToApply = m_luxuriesProduction()/2;
+	int luxuriesToApply = m_luxuriesRevenue()/2;
 	int luxuriesApplied = 0;
 	int unhappyApplied = 0;
 	std::vector<CitizenState> whatToReturn;
@@ -418,12 +418,26 @@ int City::m_tradeProduction(){
 	return count;
 }
 
-int City::m_luxuriesProduction(){
-	return m_tradeProduction();
+int City::m_luxuriesRevenue(){
+	int production = m_revenueProduction().luxuries;
+	int marketBankCoefficient = 2;
+	return (production*marketBankCoefficient)/2;
+}
+
+int City::m_goldRevenue(){
+	int production = m_revenueProduction().gold;
+	int marketBankCoefficient = 2;
+	return (production*marketBankCoefficient)/2;
+}
+
+int City::m_scienceRevenue(){
+	int production = m_revenueProduction().science;
+	int libraryUniversityCoefficient = 2;
+	return (production*libraryUniversityCoefficient)/2;
 }
 
 bool City::m_placeCitizen(std::shared_ptr<Field> fieldClickedOn){
-	if(fieldClickedOn->m_CityContained() != nullptr)
+	if(fieldClickedOn->m_CityContained() != nullptr || !fieldClickedOn->m_isVisible(m_owningNation->m_Nation()))
 	{
 		return false;
 	}
@@ -451,6 +465,7 @@ int City::shieldsNeeded(ImprovementType imptype){
 	case IMPROVEMENT_SETTLERS: return 40;
 	case IMPROVEMENT_TRIREME: return 40;
 	case TEMPLE: return 40;
+	case COURTHOUSE: return 80;
 	case PALACE: return 200;
 	case GRANARY: return 60;
 	default: return 30000;
@@ -471,11 +486,15 @@ std::vector<ImprovementType> City::wonderTypes(){
 
 bool City::m_maybeFinishProduction(){
 	if((m_shields+=m_shieldProduction())<shieldsNeeded(m_whatIsBuilt)){
-		//return false;
+		return false;
 	}
 	m_shields = 0;
 	std::shared_ptr<Figure> newFigure;
 	bool gonnaBeVeteran  = false;
+	std::shared_ptr<CityImprovement> newImprovement = m_maybeBuild(m_whatIsBuilt);
+	if(newImprovement != nullptr){
+		m_improvements.push_back(*newImprovement);
+	}
 	switch(m_whatIsBuilt){
 	case IMPROVEMENT_SETTLERS:
 	{
@@ -499,6 +518,7 @@ std::string City::improvementString(ImprovementType imptype){
 	RETURN_FOR(PALACE, "Palace")
 	RETURN_FOR(TEMPLE, "Temple")
 	RETURN_FOR(GRANARY, "Granary")
+	RETURN_FOR(COURTHOUSE, "Courthouse")
 	default: return "Hä?";
 	}
 	return "Hä????";
@@ -510,5 +530,147 @@ std::vector<ImprovementType> City::m_whatCanBeBuilt(){
 	whatToReturn.push_back(IMPROVEMENT_SETTLERS);
 	whatToReturn.push_back(IMPROVEMENT_TRIREME);
 	whatToReturn.push_back(PALACE);
+	return whatToReturn;
+}
+
+bool City::m_contains(ImprovementType imptype){
+	for(CityImprovement& currentImprovement: m_improvements){
+		if(currentImprovement.m_what == imptype){
+			return true;
+		}
+	}
+	return false;
+}
+
+CityImprovement::CityImprovement(ImprovementType what, City* home):m_what(what), m_home(home)
+{
+	std::cout<<"CityImprovement-Konstruktor: imptype = "<<m_what<<", home = "<<m_home<<": "<<home->m_Name()<<std::endl;
+}
+
+
+std::shared_ptr<CityImprovement> City::m_maybeBuild(ImprovementType imptype){
+	if(m_contains(imptype)){
+		return nullptr;
+	}
+	switch(imptype){
+	case PALACE:
+		m_owningNation->m_setCapitalCity(shared_from_this());
+		return std::make_shared<CityImprovement>(PALACE, this);
+	}
+	return nullptr;
+}
+
+int City::m_distanceTo(std::shared_ptr<City> comparedCity){
+	if(!comparedCity){
+		std::cout<<"compared City not found"<<std::endl;
+		throw NullPointerException("City");
+	}
+	int horizontalDistance = std::abs(comparedCity->m_whereItStands->m_x - m_whereItStands->m_x)/STANDARD_FIELD_SIZE;
+	horizontalDistance = std::min(horizontalDistance, WORLD_LENGTH - 1 - horizontalDistance);
+	int verticalDistance = std::abs(comparedCity->m_whereItStands->m_y - m_whereItStands->m_y)/STANDARD_FIELD_SIZE;
+	std::cout<<"horizontal distance: "<<horizontalDistance<<"verticaldistance: "<<verticalDistance<<std::endl;
+	return std::max(horizontalDistance, verticalDistance);
+}
+
+int City::m_corruptionProduction(){
+	int governmentCoefficient;
+	switch(m_owningNation->m_Government()){
+	case DEMOCRACY:
+	{
+		return 0;
+	}
+	case ANARCHY:
+	{
+		governmentCoefficient = 12;
+		break;
+	}
+	case DESPOTISM:
+	{
+		governmentCoefficient = 8;
+		break;
+	}
+	case REPUBLIC:
+	{
+		governmentCoefficient = 24;
+		break;
+	}
+	case MONARCHY:
+	{
+		governmentCoefficient = 16;
+		break;
+	}
+	case COMMUNISM:
+	{
+		governmentCoefficient = 20;
+		break;
+	}
+	}
+	int distance;
+	try{
+	distance = m_distanceTo(m_owningNation->m_CapitalCity());
+	}
+	catch(NullPointerException& npe){
+		if(npe.what() == "City"){
+			distance = 32;
+		}
+	}
+	int courthouseDivisor = m_contains(COURTHOUSE) ? 2 : 1;
+	return (3*distance*this->m_tradeProduction())/(courthouseDivisor * governmentCoefficient*10);
+}
+
+CityProduction City::m_revenueProduction(){
+	int amount = m_tradeProduction(),
+	taxRate = m_owningNation->m_TaxRate(),
+	luxuriesRate = m_owningNation->m_LuxuriesRate(),
+	scienceRate = TAX_RATE_STEP_COUNT - taxRate - luxuriesRate;
+	std::cout<<"tradeProsuction: "<<amount<<std::endl;
+	int preluxury = ((amount*luxuriesRate)/TAX_RATE_STEP_COUNT)*TAX_RATE_STEP_COUNT;
+	int pregold = ((amount*taxRate)/TAX_RATE_STEP_COUNT)*TAX_RATE_STEP_COUNT;
+	int prescience = ((amount*scienceRate)/TAX_RATE_STEP_COUNT)*TAX_RATE_STEP_COUNT;
+#define GOLD_ERROR amount*taxRate - pregold
+#define LUXURY_ERROR amount*luxuriesRate - preluxury
+#define SCIENCE_ERROR amount*scienceRate - prescience
+	while(GOLD_ERROR + LUXURY_ERROR + SCIENCE_ERROR >0){
+		std::cout<<"lol"<<std::endl;
+		int worstDeficit = std::max(GOLD_ERROR, std::max(SCIENCE_ERROR, LUXURY_ERROR));
+		if(worstDeficit == GOLD_ERROR){
+			pregold+=TAX_RATE_STEP_COUNT;
+		}
+		else{
+			if(worstDeficit == SCIENCE_ERROR){
+				prescience+=TAX_RATE_STEP_COUNT;
+			}
+			else{
+				preluxury+=TAX_RATE_STEP_COUNT;
+			}
+		}
+	}
+	CityProduction whatToReturn{preluxury/TAX_RATE_STEP_COUNT, pregold/TAX_RATE_STEP_COUNT, prescience/TAX_RATE_STEP_COUNT};
+	std::cout<<"gold: "<<whatToReturn.gold<<", luxury: "<<whatToReturn.luxuries<<", science: "<<whatToReturn.science<<std::endl;
+	for(Citizen& currentCitizen: m_citizens){
+		switch(currentCitizen.m_state){
+		case ENTERTAINER:
+		{
+			whatToReturn.luxuries+=2;
+			break;
+		}
+		case TAX_COLLECTOR:
+		{
+			whatToReturn.gold+=2;
+			break;
+		}
+		case SCIENTIST:
+		{
+			whatToReturn.science+=2;
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	if(m_owningNation->m_Government()==ANARCHY){
+		whatToReturn.gold = 0;
+		whatToReturn.science = 0;
+	}
 	return whatToReturn;
 }

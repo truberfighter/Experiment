@@ -17,13 +17,21 @@ class Nation: public std::enable_shared_from_this<Nation>{
 private:
 	std::shared_ptr<City> m_capitalCity;
 	std::vector<std::shared_ptr<City>> m_cities;
-	GovernmentType m_government = DEMOCRACY;
+	GovernmentType m_government = DESPOTISM;
 	Nationality m_nation;
 	std::string m_leaderName;
 	std::vector<std::shared_ptr<Figure>> m_figures;
 	std::list<std::shared_ptr<Figure>> m_activeFigures;
 	bool m_directlyMakingFiguresActive = false;
+	short unsigned int m_taxRate = 5;
+	short unsigned int m_luxuriesRate = 5;
 public:
+	short unsigned int m_TaxRate();
+	void m_setTaxRate(short unsigned int tax);
+	short unsigned int m_LuxuriesRate();
+	bool m_alterTaxRate();
+	bool m_alterLuxuriesRate();
+	void m_setLuxuriesRate(short unsigned int luxuries);
 	void m_setMakingActive(bool setting){m_directlyMakingFiguresActive = setting;}
 	std::shared_ptr<City> m_CapitalCity(){return m_capitalCity;}
 	void m_setCapitalCity(std::shared_ptr<City> city){m_capitalCity = city;}

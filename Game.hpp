@@ -42,7 +42,6 @@ public:
 	bool m_addNation(Nationality naewNationality);
 	bool m_addNation(std::shared_ptr<Nation> newNation);
 	void m_makeEndOfTurn();
-	//if necessary, create a log
 	Nationality m_calculateWinnerInFight(std::shared_ptr<Figure> attacker, std::shared_ptr<Figure> defender);
 	std::shared_ptr<Nation> m_NationAtCurrentTurn();
 	unsigned int m_Year(){return m_currentYear.m_yearNumberRaw;}

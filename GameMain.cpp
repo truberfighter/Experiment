@@ -17,6 +17,7 @@
 #include "Figurebutton.hpp"
 #include <sstream>
 #include "City.hpp"
+#include "SelectorSurface.hpp"
 
 #define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ \
 	  Uint32 currentTime = SDL_GetTicks();\
@@ -236,3 +237,5 @@ bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 		throw exception;
 	}
 }
+
+

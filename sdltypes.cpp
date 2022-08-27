@@ -328,7 +328,7 @@ int Graphics::Civ::drawFood(SDL_Renderer* renderer, int x, int y, int scaleFacto
 	rectToFill.y+=scaleFactor;
 	whatToReturn += SDL_RenderFillRect(renderer, &rectToFill);
 
-	//Now, the white ad the yellow.
+	//Now, the white and the yellow.
 
 	int xCoordinate[19]={0,1,0,1,2,5,6,1,2,4,5,6,2,4,5,2,4,2,4};
 	int yCoordinate[19]={1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,5,5,6,6};
@@ -367,11 +367,12 @@ SDL_Color Graphics::Civ::brightCityBackgroundColor(){
 	return SDL_Color{125,125,255};
 }
 
+SDL_Color Graphics::Civ::darkgreyColor(){return SDL_Color{72,72,72};}
+
 SDL_Color Graphics::Civ::shieldGreyColor(){return SDL_Color{138,138,142};}
 SDL_Color Graphics::Civ::resourcesWhiteColor(){return SDL_Color{235,235,235};}
 int Graphics::Civ::drawShield(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus){
 	int whatToReturn = 0;
-	SDL_Color colorblack = blackColor;
 	SDL_Color colorgrey = Graphics::Civ::shieldGreyColor();
 	whatToReturn+=SDL_SetRenderDrawColor(renderer, colorgrey);
 	int xCoordinateGrey[]={2,3,4,3,3};
@@ -394,6 +395,49 @@ int Graphics::Civ::drawShield(SDL_Renderer* renderer, int x, int y, int scaleFac
 	int xCoordinateWhite[] = {1,5,1,2,3,4,5,1,2,4,5,1,2,4,5,2,3,4};
 	int yCoordinateWhite[] = {1,1,2,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5};
 	for(int i(0); i<18; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateWhite[i], y+scaleFactor*yCoordinateWhite[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	return whatToReturn;
+}
+
+int Graphics::Civ::drawScience(SDL_Renderer* renderer, int x, int y, int scaleFactor){
+	int whatToReturn = 0;
+	SDL_Color colorblack = blackColor;
+	int xCoordinateBlack[] = {2,3,4,1,5,0,6,0,6,0,6,1,5,2,4,2,4};
+	int yCoordinateBlack[] = {0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7};
+	whatToReturn += SDL_SetRenderDrawColor(theRenderer, colorblack);
+	for(int i(0); i<15; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateBlack[i], y+scaleFactor*yCoordinateBlack[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_Color colordarkgrey = Graphics::Civ::darkgreyColor();
+	int xCoordinateDarkGrey = 3;
+	int yCoordinateDarkGrey = 6;
+	whatToReturn += SDL_SetRenderDrawColor(theRenderer, colordarkgrey);
+	SDL_Rect rect{x + scaleFactor*xCoordinateDarkGrey, y+scaleFactor*yCoordinateDarkGrey, scaleFactor, scaleFactor};
+	whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	SDL_Color colorgrey = Graphics::Civ::shieldGreyColor();
+	whatToReturn += SDL_SetRenderDrawColor(theRenderer, colorgrey);
+	int xCoordinateGrey[] = {3,3};
+	int yCoordinateGrey[] = {4,5};
+	for(int i(0); i<2; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateGrey[i], y+scaleFactor*yCoordinateGrey[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_Color colorturquoise = Graphics::Civ::turquoiseColor();
+	whatToReturn += SDL_SetRenderDrawColor(theRenderer, colorturquoise);
+	int xCoordinateTurquoise[] = {2,3,4,1,2,4,5,1,2,4,5,2,4};
+	int yCoordinateTurquoise[] = {1,1,1,2,2,2,2,3,3,3,3,4,4};
+	for(int i(0); i<13; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateTurquoise[i], y+scaleFactor*yCoordinateTurquoise[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_Color colorwhite = Graphics::Civ::resourcesWhiteColor();
+	whatToReturn += SDL_SetRenderDrawColor(theRenderer, colorwhite);
+	int xCoordinateWhite[] = {3,3};
+	int yCoordinateWhite[] = {2,3};
+	for(int i(0); i<2; i++){
 		SDL_Rect rect{x + scaleFactor*xCoordinateWhite[i], y+scaleFactor*yCoordinateWhite[i], scaleFactor, scaleFactor};
 		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
 	}
@@ -428,11 +472,15 @@ int Graphics::Civ::drawTrade(SDL_Renderer* renderer, int x, int y, int scaleFact
 		SDL_Rect rect{x + scaleFactor*xCoordinateWhite[i], y+scaleFactor*yCoordinateWhite[i], scaleFactor, scaleFactor};
 		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
 	}
-	return whatToReturn;
+	whatToReturn;
 }
 
 SDL_Color Graphics::Civ::yellowColor(){
 	return SDL_Color{255,255,150};
+}
+
+SDL_Color Graphics::Civ::turquoiseColor(){
+	return SDL_Color{12,227,235};
 }
 
 int Graphics::Civ::drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int scaleFactor){
@@ -446,7 +494,7 @@ int Graphics::Civ::drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int sca
 		SDL_Rect rect{x + scaleFactor*xCoordinateYellow[i], y+scaleFactor*yCoordinateYellow[i], scaleFactor, scaleFactor};
 		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
 	}
-	SDL_SetRenderDrawColor(theRenderer, blackColor);
+	whatToReturn+=SDL_SetRenderDrawColor(theRenderer, blackColor);
 	int xCoordinateBlack[]={1,2,3,4,5,0,1,2,3,4,5,6,0,1,3,5,6,0,1,2,3,4,5,6,0,1,5,6,0,2,3,4,6,1,2,3,4,5};
 	int yCoordinateBlack[]={0,0,0,0,0,1,1,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5,5,6,6,6,6,6};
 	for(int i(0); i<38; i++){
@@ -455,6 +503,59 @@ int Graphics::Civ::drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int sca
 	}
 	return whatToReturn;
 }
+
+int Graphics::Civ::drawLuxury(SDL_Renderer* renderer, int x, int y, int scaleFactor){
+	int whatToReturn = 0;
+	SDL_Color colorwhite = Graphics::Civ::resourcesWhiteColor();
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, colorwhite);
+	int xCoordinateWhite[] = {3,2,3,1,2,3,0,1,2,3};
+	int yCoordinateWhite[] = {0,1,1,2,2,2,3,3,3,3};
+	for(int i(0); i<10; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateWhite[i], y+scaleFactor*yCoordinateWhite[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_Color colorturquoise = Graphics::Civ::turquoiseColor();
+	int xCoordinateTurquoise[] = {4,4,5,4,5,6,1,2,3,4,5,2,3,4,3};
+	int yCoordinateTurquoise[] = {1,2,2,3,3,3,4,4,4,4,4,5,5,5,6};
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, colorturquoise);
+	for(int i(0); i<15; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateTurquoise[i], y+scaleFactor*yCoordinateTurquoise[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	return whatToReturn;
+}
+
+int Graphics::Civ::drawGold(SDL_Renderer* renderer, int x, int y, int scaleFactor){
+	int whatToReturn = 0;
+	SDL_Color colorwhite = Graphics::Civ::resourcesWhiteColor();
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, colorwhite);
+	int xCoordinateWhite[] = {2,3,4,1,5,1,5,1,5,2,3,4};
+	int yCoordinateWhite[] = {1,1,1,2,2,3,3,4,4,5,5,5};
+	for(int i(0); i<12; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateWhite[i], y+scaleFactor*yCoordinateWhite[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_Color coloryellow = Graphics::Civ::yellowColor();
+	int xCoordinateYellow[] = {2,3,4,2,3,4,2,3,4};
+	int yCoordinateYellow[] = {2,2,2,3,3,3,4,4,4};
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, coloryellow);
+	for(int i(0); i<9; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateYellow[i], y+scaleFactor*yCoordinateYellow[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	SDL_Color colorblack = blackColor;
+	int xCoordinateBlack[] = {2,3,4,1,5,0,6,0,6,0,6,1,5,2,3,4};
+	int yCoordinateBlack[] = {0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,6};
+	whatToReturn+=SDL_SetRenderDrawColor(renderer, colorblack);
+	for(int i(0); i<16; i++){
+		SDL_Rect rect{x + scaleFactor*xCoordinateBlack[i], y+scaleFactor*yCoordinateBlack[i], scaleFactor, scaleFactor};
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+	}
+	return whatToReturn;
+}
+
+void DoNothing::operator ()(){}
+DoNothing::DoNothing(){}
 
 std::vector<Coordinate> coordinatesAroundField(int visibilityRange){
 	std::vector<Coordinate> whatToReturn;
@@ -473,7 +574,9 @@ std::ostream& operator<<(std::ostream& os, ImprovementType imptype){
 	case PALACE: os<<"Palace"; break;
 	case TEMPLE: os<<"Temple"; break;
 	case GRANARY: os<<"Granary"; break;
+	case COURTHOUSE: os<<"Courthouse";break;
 	default: os<<(int)imptype; break;
 	}
 	return os;
 }
+

@@ -11,8 +11,12 @@
 #include "FieldContainer.hpp"
 #include "City.hpp"
 #include "Game.hpp"
+#include "SelectorSurface.hpp"
+#include "functional"
 
 using namespace std;
+
+
 
 Nation::Nation(Nationality nationality, std::string leaderName, bool directlyMakingFiguresActive): m_nation(nationality), m_directlyMakingFiguresActive(directlyMakingFiguresActive), m_leaderName(leaderName), enable_shared_from_this()
 {
@@ -118,6 +122,90 @@ bool Nation::m_addToQueue(std::shared_ptr<Figure> newFigure){
 	newFigure->m_setFigureState(MOVING);
 	return previousSize == m_activeFigures.size();
 }
+
+void Nation::m_setTaxRate(short unsigned int tax){
+	//Automatic adjustion, if needed
+	m_taxRate = tax;
+	m_luxuriesRate = std::min(10-(int) m_taxRate, (int) m_luxuriesRate);
+}
+
+void Nation::m_setLuxuriesRate(short unsigned int luxuries){
+	m_luxuriesRate = luxuries;
+}
+
+bool Nation::m_alterLuxuriesRate(){
+	try{
+	std::cout<<"m_alterLuxuriesRrate: taxRate = "<<m_taxRate<<", luxuriesRate = "<<m_luxuriesRate<<std::endl;
+	if(m_taxRate == 10)
+		return false;
+	std::vector<std::shared_ptr<SelectionElement>> whatToSelectFrom;
+	int whatIsPossible = 10 - m_taxRate;
+	for(int i(0);i<=whatIsPossible;i++){
+		std::stringstream stream;
+		stream<<"Luxuries Rate: "<<i<<0<<"%, Science Rate = "<<whatIsPossible-i<<0<<"%";
+		stream.flush();
+		DoNothing dn;
+		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(stream.str(),0,dn);
+		whatToSelectFrom.push_back(selectionElement);
+	}
+	std::stringstream stringStream;
+	stringStream<<"TaxRate: "<<m_taxRate<<"0%, Luxuries Rate: "<<m_luxuriesRate<<0<<"%, Science Rate = "<<10-m_luxuriesRate - m_taxRate<<0<<"%";
+	stringStream.flush();
+	SDL_Surface* textSurface = TTF_RenderText_Shaded(theFont,stringStream.str().c_str(),blackColor,Graphics::Civ::resourcesWhiteColor());
+	SDL_Texture* textTexture = SDL_CreateTextureFromSurface(theRenderer, textSurface);
+	SDL_Rect rect{0,10*textSurface->h,textSurface->w,textSurface->h};
+	SDL_RenderCopy(theRenderer, textTexture, nullptr, &rect);
+	SDL_RenderPresent(theRenderer);
+	SDL_FreeSurface(textSurface);
+	SDL_DestroyTexture(textTexture);
+
+	SelectorSurface selectorSurface(0,0,whatToSelectFrom);
+	m_setLuxuriesRate(selectorSurface.m_fetchSelection().index);
+	return true;
+}
+	catch(QuitSelection qs){
+		if(qs.m_returnSomething == NO_ACTION)
+			return false;
+		throw qs;
+	}
+}
+
+bool Nation::m_alterTaxRate(){
+	try{
+	std::cout<<"m_alterTaxRate: taxRate = "<<m_taxRate<<", luxuriesRate = "<<m_luxuriesRate<<std::endl;
+	std::vector<std::shared_ptr<SelectionElement>> whatToSelectFrom;
+	for(int i(0);i<=10;i++){
+		std::stringstream stream;
+		stream<<"TaxRate: "<<i<<0<<"%, Luxuries Rate: "<<std::min(10-(int)m_taxRate, (int)m_luxuriesRate)<<0<<"%, Science Rate = "<<std::max(10-i-(int)m_luxuriesRate,0)<<0<<"%";
+		stream.flush();
+		DoNothing dn;
+		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(stream.str(),0,dn);
+		whatToSelectFrom.push_back(selectionElement);
+	}
+	std::stringstream stringStream;
+		stringStream<<"TaxRate: "<<m_taxRate<<"0%, Luxuries Rate: "<<m_luxuriesRate<<0<<"%, Science Rate = "<<10-m_luxuriesRate - m_taxRate<<0<<"%";
+		stringStream.flush();
+		SDL_Surface* textSurface = TTF_RenderText_Shaded(theFont,stringStream.str().c_str(),blackColor,Graphics::Civ::resourcesWhiteColor());
+		SDL_Texture* textTexture = SDL_CreateTextureFromSurface(theRenderer, textSurface);
+		SDL_Rect rect{0,12*textSurface->h,textSurface->w,textSurface->h};
+		SDL_RenderCopy(theRenderer, textTexture, nullptr, &rect);
+		SDL_RenderPresent(theRenderer);
+		SDL_FreeSurface(textSurface);
+		SDL_DestroyTexture(textTexture);SelectorSurface selectorSurface(0,0,whatToSelectFrom);
+	m_setTaxRate(selectorSurface.m_fetchSelection().index);
+	return true;
+	}
+	catch(QuitSelection qs){
+		if(qs.m_returnSomething == NO_ACTION)
+			return false;
+		throw qs;
+	}
+
+}
+
+short unsigned int Nation::m_LuxuriesRate(){return m_luxuriesRate;}
+short unsigned int Nation::m_TaxRate(){return m_taxRate;}
+
 
 void Nation::m_startNewTurn(){
 	try{

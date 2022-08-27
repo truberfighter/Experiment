@@ -349,12 +349,14 @@ void CitySurface::m_drawSurface(SDL_Renderer* renderer){
 	SDL_RenderClear(renderer);
 	m_drawFoodProduction();
 	m_drawShieldProduction();
+	m_drawTradeProduction();
 	m_drawFoodStorage();
 	m_drawCitizens(renderer, 0,0);
 	m_drawCityFields();
 	m_drawFigures();
 	m_drawSubsurfaceButtons();
 	m_drawShields();
+	m_drawRevenueProduction();
 	m_subsurface->m_draw();
 	SDL_RenderPresent(theRenderer);
 }
@@ -425,7 +427,61 @@ bool CitySurface::m_changeWhatIsBuilt(){
 	return true;
 }
 
+void CitySurface::m_drawTradeProduction(){
+	int amount = m_associatedCity->m_tradeProduction();
+	int checkInt = 0;
+	bool isThereAnyCorruption = false;
+	const int tradeWidth = RESOURCES_SCALEFACTOR*7;
+	int x = 0;
+	const int yToStart = CITIZENS_OVERVIEW_HEIGHT + RESOURCES_TEXT_HEIGHT + 2*RESOURCE_TEXT_SHIELD_DIFFERENCE;
+	const int distance = std::max(1*RESOURCES_SCALEFACTOR, std::min(tradeWidth,(int)PRODUCTION_OVERVIEW_WIDTH/std::max(m_associatedCity->m_shieldCost(), m_associatedCity->m_shieldProduction())));
+	std::cout<<"before corruption production"<<std::endl;
+	for(int i(0); i<amount-m_associatedCity->m_corruptionProduction(); i++){
+		isThereAnyCorruption = true;
+		checkInt += Graphics::Civ::drawTrade(theRenderer, x = i*distance, yToStart, RESOURCES_SCALEFACTOR, false);
+	}
+	for(int i(amount-m_associatedCity->m_corruptionProduction()); i<m_associatedCity->m_tradeProduction();i++){
+		checkInt +=Graphics::Civ::drawTrade(theRenderer, x = i*distance + (isThereAnyCorruption ? 3*tradeWidth/2 : 0), yToStart, RESOURCES_SCALEFACTOR, true);
+	}
+	if(checkInt != 0){
+		std::cout<<"SDL Error in trade drawing: "<<SDL_GetError()<<std::endl;
+	}
+}
 
+int zeroOrOneMore(int a){
+	if(a<0){
+		throw(a);
+	}
+	if(a==0){
+		return 0;
+	}
+	return a+1;
+}
 
-
+void CitySurface::m_drawRevenueProduction(){
+	std::cout<<"drawRevenueProduction: "<<std::endl;
+	//draw luxuries at first
+	int xToStart = 0;
+	const int tradeWidth = RESOURCES_SCALEFACTOR*7;
+	int distance = std::max(1*RESOURCES_SCALEFACTOR, std::min(tradeWidth,PRODUCTION_OVERVIEW_WIDTH/(zeroOrOneMore(m_associatedCity->m_luxuriesRevenue())+zeroOrOneMore(m_associatedCity->m_goldRevenue())+ zeroOrOneMore(m_associatedCity->m_scienceRevenue()))));
+	const int yToStart = CITIZENS_OVERVIEW_HEIGHT + RESOURCES_TEXT_HEIGHT + 3*RESOURCE_TEXT_SHIELD_DIFFERENCE;
+	for(int luxuriesCount(0); luxuriesCount < m_associatedCity->m_luxuriesRevenue();luxuriesCount++){
+		Graphics::Civ::drawLuxury(theRenderer, xToStart, yToStart, RESOURCES_SCALEFACTOR);
+		xToStart+=distance;
+	}
+	if(m_associatedCity->m_luxuriesRevenue()>0){
+		(xToStart-=distance)+=tradeWidth;
+	}
+	for(int goldCount(0); goldCount < m_associatedCity->m_goldRevenue();goldCount++){
+		Graphics::Civ::drawGold(theRenderer, xToStart, yToStart, RESOURCES_SCALEFACTOR);
+		xToStart+=distance;
+	}
+	if(m_associatedCity->m_goldRevenue()>0){
+		(xToStart-=distance)+=tradeWidth;
+	}
+	for(int scienceCount(0); scienceCount < m_associatedCity->m_scienceRevenue();scienceCount++){
+		Graphics::Civ::drawScience(theRenderer, xToStart, yToStart, RESOURCES_SCALEFACTOR);
+		xToStart+=distance;
+	}
+}
 

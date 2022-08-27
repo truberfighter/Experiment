@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <functional>
 #define KeyCode unsigned int
 class Field;
 class Figure;
@@ -17,7 +18,8 @@ enum PoleHit{NORTH_POLE_HIT, SOUTHERN_POLE_HIT};
 enum{SDLK_1_DOWN_LEFT = 1073741913, SDLK_2_DOWN = SDLK_1_DOWN_LEFT + 1, SDLK_3_DOWN_RIGHT = SDLK_2_DOWN+1,
 	SDLK_4_LEFT = SDLK_3_DOWN_RIGHT + 1, SDLK_5_CENTER = SDLK_4_LEFT + 1, SDLK_6_RIGHT = SDLK_5_CENTER+1,
 	SDLK_7_UP_LEFT = SDLK_6_RIGHT + 1, SDLK_8_UP = SDLK_7_UP_LEFT + 1, SDLK_9_UP_RIGHT = SDLK_8_UP+1,
-	SDLK_ENTER_KEY = 13
+	SDLK_ENTER_KEY = 13,
+	SDLK_TAXRATE_KEY = 1073741911, SDLK_LUXURIESRATE_KEY = 1073741910
 };
 enum{NORMAL_FONT_HEIGHT = 22};
 enum{STANDARD_DRAWING_TIME = 200, STANDARD_FIELD_SIZE = 60};
@@ -67,10 +69,12 @@ enum HappyVectorType{HAPPY_ALL = 0, HAPPY_1 = 1, HAPPY_2 = 2, HAPPY_3 = 3, HAPPY
 enum SubSurfaceState{
 	SUBSURFACE_INFO = 0, SUBSURFACE_HAPPY = 1, SUBSURFACE_MAP = 2, SUBSURFACE_VIEW = 3
 };
+enum{TAX_RATE_STEP_COUNT = 10};
+enum TradeType{TRADE_GOLD, TRADE_SCIENCE, TRADE_LUXURIES};
 enum BlinkingTime{STANDARD_BLINKING_INTERVAL_TIME = 1500};
 enum{MAX_CITY_NAME_LENGTH = 12, CITIES_PER_NATION = 15, ADDITIONAL_CITIES = 20};
 //Units receive some negative value
-enum ImprovementType{IMPROVEMENT_SETTLERS = -1000, IMPROVEMENT_TRIREME, TEMPLE = 1, GRANARY, PALACE};
+enum ImprovementType{IMPROVEMENT_SETTLERS = -1000, IMPROVEMENT_TRIREME, TEMPLE = 1, GRANARY, PALACE, COURTHOUSE};
 typedef bool BlinkingState;
 constexpr BlinkingState VISIBLE(){return true;}
 constexpr BlinkingState INVISIBLE(){return false;}
@@ -213,10 +217,15 @@ SDL_Color cityBackgroundColor();
 SDL_Color cityNameColor();
 SDL_Color cityOccupiedColor();
 SDL_Color brightCityBackgroundColor();
+SDL_Color turquoiseColor();
+SDL_Color darkgreyColor();
 int drawFood(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus = false);
 int drawShield(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus = false);
 int drawTrade(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool corruption = false);
 int drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int scaleFactor);
+int drawLuxury(SDL_Renderer* renderer, int x, int y, int scaleFactor);
+int drawGold(SDL_Renderer* renderer, int x, int y, int scaleFactor);
+int drawScience(SDL_Renderer* renderer, int x, int y, int scaleFactor);
 extern Nationality currentNationality;
 }
 extern DrawState m_whatsUpDrawingwise;
@@ -271,6 +280,13 @@ bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1,
 	}
 	return false;
 }
+
+class DoNothing: public std::function<void()>{
+public:
+	void operator()();
+	DoNothing();
+};
+
 #endif
 
 #endif

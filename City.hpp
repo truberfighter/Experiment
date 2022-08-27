@@ -28,6 +28,22 @@ class City;
 class Subsurface;
 class CitySurface;
 
+struct CityProduction{
+	int luxuries, gold, science;
+};
+
+class SellException{
+public:
+	ImprovementType m_what;
+};
+
+class CityImprovement{
+public:
+	CityImprovement(ImprovementType whart, City* home);
+	ImprovementType m_what;
+	City* m_home;
+};
+
 struct LayerString{
 	int layer;
 	std::string content;
@@ -65,6 +81,7 @@ class City: public std::enable_shared_from_this<City> {
 public:
 
 private:
+	std::vector<CityImprovement> m_improvements;
 	ImprovementType m_whatIsBuilt = IMPROVEMENT_SETTLERS;
 	std::shared_ptr<Nation> m_owningNation;
 	std::shared_ptr<Field> m_whereItStands;
@@ -81,6 +98,7 @@ public:
 	static std::vector<ImprovementType> figureTypes();
 	static std::vector<ImprovementType> wonderTypes();
 	static int shieldsNeeded(ImprovementType imptype);
+	bool m_contains(ImprovementType imptype);
 	std::vector<ImprovementType> m_whatCanBeBuilt();
 	ImprovementType m_WhatIsBuilt(){return m_whatIsBuilt;}
 	std::shared_ptr<Field> m_WhereItStands(){return m_whereItStands;}
@@ -100,18 +118,21 @@ public:
 	int m_shieldCost();
 	std::vector<UnitCostingResources> m_unitCostVector();
 	int m_size();
+	int m_luxuriesRevenue();
+	int m_goldRevenue();
+	int m_scienceRevenue();
 	int m_foodProduction();
 	int m_shieldProduction();
 	int m_tradeProduction();
 	int m_corruptionProduction();
-	int m_goldProduction();
-	int m_sciencdProduction();
-	int m_luxuriesProduction();
+	CityProduction m_revenueProduction();
 	void m_startNewTurn();
 	void m_sortFiguresByValue();
 	bool m_maybeFinishProduction();
 	void m_grow();
+	std::shared_ptr<CityImprovement> m_maybeBuild(ImprovementType imptype);
 	bool m_placeCitizen(std::shared_ptr<Field> fieldClickedOn);
+	int m_distanceTo(std::shared_ptr<City> comparedCity);
 };
 
 template<typename T>

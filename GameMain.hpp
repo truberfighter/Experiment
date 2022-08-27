@@ -31,7 +31,6 @@ private:
 	BlinkingState m_currentBlinkingState = VISIBLE();
 	BlinkingTime m_blinkingIntervalTime = STANDARD_BLINKING_INTERVAL_TIME;
 public:
-	void _setWhatToMove(std::shared_ptr<Figure> whatToMove);
 	bool m_handleEvent(const SDL_Event& event) override;
 	bool m_handleKeyboardEvent(const SDL_Event& event) override;
 	void m_showFigureInfo();

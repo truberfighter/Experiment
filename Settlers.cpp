@@ -213,7 +213,8 @@ std::shared_ptr<City> Settlers::m_foundNewCity(std::string name){
 	theGame->m_AllCities().push_back(m_whereItStands->m_CityContained());
 	m_nationality->m_Cities().push_back(m_whereItStands->m_CityContained());
 	std::cout<<"nationCitiesSize: "<<m_nationality->m_Cities().size()<<std::endl;
-	if(m_nationality->m_Cities().size()==0){
+	if(m_nationality->m_Cities().size()==1){
+		m_whereItStands->m_CityContained()->buildingTypes().push_back(PALACE);
 		m_nationality->m_setCapitalCity(m_whereItStands->m_CityContained());
 	}
 	if(m_whereItStands->m_citizenWorking){

@@ -166,6 +166,16 @@ bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){
 		m_whatToMove->m_wait();
 		break;
 	}
+	case SDLK_TAXRATE_KEY:
+	{
+		theGame->m_NationAtCurrentTurn()->m_alterTaxRate();
+		break;
+	}
+	case SDLK_LUXURIESRATE_KEY:
+	{
+		theGame->m_NationAtCurrentTurn()->m_alterLuxuriesRate();
+		break;
+	}
 	default:
 		NO_EVENT_HANDLING_FOUND
 

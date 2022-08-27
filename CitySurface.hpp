@@ -33,6 +33,7 @@ public:
 	void m_drawFoodProduction();
 	void m_drawShieldProduction();
 	void m_drawTradeProduction();
+	void m_drawRevenueProduction();
 	bool m_change();
 	bool m_sell();
 	bool m_buy();
