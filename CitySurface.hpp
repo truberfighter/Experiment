@@ -20,6 +20,8 @@ class CitySurface{
 private:
 	City* m_associatedCity;
 	std::shared_ptr<Subsurface> m_subsurface;
+	std::vector<std::shared_ptr<ButtonElement>> m_sellingElements;
+	int indexForImprovementOverview =0;
 public:
 	CitySurface(City* city);
 	bool m_handleEvent(const SDL_Event& event) ;
@@ -45,6 +47,8 @@ public:
 	void m_drawShieldOverview();
 	bool m_changeWhatIsBuilt();
 	bool m_handleCitizenClick(const SDL_MouseButtonEvent& event);
+	void m_createSellingButtonElements();
+	void m_drawSellingOverview();
 	friend class Subsurface;
 };
 

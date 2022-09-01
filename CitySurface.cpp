@@ -23,6 +23,7 @@ ButtonElement buyButton(SCREEN_WIDTH - BUYBUTTON_WIDTH, SCREEN_HEIGHT - SHIELD_O
 CitySurface::CitySurface(City* city): m_associatedCity(city)
 {
 	m_subsurface = std::make_shared<Subsurface>(this);
+
 }
 
 Subsurface::Subsurface(CitySurface* surface):m_surface(surface)
@@ -91,6 +92,7 @@ void CitySurface::m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backg
 }
 
 void CitySurface::m_displaySurface(SDL_Renderer* renderer){
+	m_createSellingButtonElements();
 	m_drawSurface(theRenderer);
 	std::cout<<"displaySurface"<<std::endl;
 	SDL_Event e;
@@ -358,6 +360,7 @@ void CitySurface::m_drawSurface(SDL_Renderer* renderer){
 	m_drawShields();
 	m_drawRevenueProduction();
 	m_subsurface->m_draw();
+	m_drawSellingOverview();
 	SDL_RenderPresent(theRenderer);
 }
 
@@ -485,3 +488,23 @@ void CitySurface::m_drawRevenueProduction(){
 	}
 }
 
+void CitySurface::m_createSellingButtonElements(){
+	for(int i(0);i+indexForImprovementOverview<std::min((int)m_associatedCity->m_improvements.size(),IMPROVEMENT_OVERVIEW_HEIGHT_NORMED - 1);i++){
+		std::shared_ptr<ButtonElement> whatToAdd = std::make_shared<ButtonElement>(SCREEN_WIDTH-IMPROVEMENT_OVERVIEW_WIDTH, i*STANDARD_TEXT_HEIGHT, IMPROVEMENT_OVERVIEW_WIDTH,
+STANDARD_TEXT_HEIGHT, Graphics::Civ::brightCityBackgroundColor(),Graphics::Civ::resourcesWhiteColor(),
+City::improvementString((m_associatedCity->m_improvements)[i+indexForImprovementOverview].m_what));
+		m_sellingElements.push_back(whatToAdd);
+	}
+	if(m_associatedCity->m_improvements.size()<=IMPROVEMENT_OVERVIEW_HEIGHT_NORMED){
+		std::shared_ptr<ButtonElement> whatToAdd = std::make_shared<ButtonElement>(SCREEN_WIDTH-IMPROVEMENT_OVERVIEW_WIDTH, IMPROVEMENT_OVERVIEW_HEIGHT_NORMED*STANDARD_TEXT_HEIGHT, IMPROVEMENT_OVERVIEW_WIDTH,
+STANDARD_TEXT_HEIGHT, Graphics::Civ::brightCityBackgroundColor(),Graphics::Civ::resourcesWhiteColor(),
+std::string("More"));
+		m_sellingElements.push_back(whatToAdd);
+	}
+}
+
+void CitySurface::m_drawSellingOverview(){
+	for(std::shared_ptr<ButtonElement>& currentElement: m_sellingElements){
+		currentElement->m_draw(0, 0);
+	}
+}

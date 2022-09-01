@@ -64,6 +64,7 @@ bool Settlers::m_takeOrder(char order){
 	try{
 	std::cout<<"order taken by settlers: this = "<<this<<", order = "<<(order == ' '? "space" : "char: ")<<order<<std::endl;
 	switch(order){
+	case 'i': return m_whereItStands->m_Irrigate(*this);
 	case 's': return m_sentry();
 	case 'r': return m_whereItStands->m_road(*this);
 	case 'h': return m_homeCity();

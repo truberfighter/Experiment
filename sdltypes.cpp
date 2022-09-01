@@ -580,3 +580,26 @@ std::ostream& operator<<(std::ostream& os, ImprovementType imptype){
 	return os;
 }
 
+bool lolllll = false;
+
+int Graphics::Civ::drawIrrigation(SDL_Renderer* renderer, int x, int y){
+	int whatToReturn = 0;
+	std::vector<int> xCoordinateBlue={3,11,3,4,5,6,7,8,9,10,11,11,12,13,14,11,11,0,1,2,3,4,5,6,7,8,9,10,11,9,14,3,9,14,3,9,14,3,9,14,10,11,12,13,14,3,11};
+	int yToStart = 0;
+
+	whatToReturn+=SDL_SetRenderDrawColor(theRenderer, Graphics::Civ::irrigationBlueColor());
+	for(int i(0);i<xCoordinateBlue.size();i++){
+		if(i>0 && xCoordinateBlue[i-1]>=xCoordinateBlue[i]){
+			yToStart++;
+		}
+		SDL_Rect rect{x + 4*xCoordinateBlue[i], y+4*yToStart,4,4};
+		if(!lolllll)
+			std::cout<<"drawing x"<<xCoordinateBlue[i]<<", y "<<yToStart<<std::endl;
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+
+	}
+	lolllll = true;
+	return whatToReturn;
+}
+
+SDL_Color Graphics::Civ::irrigationBlueColor(){return SDL_Color{85,89,162,128};}

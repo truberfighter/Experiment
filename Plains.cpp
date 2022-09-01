@@ -38,7 +38,7 @@ bool Plains::m_Irrigate(Settlers& settlers){
 }
 
 int Plains::m_shields(){
-	return m_hasSpecialResource ? 3 : 1;
+	return m_hasSpecialResource ? 3 : 100;
 }
 
 int Plains::m_food(){

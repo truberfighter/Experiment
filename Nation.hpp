@@ -12,6 +12,11 @@
 #include <queue>
 
 class City;
+class NegativeTreasury{
+public:
+	int previousTreasury, treasuryNow;
+	NegativeTreasury(int a, int b):previousTreasury(a), treasuryNow(b){}
+};
 
 class Nation: public std::enable_shared_from_this<Nation>{
 private:
@@ -25,7 +30,9 @@ private:
 	bool m_directlyMakingFiguresActive = false;
 	short unsigned int m_taxRate = 5;
 	short unsigned int m_luxuriesRate = 5;
+	int m_treasury = 50;
 public:
+	void m_receiveMoney(int amount);
 	short unsigned int m_TaxRate();
 	void m_setTaxRate(short unsigned int tax);
 	short unsigned int m_LuxuriesRate();

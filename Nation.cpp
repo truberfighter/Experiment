@@ -12,7 +12,8 @@
 #include "City.hpp"
 #include "Game.hpp"
 #include "SelectorSurface.hpp"
-#include "functional"
+#include <functional>
+#include <iomanip>
 
 using namespace std;
 
@@ -142,18 +143,18 @@ bool Nation::m_alterLuxuriesRate(){
 	int whatIsPossible = 10 - m_taxRate;
 	for(int i(0);i<=whatIsPossible;i++){
 		std::stringstream stream;
-		stream<<"Luxuries Rate: "<<i<<0<<"%, Science Rate = "<<whatIsPossible-i<<0<<"%";
+		stream<<"Luxuries Rate:"<<std::setw(2)<<i<<"0%, Science Rate:"<<std::setw(2)<<whatIsPossible-i<<"0%";
 		stream.flush();
 		DoNothing dn;
 		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(stream.str(),0,dn);
 		whatToSelectFrom.push_back(selectionElement);
 	}
 	std::stringstream stringStream;
-	stringStream<<"TaxRate: "<<m_taxRate<<"0%, Luxuries Rate: "<<m_luxuriesRate<<0<<"%, Science Rate = "<<10-m_luxuriesRate - m_taxRate<<0<<"%";
+	stringStream<<"Tax Rate:"<<std::setw(2)<<m_taxRate<<"0%, Luxuries Rate:"<<std::setw(2)<<m_luxuriesRate<<"0%, Science Rate:"<<std::setw(2)<<10-m_luxuriesRate - m_taxRate<<"0%";
 	stringStream.flush();
 	SDL_Surface* textSurface = TTF_RenderText_Shaded(theFont,stringStream.str().c_str(),blackColor,Graphics::Civ::resourcesWhiteColor());
 	SDL_Texture* textTexture = SDL_CreateTextureFromSurface(theRenderer, textSurface);
-	SDL_Rect rect{0,10*textSurface->h,textSurface->w,textSurface->h};
+	SDL_Rect rect{0,(whatIsPossible+2)*textSurface->h,textSurface->w,textSurface->h};
 	SDL_RenderCopy(theRenderer, textTexture, nullptr, &rect);
 	SDL_RenderPresent(theRenderer);
 	SDL_FreeSurface(textSurface);
@@ -163,7 +164,7 @@ bool Nation::m_alterLuxuriesRate(){
 	m_setLuxuriesRate(selectorSurface.m_fetchSelection().index);
 	return true;
 }
-	catch(QuitSelection qs){
+	catch(QuitSelection& qs){
 		if(qs.m_returnSomething == NO_ACTION)
 			return false;
 		throw qs;
@@ -176,14 +177,14 @@ bool Nation::m_alterTaxRate(){
 	std::vector<std::shared_ptr<SelectionElement>> whatToSelectFrom;
 	for(int i(0);i<=10;i++){
 		std::stringstream stream;
-		stream<<"TaxRate: "<<i<<0<<"%, Luxuries Rate: "<<std::min(10-(int)m_taxRate, (int)m_luxuriesRate)<<0<<"%, Science Rate = "<<std::max(10-i-(int)m_luxuriesRate,0)<<0<<"%";
+		stream<<"Tax Rate:"<<std::setw(2)<<i<<"0%, Luxuries Rate:"<<std::setw(2)<<std::min(10-(int)i, (int)m_luxuriesRate)<<"0%, Science Rate:"<<std::setw(2)<<std::max(10-i-(int)m_luxuriesRate,0)<<"0%";
 		stream.flush();
 		DoNothing dn;
 		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(stream.str(),0,dn);
 		whatToSelectFrom.push_back(selectionElement);
 	}
 	std::stringstream stringStream;
-		stringStream<<"TaxRate: "<<m_taxRate<<"0%, Luxuries Rate: "<<m_luxuriesRate<<0<<"%, Science Rate = "<<10-m_luxuriesRate - m_taxRate<<0<<"%";
+		stringStream<<"Tax Rate:"<<std::setw(2)<<m_taxRate<<"0%, Luxuries Rate:"<<std::setw(2)<<m_luxuriesRate<<"0%, Science Rate:"<<std::setw(2)<<10-m_luxuriesRate - m_taxRate<<"0%";
 		stringStream.flush();
 		SDL_Surface* textSurface = TTF_RenderText_Shaded(theFont,stringStream.str().c_str(),blackColor,Graphics::Civ::resourcesWhiteColor());
 		SDL_Texture* textTexture = SDL_CreateTextureFromSurface(theRenderer, textSurface);
@@ -329,4 +330,11 @@ SDL_Color Nation::standardNationColor(Nationality nationalityToDraw){
 	}
 	//This color should NEVER appear
 	return SDL_Color{100,0,100,0};
+}
+
+void Nation::m_receiveMoney(int amount){
+	m_treasury+=amount;
+	if(m_treasury<0){
+		throw NegativeTreasury(m_treasury-amount,m_treasury);
+	}
 }

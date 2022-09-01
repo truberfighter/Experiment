@@ -484,6 +484,15 @@ std::vector<ImprovementType> City::wonderTypes(){
 	return std::vector<ImprovementType>{};
 }
 
+bool City::isWonderType(ImprovementType imptype){
+	for(ImprovementType imptype2: wonderTypes()){
+		if(imptype2==imptype){
+			return true;
+		}
+	}
+	return false;
+}
+
 bool City::m_maybeFinishProduction(){
 	if((m_shields+=m_shieldProduction())<shieldsNeeded(m_whatIsBuilt)){
 		return false;
@@ -524,12 +533,17 @@ std::string City::improvementString(ImprovementType imptype){
 	return "Hä????";
 }
 
+#define IF_UNBUILT(A,B) if(!m_contains(A)&&B)whatToReturn.push_back(A);
 std::vector<ImprovementType> City::m_whatCanBeBuilt(){
 	std::vector<ImprovementType> whatToReturn;
-	for(int i(0); i<75;i++)
 	whatToReturn.push_back(IMPROVEMENT_SETTLERS);
-	whatToReturn.push_back(IMPROVEMENT_TRIREME);
-	whatToReturn.push_back(PALACE);
+	if(m_whereItStands->m_closeToOcean()){
+		whatToReturn.push_back(IMPROVEMENT_TRIREME);
+	}
+	IF_UNBUILT(PALACE,true)
+	IF_UNBUILT(TEMPLE,true)
+	IF_UNBUILT(GRANARY,true)
+	IF_UNBUILT(COURTHOUSE,true)
 	return whatToReturn;
 }
 
@@ -554,10 +568,17 @@ std::shared_ptr<CityImprovement> City::m_maybeBuild(ImprovementType imptype){
 	}
 	switch(imptype){
 	case PALACE:
+	{
 		m_owningNation->m_setCapitalCity(shared_from_this());
 		return std::make_shared<CityImprovement>(PALACE, this);
 	}
-	return nullptr;
+	case GRANARY: {
+		return std::make_shared<CityImprovement>(GRANARY, this);
+	}
+	case TEMPLE: {
+		return std::make_shared<CityImprovement>(TEMPLE, this);
+	}
+	}return nullptr;
 }
 
 int City::m_distanceTo(std::shared_ptr<City> comparedCity){
@@ -673,4 +694,18 @@ CityProduction City::m_revenueProduction(){
 		whatToReturn.science = 0;
 	}
 	return whatToReturn;
+}
+
+bool City::m_sell(int index){
+	if(index >= m_improvements.size()){
+		return false;
+	}
+	if(isWonderType(m_improvements[index].m_what)){
+		return false;
+	}
+	ImprovementType imptype = m_improvements[index].m_what;
+	std::vector<CityImprovement>::iterator deleter = m_improvements.begin()+index;
+	m_improvements.erase(deleter);
+	m_owningNation->m_receiveMoney(shieldsNeeded(imptype));
+	return true;
 }

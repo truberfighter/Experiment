@@ -136,10 +136,10 @@ bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){
 		}
 	}
 
-	char orders[]={'s', 'r', ' ', 'h','b'};
-	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r, SDLK_SPACE,SDLK_h, SDLK_b};
+	char orders[]={'s', 'r', ' ', 'h','b','i'};
+	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r, SDLK_SPACE,SDLK_h, SDLK_b,SDLK_i};
 	if(m_whatToMove){
-	for(int i = 0; i<5; i++){
+	for(int i = 0; i<6; i++){
 		if(keyCode == keyCharPossibilities[i]){
 			try{
 			if(m_whatToMove->m_takeOrder(orders[i])){

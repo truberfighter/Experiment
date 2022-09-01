@@ -402,7 +402,7 @@ FieldElement::FieldElement(SDL_Renderer* renderer, std::shared_ptr<Texture> text
 
 int FieldElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
 	if(m_field->m_isVisible(theGame->m_NationAtCurrentTurn()->m_Nation())){
-		return ImmovableDrawingElement::m_draw(rowShift, columnShift, renderer);
+		return ImmovableDrawingElement::m_draw(rowShift, columnShift, renderer) + (!m_field->m_IsIrrigated() ? Graphics::Civ::drawIrrigation(renderer, m_row + rowShift, m_column + columnShift) : 0);
 	}
 	if(SDL_SetRenderDrawColor(theRenderer, blackColor)==0){
 		SDL_Rect rectToFill{m_row + rowShift, m_column + columnShift, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE};

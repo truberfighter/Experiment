@@ -98,6 +98,7 @@ public:
 	static std::vector<ImprovementType> figureTypes();
 	static std::vector<ImprovementType> wonderTypes();
 	static int shieldsNeeded(ImprovementType imptype);
+	static bool isWonderType(ImprovementType imptype);
 	bool m_contains(ImprovementType imptype);
 	std::vector<ImprovementType> m_whatCanBeBuilt();
 	ImprovementType m_WhatIsBuilt(){return m_whatIsBuilt;}
@@ -133,6 +134,7 @@ public:
 	std::shared_ptr<CityImprovement> m_maybeBuild(ImprovementType imptype);
 	bool m_placeCitizen(std::shared_ptr<Field> fieldClickedOn);
 	int m_distanceTo(std::shared_ptr<City> comparedCity);
+	bool m_sell(int index);
 };
 
 template<typename T>
