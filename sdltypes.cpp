@@ -7,6 +7,7 @@
 #include "sdltypes.hpp"
 #include "SDL2/SDL.h"
 #include <iostream>
+#include <sstream>
 #include <SDL2\SDL_image.h>
 
 
@@ -603,3 +604,44 @@ int Graphics::Civ::drawIrrigation(SDL_Renderer* renderer, int x, int y){
 }
 
 SDL_Color Graphics::Civ::irrigationBlueColor(){return SDL_Color{85,89,162,128};}
+
+SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y, SDL_Color color, bool shaded, SDL_Color backgroundColor){
+	int maxWidth = 0,
+	height = 0;
+	std::string stringOfInterest = "";
+	stringOfInterest = str.str();
+	std::cout<<str.str()<<SDL_GetError()<<std::endl;
+	std::string temporaryString = "";
+	int length = stringOfInterest.length();
+	int reachedHeight = 0;
+	std::vector<SDL_Surface*> textures;
+	for(int i(0); i<length; i++){
+		if(stringOfInterest[i] != '\n'){
+			temporaryString += stringOfInterest[i];
+			continue;
+		}
+		else{
+			SDL_Surface* surface = TTF_RenderText_Blended(theFont, temporaryString.c_str(), color);
+			//	std::cout<<temporaryString<<std::endl;
+			temporaryString = "";
+			maxWidth=std::max(maxWidth,surface->w);
+			height+=surface->h;
+			textures.push_back(surface);
+		}
+	}
+	SDL_Rect rectToFill{x,y,maxWidth,height};
+	if(shaded){
+		SDL_SetRenderDrawColor(theRenderer, backgroundColor);
+		SDL_RenderFillRect(theRenderer, &rectToFill);
+	}
+	for(SDL_Surface* currentSurface: textures){
+		std::cout<<"lol"<<std::endl;
+		SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, currentSurface);
+		SDL_Rect textRect{x, reachedHeight+y, currentSurface->w, currentSurface->h};
+		reachedHeight+=currentSurface->h;
+		SDL_RenderCopy(theRenderer, texture, nullptr,&textRect);
+		SDL_FreeSurface(currentSurface);
+		SDL_DestroyTexture(texture);
+	}
+	return rectToFill;
+}

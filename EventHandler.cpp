@@ -7,8 +7,11 @@
 
 #include "EventHandler.hpp"
 #include <iostream>
+#include <iomanip>
 #include "sdltypes.hpp"
 #include "Figure.hpp"
+#include "Field.hpp"
+#include "City.hpp"
 #include "GameMain.hpp"
 #include <sstream>
 #include <list>
@@ -22,6 +25,19 @@ void EventHandler::m_setCurrentDrawing(std::shared_ptr<Drawing> drawing){
 EventHandler::EventHandler()
 :  m_currentDrawing(nullptr)
 {}
+
+void GameMain::m_showNationInfo(){
+	SDL_Color backgroundColor = infoTextBackgroundColor;
+	SDL_Rect rectToFill{0,NATION_INFO_Y, FIGURE_INFO_WIDTH, NATION_INFO_HEIGHT};
+	SDL_SetRenderDrawColor(theRenderer,backgroundColor);
+	SDL_RenderFillRect(theRenderer, &rectToFill);
+	std::stringstream theStringstream;
+	Nation& nation = *theGame->m_NationAtCurrentTurn();
+	theStringstream<<theGame->m_CurrentYear().m_yearString()<<std::endl;
+	theStringstream<<std::setw(5)<<nation.m_Treasury()<<"$"<<"; "<<nation.m_TaxRate()<<"."<<nation.m_LuxuriesRate()<<"."<<nation.m_ScienceRate()<<std::endl;
+	Miscellaneous::printMultipleLines(theStringstream, 0, NATION_INFO_Y, whiteColor);
+}
+
 void GameMain::m_showFigureInfo(){
 	SDL_Color& backgroundColor = infoTextBackgroundColor;
 	SDL_SetRenderDrawColor(theRenderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
@@ -29,7 +45,6 @@ void GameMain::m_showFigureInfo(){
 	SDL_RenderFillRect(theRenderer, &rectToFill);
 
 	std::stringstream theStringstream;
-	std::string stringOfInterest = "";
 	std::list<int> f;
 	if(!m_whatToMove){
 		if(theGame->m_NationAtCurrentTurn()->m_queueSize()==0){
@@ -40,28 +55,7 @@ void GameMain::m_showFigureInfo(){
 		theStringstream<<m_whatToMove->m_figureOverview()<<std::endl;
 		theStringstream<<"Moves: "<<m_whatToMove->m_MovementPoints()<<std::endl;
 	}
-		stringOfInterest = theStringstream.str();
-		//std::cout<<theStringstream.str()<<SDL_GetError()<<std::endl;
-	std::string temporaryString = "";
-	int length = stringOfInterest.length();
-	int whereToPlaceYCoordinate = FIGURE_INFO_Y;
-	for(int i(0); i<length; i++){
-		if(stringOfInterest[i] != '\n'){
-			temporaryString += stringOfInterest[i];
-			continue;
-		}
-		else{
-			SDL_Surface* surface = TTF_RenderText_Blended(theFont, temporaryString.c_str(), whiteColor);
-				SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, surface);
-				SDL_Rect theRect{0, whereToPlaceYCoordinate, surface->w, surface->h};
-				SDL_RenderCopy(theRenderer, texture, NULL, &theRect);
-			//	std::cout<<temporaryString<<std::endl;
-				whereToPlaceYCoordinate+=surface->h;
-				temporaryString = "";
-				SDL_DestroyTexture(texture);
-				SDL_FreeSurface(surface);
-		}
-	}
+	Miscellaneous::printMultipleLines(theStringstream, 0, FIGURE_INFO_Y, whiteColor);
 	//std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
 
 }
@@ -125,7 +119,7 @@ bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){
 			if(keyCode == keyPossibilities[i]){
 				try{
 				if(m_whatToMove->m_tryMoveToField(directions[i])){
-				return true;
+					return true;
 				}
 				else return false;
 				}
@@ -191,5 +185,6 @@ int GameMain::m_drawMainDrawing(){
 	if(m_currentDrawing)
 	whatToReturn = m_currentDrawing->m_draw(-m_topLeftCorner.x, -m_topLeftCorner.y);
 	m_showFigureInfo();
+	m_showNationInfo();
 	return whatToReturn;
 }

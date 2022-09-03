@@ -360,7 +360,9 @@ void CitySurface::m_drawSurface(SDL_Renderer* renderer){
 	m_drawShields();
 	m_drawRevenueProduction();
 	m_subsurface->m_draw();
+	m_drawImprovementBackground();
 	m_drawSellingOverview();
+	std::cout<<"shield in surface: "<<m_associatedCity->m_shields<<std::endl;
 	SDL_RenderPresent(theRenderer);
 }
 
@@ -368,17 +370,17 @@ void CitySurface::m_drawSurface(SDL_Renderer* renderer){
 
 void CitySurface::m_drawShields(){
 	const int shieldsNeeded = City::shieldsNeeded(m_associatedCity->m_whatIsBuilt);
-	const int shieldWidth = RESOURCES_SCALEFACTOR*7;
+	const int shieldWidth = RESOURCES_SCALEFACTOR*8;
 	const int shieldsPerRow = std::max(shieldsNeeded/100,1)*10;
 	const int rowCount = shieldsNeeded/shieldsPerRow;
-	const int distance = std::max(1*RESOURCES_SCALEFACTOR,(SHIELD_OVERVIEW_WIDTH-7*RESOURCES_SCALEFACTOR)/(shieldsPerRow-1));
+	const int distance = std::max(1*RESOURCES_SCALEFACTOR,std::min(shieldWidth,SHIELD_OVERVIEW_WIDTH/shieldsPerRow));
 	SDL_Rect backgroundRect{SCREEN_WIDTH - SHIELD_OVERVIEW_WIDTH, SCREEN_HEIGHT - SHIELD_OVERVIEW_HEIGHT, SHIELD_OVERVIEW_WIDTH, SHIELD_OVERVIEW_HEIGHT};
 	SDL_SetRenderDrawColor(theRenderer, Graphics::Civ::cityBackgroundColor());
 	SDL_RenderFillRect(theRenderer, &backgroundRect);
 	SDL_Rect storageRect{SCREEN_WIDTH-SHIELD_OVERVIEW_WIDTH, SCREEN_HEIGHT-10*8*RESOURCES_SCALEFACTOR, SHIELD_OVERVIEW_WIDTH-shieldWidth, rowCount*RESOURCES_SCALEFACTOR*8};
 	SDL_SetRenderDrawColor(theRenderer, Graphics::Civ::brightCityBackgroundColor());
 	SDL_RenderFillRect(theRenderer, &storageRect);
-	int shieldCount = m_associatedCity->m_shieldProduction();
+	int shieldCount = m_associatedCity->m_Shields();
 	for(int shieldIndex(0); shieldIndex<shieldCount; shieldIndex++){
 		Graphics::Civ::drawShield(theRenderer, storageRect.x + distance*(shieldIndex%shieldsPerRow), storageRect.y + 8*RESOURCES_SCALEFACTOR*(shieldIndex/shieldsPerRow), RESOURCES_SCALEFACTOR);
 	}
@@ -489,13 +491,14 @@ void CitySurface::m_drawRevenueProduction(){
 }
 
 void CitySurface::m_createSellingButtonElements(){
-	for(int i(0);i+indexForImprovementOverview<std::min((int)m_associatedCity->m_improvements.size(),IMPROVEMENT_OVERVIEW_HEIGHT_NORMED - 1);i++){
+	m_sellingElements.clear();
+	for(int i(0);i+m_indexForImprovementOverview<std::min((int)m_associatedCity->m_improvements.size(),IMPROVEMENT_OVERVIEW_HEIGHT_NORMED - 1);i++){
 		std::shared_ptr<ButtonElement> whatToAdd = std::make_shared<ButtonElement>(SCREEN_WIDTH-IMPROVEMENT_OVERVIEW_WIDTH, i*STANDARD_TEXT_HEIGHT, IMPROVEMENT_OVERVIEW_WIDTH,
 STANDARD_TEXT_HEIGHT, Graphics::Civ::brightCityBackgroundColor(),Graphics::Civ::resourcesWhiteColor(),
-City::improvementString((m_associatedCity->m_improvements)[i+indexForImprovementOverview].m_what));
+City::improvementString((m_associatedCity->m_improvements)[i+m_indexForImprovementOverview].m_what));
 		m_sellingElements.push_back(whatToAdd);
 	}
-	if(m_associatedCity->m_improvements.size()<=IMPROVEMENT_OVERVIEW_HEIGHT_NORMED){
+	if(m_associatedCity->m_improvements.size()>=IMPROVEMENT_OVERVIEW_HEIGHT_NORMED){
 		std::shared_ptr<ButtonElement> whatToAdd = std::make_shared<ButtonElement>(SCREEN_WIDTH-IMPROVEMENT_OVERVIEW_WIDTH, IMPROVEMENT_OVERVIEW_HEIGHT_NORMED*STANDARD_TEXT_HEIGHT, IMPROVEMENT_OVERVIEW_WIDTH,
 STANDARD_TEXT_HEIGHT, Graphics::Civ::brightCityBackgroundColor(),Graphics::Civ::resourcesWhiteColor(),
 std::string("More"));
@@ -507,4 +510,10 @@ void CitySurface::m_drawSellingOverview(){
 	for(std::shared_ptr<ButtonElement>& currentElement: m_sellingElements){
 		currentElement->m_draw(0, 0);
 	}
+}
+
+void CitySurface::m_drawImprovementBackground(){
+	SDL_Rect rectToFill{SCREEN_WIDTH - IMPROVEMENT_OVERVIEW_WIDTH,0,IMPROVEMENT_OVERVIEW_WIDTH,STANDARD_TEXT_HEIGHT*IMPROVEMENT_OVERVIEW_HEIGHT_NORMED};
+	SDL_SetRenderDrawColor(theRenderer, Graphics::Civ::cityBackgroundColor());
+	SDL_RenderFillRect(theRenderer, &rectToFill);
 }

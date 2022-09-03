@@ -34,6 +34,7 @@ public:
 	bool m_handleEvent(const SDL_Event& event) override;
 	bool m_handleKeyboardEvent(const SDL_Event& event) override;
 	void m_showFigureInfo();
+	void m_showNationInfo();
 	void m_initInfoDrawing();
 	void lol(){this->EventHandler::lol(); std::cout<<"GameMain::lol()"<<std::endl;}
 	GameMain();

@@ -20,9 +20,7 @@ bool CitySurface::m_handleEvent(const SDL_Event& event){
 		if(m_handleKeyboardEvent(event)){
 			return true;
 		}
-		else{
-			throw(QuitSurface());
-		}
+		else return false;
 	}
 	if(event.type == SDL_MOUSEBUTTONDOWN){
 		if(event.button.button == SDL_BUTTON_LEFT){
@@ -55,8 +53,11 @@ bool CitySurface::m_handleKeyboardEvent(const SDL_Event& event){
 	if(event.key.keysym.sym == SDLK_c){
 		return m_changeWhatIsBuilt();
 	}
+	if(event.key.keysym.sym == SDLK_b){
+		return m_buy();
+	}
 	std::cout<<"false keyboardhandling "<<std::endl;
-	return false;
+	throw QuitSurface();
 }
 
 bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
@@ -65,6 +66,9 @@ bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
 	{
 	if (m_subsurface->m_handleMouseClick(event.x, event.y)){
 		return true;
+	}
+	if(buyButton.m_isClicked(event.x, event.y)){
+		return m_buy();
 	}
 	else{
 		int xToStart = PRODUCTION_OVERVIEW_WIDTH;
@@ -88,7 +92,22 @@ bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
 	if(changeButton.m_isClicked(event.x, event.y)){
 		return m_changeWhatIsBuilt();
 	}
-
+	for(int buttonIndex(0); buttonIndex<m_sellingElements.size();buttonIndex++){
+		int effectiveIndex = buttonIndex+m_indexForImprovementOverview;
+		std::shared_ptr<ButtonElement>& sellingButton = m_sellingElements[buttonIndex];
+		if(sellingButton->m_isClicked(event.x, event.y)){
+			//check if it is the "More"-Button
+			if(sellingButton==m_sellingElements.back()&&m_associatedCity->m_improvements.size()<=IMPROVEMENT_OVERVIEW_HEIGHT_NORMED){
+				m_indexForImprovementOverview = std::min(m_indexForImprovementOverview+IMPROVEMENT_OVERVIEW_HEIGHT_NORMED-1,std::max(0,(int)m_associatedCity->m_improvements.size()-1));
+				std::cout<<"Z.98 in city surface"<<std::endl;
+				m_createSellingButtonElements();std::cout<<"Z.99citysurface"<<std::endl;
+				return true;
+			}
+			else{
+				return m_handleSellingButtonClick(effectiveIndex);
+			}
+		}
+	}
 
 	std::cout<<"quitSufaece"<<std::endl;
 	throw(QuitSurface());
@@ -198,4 +217,48 @@ bool CitySurface::m_handleCitizenClick(const SDL_MouseButtonEvent& event){
 		return false;
 	}
 	}
+}
+
+bool CitySurface::m_handleSellingButtonClick(int effectiveIndex){
+ImprovementType imptype = m_associatedCity->m_improvements[effectiveIndex].m_what;
+	if(!City::isWonderType(imptype)){
+		std::stringstream notSellingSuggestor;
+		notSellingSuggestor<<"Do not sell your "<<imptype;
+		notSellingSuggestor.flush();
+		std::stringstream sellingSuggestor;
+		sellingSuggestor<<"Sell your "<<imptype<<" for "<<City::shieldsNeeded(imptype)<<"$";
+		sellingSuggestor.flush();
+		DoNothing dn;
+		std::shared_ptr<SelectionElement> se1 = std::make_shared<SelectionElement>(notSellingSuggestor.str(),0,dn),
+		se2 = std::make_shared<SelectionElement>(sellingSuggestor.str(),1,dn);
+		std::vector<std::shared_ptr<SelectionElement>> theVector{se1,se2};
+		SelectorSurface surface(0,0,theVector);
+		SelectionReturn result = surface.m_fetchSelection();
+		if(result.index == 1){
+			m_associatedCity->m_sell(effectiveIndex);
+			m_createSellingButtonElements();
+		}
+	}
+	return true;
+}
+
+bool CitySurface::m_buy(){
+	ImprovementType imptype = m_associatedCity->m_whatIsBuilt;
+	int price = m_associatedCity->m_buyingPrice(imptype);
+	std::stringstream infoStream;
+	infoStream<<"Cost to complete"<<std::endl<<imptype<<": "<<price<<"$,\n"<<"Treasury: "<<m_associatedCity->m_owningNation->m_Treasury()<<std::endl;
+	SDL_Rect rect;
+	rect= Miscellaneous::printMultipleLines(infoStream, BUY_INFO_X, BUY_INFO_Y, whiteColor, true, Graphics::Civ::shieldGreyColor());
+	SDL_RenderPresent(theRenderer);
+	if(m_associatedCity->m_owningNation->m_Treasury()>=price){
+		std::string yes = "Yes", no = "No";
+		DoNothing dn;
+		std::vector<std::shared_ptr<SelectionElement>> selectionElements = {std::make_shared<SelectionElement>(yes,0,dn), std::make_shared<SelectionElement>(no, 1, dn)};
+		SelectorSurface ssurface(BUY_INFO_X,BUY_INFO_Y+rect.h,selectionElements);
+		if(ssurface.m_fetchSelection().index==0){
+			m_associatedCity->m_buy(price);
+		}
+		return true;
+	}
+	return false;
 }

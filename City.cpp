@@ -493,6 +493,24 @@ bool City::isWonderType(ImprovementType imptype){
 	return false;
 }
 
+bool City::isBuildingType(ImprovementType imptype){
+	for(ImprovementType imptype2: buildingTypes()){
+		if(imptype2==imptype){
+			return true;
+		}
+	}
+	return false;
+}
+
+bool City::isFigureType(ImprovementType imptype){
+	for(ImprovementType imptype2: figureTypes()){
+		if(imptype2==imptype){
+			return true;
+		}
+	}
+	return false;
+}
+
 bool City::m_maybeFinishProduction(){
 	if((m_shields+=m_shieldProduction())<shieldsNeeded(m_whatIsBuilt)){
 		return false;
@@ -697,6 +715,7 @@ CityProduction City::m_revenueProduction(){
 }
 
 bool City::m_sell(int index){
+	std::cout<<"Now the "<<m_improvements[index].m_what<<" is sold for "<<City::shieldsNeeded(m_improvements[index].m_what)<<std::endl;
 	if(index >= m_improvements.size()){
 		return false;
 	}
@@ -706,6 +725,27 @@ bool City::m_sell(int index){
 	ImprovementType imptype = m_improvements[index].m_what;
 	std::vector<CityImprovement>::iterator deleter = m_improvements.begin()+index;
 	m_improvements.erase(deleter);
-	m_owningNation->m_receiveMoney(shieldsNeeded(imptype));
+	m_owningNation->m_receiveMoney(City::shieldsNeeded(imptype));
+	std::cout<<"vectorsize: "<<m_improvements.size()<<std::endl;
 	return true;
+}
+
+int City::m_buyingPrice(ImprovementType imptype){
+	if(m_shields!=0){
+		return (shieldsNeeded(imptype)-m_shields)/2;
+	}
+	if(!City::isFigureType(imptype)){
+		return 4*shieldsNeeded(imptype);
+	}
+	if(shieldsNeeded(imptype)==40){
+		return 320;
+	}
+	switch(imptype){
+	}
+	throw imptype;
+}
+
+void City::m_buy(int price){
+	m_shields = shieldsNeeded(m_whatIsBuilt);
+	m_owningNation->m_receiveMoney(-price);
 }

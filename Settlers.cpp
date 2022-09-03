@@ -222,7 +222,7 @@ std::shared_ptr<City> Settlers::m_foundNewCity(std::string name){
 		m_whereItStands->m_citizenWorking->m_whereItWorks = nullptr;
 		m_whereItStands->m_citizenWorking->m_state = ENTERTAINER;
 	}
-	if(m_whereItStands->m_roadStatus==NONE){
+	if(m_whereItStands->m_roadStatus==NOTHING){
 		m_whereItStands->m_roadStatus = ROAD;
 	}
 	m_whereItStands->m_isIrrigated = false;

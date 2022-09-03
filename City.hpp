@@ -98,6 +98,8 @@ public:
 	static std::vector<ImprovementType> figureTypes();
 	static std::vector<ImprovementType> wonderTypes();
 	static int shieldsNeeded(ImprovementType imptype);
+	static bool isFigureType(ImprovementType imptype);
+	static bool isBuildingType(ImprovementType imptype);
 	static bool isWonderType(ImprovementType imptype);
 	bool m_contains(ImprovementType imptype);
 	std::vector<ImprovementType> m_whatCanBeBuilt();
@@ -117,7 +119,9 @@ public:
 	std::vector<CitizenState> m_applyCitizenStateVector(HappyVectorType flag = HAPPY_ALL);
 	int m_foodCost();
 	int m_shieldCost();
+	int m_Shields(){return m_shields;}
 	std::vector<UnitCostingResources> m_unitCostVector();
+	int m_buyingPrice(ImprovementType imptype);
 	int m_size();
 	int m_luxuriesRevenue();
 	int m_goldRevenue();
@@ -135,6 +139,7 @@ public:
 	bool m_placeCitizen(std::shared_ptr<Field> fieldClickedOn);
 	int m_distanceTo(std::shared_ptr<City> comparedCity);
 	bool m_sell(int index);
+	void m_buy(int price);
 };
 
 template<typename T>

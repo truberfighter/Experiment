@@ -47,8 +47,8 @@ if(elementTexture.surfaceIndex == m_effectiveIndex()){\
 }\
 }\
 /*if necessary, offer stepping to the next unit (modulo)*/\
-if(HowMuchToDraw>maxHeightNormed){\
-if(currentRelativeIndex == (NEXT_INDEX(endIndexesIndex,HowMuchToDraw - 1,endIndexes)) - endIndexes[endIndexesIndex]){\
+if(HowMuchToDraw>elementsPerUnit-1){\
+if(currentRelativeIndex == (NEXT_INDEX(endIndexesIndex,HowMuchToDraw - 1,endIndexes)) - endIndexes[endIndexesIndex] + 1){\
 	SDL_SetRenderDrawColor(theRenderer, m_markedColor);\
 }\
 SDL_Surface* moreSurface = TTF_RenderText_Solid(theFont, "MORE", blackColor);\
@@ -62,7 +62,7 @@ if(currentRelativeIndex == (NEXT_INDEX(endIndexesIndex,HowMuchToDraw - 1,endInde
 	SDL_SetRenderDrawColor(theRenderer, m_standardColor);\
 }\
 SDL_RenderPresent(theRenderer);\
-currentX = m_y; currentY = m_y;
+currentX = m_x; currentY = m_y;
 
 #ifdef NEXT_INDEX
 #undef NEXT_INDEX
@@ -71,7 +71,7 @@ currentX = m_y; currentY = m_y;
 CONTAINER.at(INDEX + 1) : MAXIMUM)
 
 SelectionReturn SelectorSurface::m_fetchSelection(){
-	//std::sort(m_whatToAskFor.begin(),m_whatToAskFor.end(), [](SelectionElement& s1, SelectionElement& s2)->bool{return s1.layer<=s2.layer;});
+	std::sort(m_whatToAskFor.begin(),m_whatToAskFor.end(), [](std::shared_ptr<SelectionElement>& s1, std::shared_ptr<SelectionElement>& s2)->bool{return s1->layer<=s2->layer;});
 	SDL_SetRenderDrawColor(theRenderer, m_standardColor);
 	HowMuchToDraw = m_whatToAskFor.size();
 	int currentX(m_x), currentY(m_y);
@@ -235,14 +235,19 @@ bool SelectorSurface::m_handleKeyboardEvent(const SDL_Event& event){
 	}
 }
 
+#define MODULO_REFERENCE (NEXT_INDEX(endIndexesIndex,HowMuchToDraw,endIndexes)\
+ + (m_whatToAskFor.size()-2 >= elementsPerUnit ? 1 : 0))
+
 void SelectorSurface::m_goUp(){
-	currentRelativeIndex = modulo(currentRelativeIndex - 1, (NEXT_INDEX(endIndexesIndex,HowMuchToDraw,endIndexes)+1) - endIndexes[endIndexesIndex]);
+	currentRelativeIndex = modulo(currentRelativeIndex - 1, MODULO_REFERENCE - endIndexes[endIndexesIndex]);
 	std::cout<<"goUp: currentRelativeIndex = "<<currentRelativeIndex<<std::endl;
 }
 
 void SelectorSurface::m_goDown(){
-	currentRelativeIndex = modulo(currentRelativeIndex + 1, (NEXT_INDEX(endIndexesIndex,HowMuchToDraw,endIndexes)+1) - endIndexes[endIndexesIndex]);
+	currentRelativeIndex = modulo(currentRelativeIndex + 1, MODULO_REFERENCE - endIndexes[endIndexesIndex]);
 }
+
+#undef MODULO_REFERENCE
 
 QuitSelection SelectorSurface::m_finalSelection(){
 	if(m_effectiveIndex() == NEXT_INDEX(endIndexesIndex,HowMuchToDraw,endIndexes)){

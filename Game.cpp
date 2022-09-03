@@ -11,6 +11,7 @@
 #include "Trireme.hpp"
 #include <stdlib.h>
 #include <random>
+#include <iomanip>
 #include <functional>
 #include "City.hpp"
 
@@ -79,7 +80,7 @@ void Game::m_startNewTurn(){
 	m_NationAtCurrentTurn()->m_startNewTurn();
 	if(m_nationAtCurrentTurnIndex==0){
 		std::cout<<"wieder bei null im Nationenindex angekommen"<<std::endl;
-	m_currentYear = Year(m_currentYear.m_yearNumberRaw);
+	m_currentYear = Year(m_currentYear.m_yearNumberRaw+1);
 	}
 	std::cout<<"New turn started for "<<m_NationAtCurrentTurn()->m_Nation()<<"!"<<std::endl;
 	if(m_NationAtCurrentTurn()->m_activeFiguresSize()<=0){
@@ -134,4 +135,35 @@ int Game::m_getRandomNumberBetween(int lowerBound, int upperBound){
 	 std::uniform_int_distribution<int> distribution(lowerBound, upperBound);
 	 int randomNumber = distribution(m_theRandomDevice);
 	 return randomNumber;
+}
+
+std::string Game::Year::m_yearString(){
+	std::stringstream s;
+	if(m_yearNumberRaw == 200){
+		s<<"1 AD";
+		goto Return;
+	}
+	if(m_yearNumberRaw < 200){
+		s<<std::setw(4)<<4000-20*m_yearNumberRaw<<" BC";
+		goto Return;
+	}
+	if(m_yearNumberRaw<=250){
+		s<<std::setw(4)<<-4000+20*m_yearNumberRaw<<" AD";
+		goto Return;
+	}
+	if(m_yearNumberRaw<=300){
+		s<<std::setw(4)<<1000+(m_yearNumberRaw-250)*10<<" AD";
+		goto Return;
+	}
+	if(m_yearNumberRaw<=350){
+		s<<1500+(m_yearNumberRaw-300)*5<<" AD";
+		goto Return;
+	}
+	if(m_yearNumberRaw<=400){
+		s<<1750+(m_yearNumberRaw-350)*2<<" AD";
+		goto Return;
+	}
+	s<<1850+(m_yearNumberRaw-400)<<" AD";
+	Return: s.flush();
+	return s.str();
 }

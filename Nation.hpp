@@ -30,12 +30,13 @@ private:
 	bool m_directlyMakingFiguresActive = false;
 	short unsigned int m_taxRate = 5;
 	short unsigned int m_luxuriesRate = 5;
-	int m_treasury = 50;
+	int m_treasury = 500;
 public:
 	void m_receiveMoney(int amount);
 	short unsigned int m_TaxRate();
 	void m_setTaxRate(short unsigned int tax);
 	short unsigned int m_LuxuriesRate();
+	short unsigned int m_ScienceRate(){return TAX_RATE_STEP_COUNT - m_taxRate - m_luxuriesRate;}
 	bool m_alterTaxRate();
 	bool m_alterLuxuriesRate();
 	void m_setLuxuriesRate(short unsigned int luxuries);
@@ -62,6 +63,7 @@ public:
 	int m_activeFiguresSize(){return m_activeFigures.size();}
 	int m_queueSize(){return m_activeFigures.size();}
 	std::string m_colorString();
+	int m_Treasury(){return m_treasury;}
 	friend class Figurebutton;
 	static SDL_Color standardNationColor(Nationality nationalityToDraw);
 };

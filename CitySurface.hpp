@@ -21,15 +21,17 @@ private:
 	City* m_associatedCity;
 	std::shared_ptr<Subsurface> m_subsurface;
 	std::vector<std::shared_ptr<ButtonElement>> m_sellingElements;
-	int indexForImprovementOverview =0;
+	int m_indexForImprovementOverview =0;
 public:
 	CitySurface(City* city);
 	bool m_handleEvent(const SDL_Event& event) ;
 	bool m_handleKeyboardEvent(const SDL_Event& event) ;
 	~CitySurface(){}
 	bool m_handleLeftClick(const SDL_MouseButtonEvent& event);
+	bool m_handleSellingButtonClick(int effectiveIndex);
 	void m_drawSurface(SDL_Renderer* renderer);
 	void m_drawSubsurfaceButtons();
+	void m_drawImprovementBackground();
 	void m_displaySurface(SDL_Renderer* renderer);
 	void m_drawCitizens(SDL_Renderer* renderer, int x, int y, int backgroundWidth = CITIZENS_OVERVIEW_WIDTH, int backgroundHeight = CITIZENS_OVERVIEW_HEIGHT, HappyVectorType flag = HAPPY_ALL);
 	void m_drawFoodProduction();
