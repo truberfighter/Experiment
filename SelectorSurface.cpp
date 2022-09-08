@@ -10,8 +10,8 @@
 
 
 
-SelectorSurface::SelectorSurface(int x, int y, std::vector<std::shared_ptr<SelectionElement>>& whatToAskFor, bool inCenter, SDL_Color standardColor, SDL_Color fontColor, SDL_Color markedColor)
-:m_x(x), m_y(y), m_inCenter(inCenter), m_whatToAskFor(whatToAskFor), m_standardColor(standardColor), m_fontColor(fontColor), m_markedColor(markedColor)
+SelectorSurface::SelectorSurface(int x, int y, std::vector<std::shared_ptr<SelectionElement>>& whatToAskFor, bool inCenter, SDL_Color standardColor, SDL_Color fontColor, SDL_Color markedColor, std::function<void()> backgroundOrders)
+:m_x(x), m_y(y), m_inCenter(inCenter), m_whatToAskFor(whatToAskFor), m_standardColor(standardColor), m_fontColor(fontColor), m_markedColor(markedColor), m_backgroundOrders(backgroundOrders)
 {
 std::cout<<"SelectorSurface-Konstruktor, m_whatToAskFor-size: "<<m_whatToAskFor.size()<<std::endl;
 HowMuchToDraw = m_whatToAskFor.size();
@@ -25,6 +25,7 @@ struct TextureWithIndex{
 };
 
 #define DRAW_SELECTION 	std::vector<TextureWithIndex> textSurfaces;\
+SDL_SetRenderDrawColor(theRenderer, m_standardColor);\
 for(int indexForSurfaceCreation(endIndexes[endIndexesIndex]); indexForSurfaceCreation<NEXT_INDEX(endIndexesIndex,HowMuchToDraw, endIndexes); indexForSurfaceCreation++){\
 SelectionElement& currentElement = *m_whatToAskFor.at(indexForSurfaceCreation);\
 SDL_Surface* elementSurface = TTF_RenderText_Solid(theFont, currentElement.content.c_str() ,m_fontColor);\
@@ -152,7 +153,8 @@ bool SelectorSurface::m_handleEvent(const SDL_Event& event){
 		if(event.button.button == SDL_BUTTON_RIGHT){
 			m_select(event.button.x, event.button.y);
 			m_whatToAskFor[m_effectiveIndex()]->rightClickOrders();
-			return false;
+			m_backgroundOrders();
+			return true;
 		}
 		return false;
 	}
@@ -201,10 +203,14 @@ bool SelectorSurface::m_handleKeyboardEvent(const SDL_Event& event){
 	std::cout<<"Man hat den KeyCode "<<keyCode<<std::endl;
 	switch(keyCode){
 	case SDLK_ENTER_KEY:{
-		if(m_effectiveIndex()<0||m_effectiveIndex()>=HowMuchToDraw){
+		enterkey: if(m_effectiveIndex()<0||m_effectiveIndex()>=HowMuchToDraw){
 			throw QuitSelection(NO_ACTION);
 		}
 		throw m_finalSelection();
+	}
+	case SDLK_SPACE:
+	{
+		goto enterkey;
 	}
 	case SDLK_UP:
 	{

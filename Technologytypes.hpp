@@ -84,12 +84,7 @@ enum Technology{
 	TECHNOLOGY_MIN = TECHNOLOGY_ADVANCED_FLIGHT
 };
 
-class TechnologyRightClick: public std::function<void()>{
-public:
-	Technology m_technology;
-	void operator()();
-	TechnologyRightClick(Technology tech);
-};
+void technologyRightClick(Technology technology);
 
 struct TechnologyDependency{
 	Technology neededTech1;

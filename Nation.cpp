@@ -14,6 +14,7 @@
 #include "SelectorSurface.hpp"
 #include <functional>
 #include <iomanip>
+#include "GameMain.hpp"
 
 using namespace std;
 
@@ -145,7 +146,7 @@ bool Nation::m_alterLuxuriesRate(){
 		std::stringstream stream;
 		stream<<"Luxuries Rate:"<<std::setw(2)<<i<<"0%, Science Rate:"<<std::setw(2)<<whatIsPossible-i<<"0%";
 		stream.flush();
-		DoNothing dn;
+		std::function<void()> dn = [](){};
 		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(stream.str(),0,dn);
 		whatToSelectFrom.push_back(selectionElement);
 	}
@@ -179,7 +180,7 @@ bool Nation::m_alterTaxRate(){
 		std::stringstream stream;
 		stream<<"Tax Rate:"<<std::setw(2)<<i<<"0%, Luxuries Rate:"<<std::setw(2)<<std::min(10-(int)i, (int)m_luxuriesRate)<<"0%, Science Rate:"<<std::setw(2)<<std::max(10-i-(int)m_luxuriesRate,0)<<"0%";
 		stream.flush();
-		DoNothing dn;
+		std::function<void()> dn = [](){};
 		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(stream.str(),0,dn);
 		whatToSelectFrom.push_back(selectionElement);
 	}
@@ -381,19 +382,22 @@ Technology Nation::m_askForNewExploration(){
 	SDL_Rect theRect;
 	theRect = Miscellaneous::printMultipleLines(stream1, 0, 0., whiteColor, true, Graphics::Civ::irrigationBlueColor());
 	std::vector<std::shared_ptr<SelectionElement>> selectionBase;
-	for(Technology techToAskFor: m_technologiesAvailable()){
+	for(Technology techToAskFor: whatToChooseFrom){
 		std::cout<<"Technology available: "<<techToAskFor<<std::endl;
-		TechnologyRightClick rightClick(techToAskFor);
+		std::function<void()> rightClick = [techToAskFor](){technologyRightClick(techToAskFor);};
 		std::stringstream stream2;
 		stream2<<techToAskFor;stream2.flush();
 		std::shared_ptr<SelectionElement> element = std::make_shared<SelectionElement>(stream2.str(),(int)techToAskFor,rightClick);
 		selectionBase.push_back(element);
 	}
 	std::cout<<"selectionbasesize: "<<selectionBase.size()<<std::endl;
-	SelectorSurface surface(theRect.x,theRect.h+theRect.y, selectionBase);
+	SelectorSurface surface(theRect.x,theRect.h+theRect.y, selectionBase, false, Graphics::Civ::shieldGreyColor(), blackColor, Graphics::Civ::brightCityBackgroundColor(),
+			[](){
+		SDL_RenderClear(theRenderer);
+		someDrawing->m_draw();});
 	SelectionReturn result;
 	result = surface.m_fetchSelection();
-	return reinterpret_cast<TechnologyRightClick*>(&(selectionBase[result.index]->rightClickOrders))->m_technology;
+	return whatToChooseFrom[result.index];
 	}
 	catch(SDLQuitException& exception){
 		throw exception;

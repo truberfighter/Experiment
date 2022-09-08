@@ -398,6 +398,12 @@ void City::m_startNewTurn(){
 		m_food = 0;
 		m_grow();
 	}
+	int figuresTooMuch = m_shieldCost()-m_shieldProduction();
+	for(int i(0);i<figuresTooMuch;i++){
+		std::cout<<"shieldCost: "<<m_shieldCost()<<std::endl;
+		m_announceCannotMaintain((ImprovementType)m_figuresOwned.back()->m_FigureType());
+		m_owningNation->m_destroyFigure(m_figuresOwned.back());
+	}
 	m_sortFiguresByValue();
 	m_maybeFinishProduction();
 	m_food = std::min((m_foodProduction()+m_food - m_foodCost()), m_foodStorageSize());
@@ -776,6 +782,8 @@ void City::m_buy(int price){
 
 void City::m_announceCannotMaintain(ImprovementType imptype){
 	someDrawing->m_draw();
+	SDL_RenderPresent(theRenderer);
+	SDL_Delay(100);
 	std::stringstream s;
 	s<<"Domestic report:\n"<<m_name<<" cannot maintain\n"<<imptype<<"\n";s.flush();
 	Miscellaneous::printMultipleLines(s, ANNOUNCEMENT_X, ANNOUNCEMENT_Y, Graphics::Civ::resourcesWhiteColor(), true, Graphics::redColor());

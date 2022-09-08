@@ -169,18 +169,16 @@ os<<"Future Technology "<<((int)tech - (int) TECHNOLOGY_WRITING);
 return os;
 }
 
-TechnologyRightClick::TechnologyRightClick(Technology tech):m_technology(tech){
-
-}
-
-void TechnologyRightClick::operator() (){
+void technologyRightClick (Technology technology){
 	std::stringstream infoStream;
-	infoStream<<"Required for "<<m_technology<<": \n"<<"Allows: ";
-	for(Technology currentTech(TECHNOLOGY_MIN);currentTech>=TECHNOLOGY_MAX;currentTech = (Technology)((int)currentTech+1)){
+	infoStream<<"Required for "<<technology<<": "<<Science::techInfo(technology).neededTech1<<", "<<Science::techInfo(technology).neededTech2<<"\n";
+
+	infoStream<<technology<<" allows: \n";
+	for(Technology currentTech(TECHNOLOGY_MIN);currentTech<=TECHNOLOGY_MAX;currentTech = (Technology)((int)currentTech+1)){
 		//Improvements and/or units are not ready yet
 		TechnologyDependency td;
 		td = Science::techInfo(currentTech);
-		if(td.neededTech1==m_technology){
+		if(td.neededTech1==technology){
 			infoStream<<currentTech;
 			if(td.neededTech2!=NO_TECHNOLOGY){
 				infoStream<<" (with "<<td.neededTech2<<")";
@@ -188,15 +186,17 @@ void TechnologyRightClick::operator() (){
 			infoStream<<"\n";
 			continue;
 		}
-		if(td.neededTech1==m_technology){
+		if(td.neededTech2==technology){
 			infoStream<<currentTech;
-			if(td.neededTech2!=NO_TECHNOLOGY){
+			if(td.neededTech1!=NO_TECHNOLOGY){
 				infoStream<<" (with "<<td.neededTech1<<")";
 			}
 			infoStream<<"\n";
 		}
 	}
+	infoStream<<"Press any key to continue.";
 	infoStream.flush();
+	std::cout<<infoStream.str();
 	Miscellaneous::printMultipleLines(infoStream, 0, 0, Graphics::Civ::irrigationBlueColor(), true, Graphics::Civ::resourcesWhiteColor());
 	SDL_RenderPresent(theRenderer);
 	SDL_Event e;
@@ -207,7 +207,7 @@ void TechnologyRightClick::operator() (){
 				if(e.type == SDL_QUIT){
 					throw SDLQuitException();
 				}
-				if(e.type==SDL_KEYDOWN || e.type == SDL_MOUSEBUTTONDOWN){
+				if(e.type==SDL_KEYDOWN){
 					quitSurface = true;
 					break;
 				}

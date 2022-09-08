@@ -79,7 +79,7 @@ enum TradeType{TRADE_GOLD, TRADE_SCIENCE, TRADE_LUXURIES};
 enum BlinkingTime{STANDARD_BLINKING_INTERVAL_TIME = 1500};
 enum{MAX_CITY_NAME_LENGTH = 12, CITIES_PER_NATION = 15, ADDITIONAL_CITIES = 20};
 //Units receive some negative value
-enum ImprovementType{IMPROVEMENT_SETTLERS = -1000, IMPROVEMENT_TRIREME, TEMPLE = 1, GRANARY, PALACE, COURTHOUSE};
+enum ImprovementType{IMPROVEMENT_SETTLERS = SETTLERS, IMPROVEMENT_TRIREME = TRIREME, TEMPLE = 5667, GRANARY = 555555, PALACE, COURTHOUSE};
 typedef bool BlinkingState;
 constexpr BlinkingState VISIBLE(){return true;}
 constexpr BlinkingState INVISIBLE(){return false;}

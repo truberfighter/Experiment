@@ -228,7 +228,7 @@ ImprovementType imptype = m_associatedCity->m_improvements[effectiveIndex].m_wha
 		std::stringstream sellingSuggestor;
 		sellingSuggestor<<"Sell your "<<imptype<<" for "<<City::shieldsNeeded(imptype)<<"$";
 		sellingSuggestor.flush();
-		DoNothing dn;
+		std::function<void()> dn = [](){};
 		std::shared_ptr<SelectionElement> se1 = std::make_shared<SelectionElement>(notSellingSuggestor.str(),0,dn),
 		se2 = std::make_shared<SelectionElement>(sellingSuggestor.str(),1,dn);
 		std::vector<std::shared_ptr<SelectionElement>> theVector{se1,se2};
@@ -252,7 +252,7 @@ bool CitySurface::m_buy(){
 	SDL_RenderPresent(theRenderer);
 	if(m_associatedCity->m_owningNation->m_Treasury()>=price){
 		std::string yes = "Yes", no = "No";
-		DoNothing dn;
+		std::function<void()> dn = [](){};
 		std::vector<std::shared_ptr<SelectionElement>> selectionElements = {std::make_shared<SelectionElement>(yes,0,dn), std::make_shared<SelectionElement>(no, 1, dn)};
 		SelectorSurface ssurface(BUY_INFO_X,BUY_INFO_Y+rect.h,selectionElements);
 		if(ssurface.m_fetchSelection().index==0){

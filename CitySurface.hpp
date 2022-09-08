@@ -54,14 +54,6 @@ public:
 	friend class Subsurface;
 };
 
-class ImprovementRightClick: public std::function<void()>{
-public:
-	void operator()();
-	std::string m_filename;
-	ImprovementRightClick(std::string name = "");
-	ImprovementRightClick(ImprovementType imptype);
-};
-
 extern ButtonElement changeButton;
 extern ButtonElement buyButton;
 

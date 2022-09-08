@@ -273,15 +273,17 @@ void CitySurface::m_drawFigures(){
 				std::cout<<"figure keine nullptr"<<std::endl;
 				int itemCount = 0;
 				for(;itemCount<cost.foodCost;itemCount++){
+					std::cout<<"drawshield"<<cost.foodCost<<", "<<cost.shieldCost<<std::endl;
 					Graphics::Civ::drawFood(theRenderer, x+(itemCount%2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), y+(itemCount/2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), RESOURCES_SCALEFACTOR_CITY_OVERVIEW);
 				}
-				for(;itemCount<cost.foodCost + cost.shieldCost; itemCount++){
+				for(itemCount = cost.foodCost;itemCount<cost.foodCost + cost.shieldCost; itemCount++){
 					Graphics::Civ::drawShield(theRenderer, x+(itemCount%2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), y+(itemCount/2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), RESOURCES_SCALEFACTOR_CITY_OVERVIEW);
 				}
-				for(;itemCount<cost.foodCost+cost.shieldCost+cost.unhappyFaces; itemCount++){
+				for(itemCount = cost.foodCost+cost.shieldCost;itemCount<cost.foodCost+cost.shieldCost+cost.unhappyFaces; itemCount++){
 					Graphics::Civ::drawUnhappyFace(theRenderer, x+(itemCount%2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), y+(itemCount/2)*(8*RESOURCES_SCALEFACTOR_CITY_OVERVIEW), RESOURCES_SCALEFACTOR_CITY_OVERVIEW);
 				}
 			}
+			it++;
 		}
 	}
 }
@@ -397,19 +399,6 @@ void CitySurface::m_drawShields(){
 	changeButton.m_draw(0,0);
 }
 
-void ImprovementRightClick::operator ()(){
-	return;
-}
-
-ImprovementRightClick::ImprovementRightClick(std::string name):m_filename(name)
-{
-
-}
-
-ImprovementRightClick::ImprovementRightClick(ImprovementType imptype){
-	m_filename = "";
-}
-
 bool CitySurface::m_changeWhatIsBuilt(){
 	std::vector<std::shared_ptr<SelectionElement>> whatToSelectFrom;
 	std::vector<ImprovementType> whatIsPossible = m_associatedCity->m_whatCanBeBuilt();
@@ -421,8 +410,9 @@ bool CitySurface::m_changeWhatIsBuilt(){
 			}
 			namestream<< imptype;
 			namestream.flush();
-		ImprovementRightClick irc(imptype);
-		std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(namestream.str(), ((int) imptype < 0 ? IMPROVEMENT_UNIT_LAYER : IMPROVEMENT_LAYER),irc);
+			//ImprovementRightClick coming!
+			std::function<void()> irc = [](){};
+			std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(namestream.str(), ((int) imptype < 0 ? IMPROVEMENT_UNIT_LAYER : IMPROVEMENT_LAYER),irc);
 		whatToSelectFrom.push_back(selectionElement);
 	}
 	SelectorSurface improvementSelection(0,0,whatToSelectFrom);

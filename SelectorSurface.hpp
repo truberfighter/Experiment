@@ -55,6 +55,7 @@ private:
 	std::vector<int> endIndexes{0};
 	int endIndexesIndex = 0;
 	int currentRelativeIndex = 0;
+	std::function<void()> m_backgroundOrders;
 public:
 	QuitSelection m_finalSelection();
 	int m_effectiveIndex();
@@ -66,7 +67,7 @@ public:
 	 bool m_handleLeftClick(const SDL_MouseButtonEvent& event);
 	virtual bool m_handleKeyboardEvent(const SDL_Event& event);
 	virtual bool m_handleEvent(const SDL_Event& event);
-	SelectorSurface(int x, int y, std::vector<std::shared_ptr<SelectionElement>>& whatToAskFor, bool inCenter = false, SDL_Color standardColor = Graphics::Civ::shieldGreyColor(), SDL_Color fontColor = blackColor, SDL_Color markedColor = Graphics::Civ::brightCityBackgroundColor());
+	SelectorSurface(int x, int y, std::vector<std::shared_ptr<SelectionElement>>& whatToAskFor, bool inCenter = false, SDL_Color standardColor = Graphics::Civ::shieldGreyColor(), SDL_Color fontColor = blackColor, SDL_Color markedColor = Graphics::Civ::brightCityBackgroundColor(), std::function<void()> backgroundOrders = [](){});
 	SelectionReturn m_fetchSelection();
 };
 
