@@ -44,6 +44,12 @@ public:
 	City* m_home;
 };
 
+class NoGivenData{
+public:
+	std::string m_what;
+	NoGivenData(std::string s):m_what(s){}
+};
+
 struct LayerString{
 	int layer;
 	std::string content;
@@ -91,6 +97,7 @@ private:
 	int m_shields = 0;
 	int m_food = 0;
 	std::vector<std::shared_ptr<TradeRoute>> m_tradeRoutes;
+	void m_cityEconomy();
 
 public:
 	static std::string improvementString(ImprovementType imptype);
@@ -98,6 +105,7 @@ public:
 	static std::vector<ImprovementType> figureTypes();
 	static std::vector<ImprovementType> wonderTypes();
 	static int shieldsNeeded(ImprovementType imptype);
+	static int maintenanceNeeded(ImprovementType imptype);
 	static bool isFigureType(ImprovementType imptype);
 	static bool isBuildingType(ImprovementType imptype);
 	static bool isWonderType(ImprovementType imptype);
@@ -140,6 +148,8 @@ public:
 	int m_distanceTo(std::shared_ptr<City> comparedCity);
 	bool m_sell(int index);
 	void m_buy(int price);
+	void m_announceCannotMaintain(ImprovementType imptype);
+	friend class Settlers;
 };
 
 template<typename T>

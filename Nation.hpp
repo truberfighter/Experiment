@@ -9,6 +9,7 @@
 #define NATION_HPP_
 
 #include "Settlers.hpp"
+#include "Technologytypes.hpp"
 #include <queue>
 
 class City;
@@ -29,14 +30,26 @@ private:
 	std::list<std::shared_ptr<Figure>> m_activeFigures;
 	bool m_directlyMakingFiguresActive = false;
 	short unsigned int m_taxRate = 5;
-	short unsigned int m_luxuriesRate = 5;
+	short unsigned int m_luxuriesRate = 0;
 	int m_treasury = 500;
+	std::vector<Technology> m_exploredTechnologies;
+	Technology m_whatToExplore = NO_TECHNOLOGY;
+	int m_explorationProgress = 0;
+	Difficulty m_difficulty;
 public:
+	void m_addProgress(int progress);
+	void m_setWhatToExplore(Technology tech){m_whatToExplore = tech;}
+	bool m_hasExplored(Technology tech);
+	void m_maybeFinishExploration();
+	int m_howMuchNeededForExploration();
+	Technology m_askForNewExploration();
+	std::vector<Technology> m_technologiesAvailable();
 	void m_receiveMoney(int amount);
 	short unsigned int m_TaxRate();
 	void m_setTaxRate(short unsigned int tax);
 	short unsigned int m_LuxuriesRate();
 	short unsigned int m_ScienceRate(){return TAX_RATE_STEP_COUNT - m_taxRate - m_luxuriesRate;}
+	void m_addTechnology(Technology tech);
 	bool m_alterTaxRate();
 	bool m_alterLuxuriesRate();
 	void m_setLuxuriesRate(short unsigned int luxuries);
@@ -46,7 +59,7 @@ public:
 	std::vector<std::shared_ptr<City>>& m_Cities(){return m_cities;}
 	~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 	static Coordinate getStandardCoordinateForNation(Nationality n);
-	Nation(Nationality n = ROMAN, std::string leaderName = "", bool directlyMakingFiguresActive = false);
+	Nation(Nationality n = ROMAN, std::string leaderName = "", Difficulty difficulty = PLAYER_PRINCE, bool directlyMakingFiguresActive = false);
 	const std::string& m_LeaderName();
 	GovernmentType m_Government();
 	Nationality m_Nation() const;
@@ -79,6 +92,13 @@ inline 	Nationality Nation::m_Nation() const{
 inline std::vector<std::shared_ptr<Figure>>& Nation::m_Figures(){
 	return m_figures;
 }
+
+class TechnologyOvershot{
+public:
+	int whatNeeded;
+	int whatsThere;
+	TechnologyOvershot(int wn, int wt):whatNeeded(wn), whatsThere(wt){}
+};
 
 class MoveStartFail{
 public:

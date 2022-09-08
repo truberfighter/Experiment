@@ -19,7 +19,7 @@ using namespace std;
 
 
 
-Nation::Nation(Nationality nationality, std::string leaderName, bool directlyMakingFiguresActive): m_nation(nationality), m_directlyMakingFiguresActive(directlyMakingFiguresActive), m_leaderName(leaderName), enable_shared_from_this()
+Nation::Nation(Nationality nationality, std::string leaderName, Difficulty difficulty, bool directlyMakingFiguresActive): m_nation(nationality), m_directlyMakingFiguresActive(directlyMakingFiguresActive), m_leaderName(leaderName), m_difficulty(difficulty),enable_shared_from_this()
 {
 	cout<<"Nation-Konstruktor mit Nationalität "<< nationality<<", this = "<<this<<endl;
 }
@@ -336,5 +336,115 @@ void Nation::m_receiveMoney(int amount){
 	m_treasury+=amount;
 	if(m_treasury<0){
 		throw NegativeTreasury(m_treasury-amount,m_treasury);
+	}
+}
+
+bool Nation::m_hasExplored(Technology tech){
+	if(tech==NO_TECHNOLOGY){
+		return true;
+	}
+	for(Technology comparedTech: m_exploredTechnologies){
+		if(comparedTech==tech){
+			return true;
+		}
+	}
+	return false;
+}
+
+std::vector<Technology> Nation::m_technologiesAvailable(){
+	if((int)m_exploredTechnologies.back()>TECHNOLOGY_MAX){
+		return std::vector<Technology>{(Technology)(m_exploredTechnologies.back()+1)};
+	}
+	std::vector<Technology> whatToReturn;
+	for(int technologyIndex(TECHNOLOGY_MIN);technologyIndex<=TECHNOLOGY_MAX;technologyIndex++){
+		if(m_hasExplored((Technology)technologyIndex)){
+			std::cout<<"continued!"<<std::endl;
+			continue;
+		}
+		TechnologyDependency td = Science::techInfo((Technology)technologyIndex);
+		if(m_hasExplored(td.neededTech1)&&m_hasExplored(td.neededTech2)){
+			std::cout<<"pushed!"<<std::endl;
+			whatToReturn.push_back((Technology) technologyIndex);
+		}
+	}
+	if(m_exploredTechnologies.size()==TECHNOLOGY_MAX - TECHNOLOGY_MIN + 1){
+		return std::vector<Technology>{(Technology)(TECHNOLOGY_MAX+1)};
+	}
+	return whatToReturn;
+}
+
+Technology Nation::m_askForNewExploration(){
+	try{
+	std::vector<Technology> whatToChooseFrom = m_technologiesAvailable();
+	std::stringstream stream1;
+	stream1<<"What do you wanna explore, most trustworthy leader "<<m_leaderName<<" of the "<<m_nation<<" Civilization?"<<std::endl;
+	SDL_Rect theRect;
+	theRect = Miscellaneous::printMultipleLines(stream1, 0, 0., whiteColor, true, Graphics::Civ::irrigationBlueColor());
+	std::vector<std::shared_ptr<SelectionElement>> selectionBase;
+	for(Technology techToAskFor: m_technologiesAvailable()){
+		std::cout<<"Technology available: "<<techToAskFor<<std::endl;
+		TechnologyRightClick rightClick(techToAskFor);
+		std::stringstream stream2;
+		stream2<<techToAskFor;stream2.flush();
+		std::shared_ptr<SelectionElement> element = std::make_shared<SelectionElement>(stream2.str(),(int)techToAskFor,rightClick);
+		selectionBase.push_back(element);
+	}
+	std::cout<<"selectionbasesize: "<<selectionBase.size()<<std::endl;
+	SelectorSurface surface(theRect.x,theRect.h+theRect.y, selectionBase);
+	SelectionReturn result;
+	result = surface.m_fetchSelection();
+	return reinterpret_cast<TechnologyRightClick*>(&(selectionBase[result.index]->rightClickOrders))->m_technology;
+	}
+	catch(SDLQuitException& exception){
+		throw exception;
+	}
+	catch(QuitSelection& qs){
+		if(qs.m_returnSomething==NO_ACTION){
+			return m_askForNewExploration();
+		}
+		else{
+			throw qs;
+		}
+	}
+}
+
+void Nation::m_maybeFinishExploration(){
+	if(m_explorationProgress>m_howMuchNeededForExploration()){
+		throw TechnologyOvershot(m_howMuchNeededForExploration(),m_explorationProgress);
+	}
+	if(m_explorationProgress==m_howMuchNeededForExploration()){
+		m_addTechnology(m_whatToExplore);
+		m_whatToExplore = NO_TECHNOLOGY;
+		std::cout<<"Kevin"<<std::endl;
+		m_explorationProgress = 0;
+	}
+}
+
+int Nation::m_howMuchNeededForExploration(){
+	return (6+2*(int)m_difficulty)*(m_exploredTechnologies.size());
+}
+
+void Nation::m_addTechnology(Technology tech){
+	m_exploredTechnologies.push_back(m_whatToExplore);
+}
+
+void Nation::m_addProgress(int progress){
+	if(progress<0){
+		//Not clear what I wanna do here.
+		m_explorationProgress+=progress;
+	}
+	while(progress>0){
+		if(m_whatToExplore==NO_TECHNOLOGY){
+			m_whatToExplore = m_askForNewExploration();
+		}
+		try{
+			m_explorationProgress += progress;
+			progress = 0;
+			m_maybeFinishExploration();
+		}
+		catch(TechnologyOvershot& ts){
+			progress = ts.whatsThere - ts.whatNeeded;
+			m_explorationProgress = ts.whatNeeded;
+		}
 	}
 }

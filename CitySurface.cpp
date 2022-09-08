@@ -114,7 +114,7 @@ void CitySurface::m_displaySurface(SDL_Renderer* renderer){
 		catch(SDLQuitException& sdlqe){
 			throw sdlqe;
 		}
-}
+	}
 	std::cout<<"displaySurfaceEnd"<<std::endl;
 }
 

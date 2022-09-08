@@ -97,7 +97,7 @@ bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
 		std::shared_ptr<ButtonElement>& sellingButton = m_sellingElements[buttonIndex];
 		if(sellingButton->m_isClicked(event.x, event.y)){
 			//check if it is the "More"-Button
-			if(sellingButton==m_sellingElements.back()&&m_associatedCity->m_improvements.size()<=IMPROVEMENT_OVERVIEW_HEIGHT_NORMED){
+			if(sellingButton==m_sellingElements.back()&&m_associatedCity->m_improvements.size()>=IMPROVEMENT_OVERVIEW_HEIGHT_NORMED){
 				m_indexForImprovementOverview = std::min(m_indexForImprovementOverview+IMPROVEMENT_OVERVIEW_HEIGHT_NORMED-1,std::max(0,(int)m_associatedCity->m_improvements.size()-1));
 				std::cout<<"Z.98 in city surface"<<std::endl;
 				m_createSellingButtonElements();std::cout<<"Z.99citysurface"<<std::endl;

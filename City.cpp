@@ -402,6 +402,8 @@ void City::m_startNewTurn(){
 	m_maybeFinishProduction();
 	m_food = std::min((m_foodProduction()+m_food - m_foodCost()), m_foodStorageSize());
 	std::cout<<"food = "<<m_food<<std::endl;
+	m_cityEconomy();
+	m_owningNation->m_addProgress(m_scienceRevenue());
 }
 
 void City::m_grow(){
@@ -468,7 +470,30 @@ int City::shieldsNeeded(ImprovementType imptype){
 	case COURTHOUSE: return 80;
 	case PALACE: return 200;
 	case GRANARY: return 60;
-	default: return 30000;
+	default:
+	{
+		std::stringstream s;
+		s<<imptype <<" does not have any shield cost data given!";s.flush();
+		throw NoGivenData(s.str());
+	}
+	}
+}
+
+int City::maintenanceNeeded(ImprovementType imptype){
+	if(!isBuildingType(imptype)){
+		throw imptype;
+	}
+	switch(imptype){
+	case TEMPLE: return 1;
+	case GRANARY: return 1;
+	case COURTHOUSE: return 2;
+	case PALACE: return 0; //forget Civilopedia!
+	default:
+	{
+		std::stringstream s;
+		s<<imptype <<" does not have any maintanance data given!";s.flush();
+		throw NoGivenData(s.str());
+	}
 	}
 }
 
@@ -670,7 +695,6 @@ CityProduction City::m_revenueProduction(){
 #define LUXURY_ERROR amount*luxuriesRate - preluxury
 #define SCIENCE_ERROR amount*scienceRate - prescience
 	while(GOLD_ERROR + LUXURY_ERROR + SCIENCE_ERROR >0){
-		std::cout<<"lol"<<std::endl;
 		int worstDeficit = std::max(GOLD_ERROR, std::max(SCIENCE_ERROR, LUXURY_ERROR));
 		if(worstDeficit == GOLD_ERROR){
 			pregold+=TAX_RATE_STEP_COUNT;
@@ -748,4 +772,55 @@ int City::m_buyingPrice(ImprovementType imptype){
 void City::m_buy(int price){
 	m_shields = shieldsNeeded(m_whatIsBuilt);
 	m_owningNation->m_receiveMoney(-price);
+}
+
+void City::m_announceCannotMaintain(ImprovementType imptype){
+	someDrawing->m_draw();
+	std::stringstream s;
+	s<<"Domestic report:\n"<<m_name<<" cannot maintain\n"<<imptype<<"\n";s.flush();
+	Miscellaneous::printMultipleLines(s, ANNOUNCEMENT_X, ANNOUNCEMENT_Y, Graphics::Civ::resourcesWhiteColor(), true, Graphics::redColor());
+	SDL_RenderPresent(theRenderer);
+	SDL_Event e;
+	bool quitSurface = false;
+	while(!quitSurface){
+		try{
+		while(SDL_PollEvent(&e)){
+			if(e.type == SDL_QUIT){
+				throw SDLQuitException();
+			}
+			if(e.type==SDL_KEYDOWN || e.type == SDL_MOUSEBUTTONDOWN){
+				quitSurface = true;
+				break;
+			}
+		}
+		}
+		catch(QuitSurface &qs){
+			quitSurface = true;
+		}
+		catch(SDLQuitException& sdlqe){
+			throw sdlqe;
+		}
+	}
+}
+
+void City::m_cityEconomy(){
+	m_owningNation->m_receiveMoney(m_goldRevenue());
+	for(int maintenanceIndex(0);maintenanceIndex<m_improvements.size();maintenanceIndex++){
+		ImprovementType currentImptype = m_improvements[maintenanceIndex].m_what;
+		if(City::isBuildingType(currentImptype)){
+			try{
+			m_owningNation->m_receiveMoney(-City::maintenanceNeeded(currentImptype));
+			}
+			catch(NegativeTreasury& nt){
+				std::cout<<"Kevin"<<std::endl;
+				m_sell(maintenanceIndex);
+				try{
+					m_announceCannotMaintain(currentImptype);
+				}
+				catch(SDLQuitException& se){
+					throw se;
+				}
+			}
+		}
+	}
 }

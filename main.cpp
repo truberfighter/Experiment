@@ -9,6 +9,7 @@
 #include "movableThing.hpp"
 #undef main
 #include <iostream>
+#include "Technologytypes.hpp"
 #include <SDL2\SDL_image.h>
 #include "drawing.hpp"
 #include "EventHandler.hpp"
@@ -31,6 +32,7 @@ using namespace std;
 //shared_ptr<Drawing> someDrawing;
 
 int main( int argc, char* args[] ){
+
 	SDL_Event e;
 		e.key.keysym.sym = SDLK_3_DOWN_RIGHT;
 		list<SDL_Event> liste;
@@ -42,6 +44,7 @@ int main( int argc, char* args[] ){
 		liste.push_back(e);
 		liste.push_back(f);
 		}
+
 
 	GameMain gameMain;
 	SDL_Event event;

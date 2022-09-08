@@ -33,7 +33,10 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 	}
 	for(Nationality currentNationality: nationsToPlay){
 		Graphics::Civ::currentNationality = currentNationality;
-		std::shared_ptr<Nation> nationPointer =  std::make_shared<Nation>(currentNationality, "", firstNation);
+		std::shared_ptr<Nation> nationPointer =  std::make_shared<Nation>(currentNationality, "", PLAYER_PRINCE, firstNation);
+		int randomIndex = m_getRandomNumberBetween(0, Science::possibleStartingTechs().size()-1);
+		nationPointer->m_setWhatToExplore (Science::possibleStartingTechs()[randomIndex]);
+		nationPointer->m_maybeFinishExploration();
 		firstNation = false;
 		m_nationsPlaying.push_back(nationPointer);
 		Nation& nation = *nationPointer;

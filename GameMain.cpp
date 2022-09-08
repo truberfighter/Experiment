@@ -121,13 +121,7 @@ int GameMain::operator()(){
   std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
  }else{
  doSomething();
- /*SDL_Surface* arsenSurface = TTF_RenderText_Shaded(theFont, "Arsen, ich habe dich lieb! :)", SDL_Color{100,100,255}, SDL_Color{255, 120, 190});
- 	 SDL_Texture* arsenTexture = SDL_CreateTextureFromSurface(theRenderer, arsenSurface);
- 	 SDL_Rect arsenRect{200, 200, arsenSurface->w, arsenSurface->h};
- 	 SDL_RenderCopy(theRenderer, arsenTexture,nullptr, &arsenRect);
- 	 std::cout<<SDL_GetError()<<std::endl;
- 	 SDL_RenderPresent(theRenderer);
- 	 SDL_Delay(5000);*/
+
  MAIN_LOOP_BEGIN
 
 

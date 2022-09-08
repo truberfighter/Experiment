@@ -645,3 +645,5 @@ SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y,
 	}
 	return rectToFill;
 }
+
+SDL_Color Graphics::redColor(){return SDL_Color{255,0,0};}
