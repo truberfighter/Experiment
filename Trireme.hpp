@@ -30,7 +30,16 @@ public:\
 	short unsigned int m_cargoCountMax();\
 };
 
-
-
+SHIP_CLASS(Trireme)
+SHIP_CLASS(Carrier)
+#define DECONSTRUCTOR_SHIP(CLASS)CLASS::~CLASS(){std::cout<<m_FigureType()<<"-Destruktor, this = "<<this<<std::endl;}\
+\
+CLASS::CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+:Ship(whereToStart, nationality, home, isVeteran)\
+{\
+	m_resetMovementPoints();\
+	if(!m_initImage()) cout<<"Fatal error: MovableThing for "<<m_FigureType()<<" not created"<<endl;\
+	cout<<m_FigureType()<<"konstruktor"<<this<<endl;\
+}
 
 #endif /* TRIREME_HPP_ */
