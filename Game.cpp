@@ -8,6 +8,7 @@
 #include "Game.hpp"
 #include "FieldContainer.hpp"
 #include "Settlers.hpp"
+#include "Plane.hpp"
 #include "Trireme.hpp"
 #include <stdlib.h>
 #include <random>
@@ -25,6 +26,9 @@ std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 }
 
 Game::Game(std::vector<Nationality>& nationsToPlay){
+	for(int i(WONDER_MIN); i<=WONDER_MAX;i++){
+		m_hasWonderBeenBuilt.push_back(WonderData{(ImprovementType)i,NO_NATIONALITY,false});
+	}
 	bool firstNation = true;
 	for(std::vector<std::shared_ptr<Field>>& currentMeridian: *theContainer->m_getFieldsOfTheWorld()){
 		for(std::shared_ptr<Field> currentField: currentMeridian){
@@ -43,9 +47,9 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 		Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
 		std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
 		std::shared_ptr<Field> fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y];
-		for(int i(0); i<9; i++){
-			std::shared_ptr<Settlers> theSettlersPointer =
-			std::make_shared<Settlers>(fieldPointer, nationPointer);
+		for(int i(0); i<3; i++){
+			std::shared_ptr<Bomber> theSettlersPointer =
+			std::make_shared<Bomber>(fieldPointer, nationPointer);
 			nation.m_addFigure(theSettlersPointer);
 			fieldPointer->m_takeFigure(theSettlersPointer);
 			std::shared_ptr<Trireme> theTriremePointer =

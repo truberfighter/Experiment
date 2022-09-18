@@ -87,6 +87,7 @@ class City: public std::enable_shared_from_this<City> {
 public:
 
 private:
+	bool m_buyInTurn = false;
 	std::vector<CityImprovement> m_improvements;
 	ImprovementType m_whatIsBuilt = IMPROVEMENT_SETTLERS;
 	std::shared_ptr<Nation> m_owningNation;
@@ -100,11 +101,9 @@ private:
 	void m_cityEconomy();
 
 public:
-	static std::string improvementString(ImprovementType imptype);
-	static std::vector<ImprovementType> buildingTypes();
-	static std::vector<ImprovementType> figureTypes();
-	static std::vector<ImprovementType> wonderTypes();
 	static int shieldsNeeded(ImprovementType imptype);
+	static int figureWidth(FigureType figtype);
+	static int figureHeight(FigureType figtype);
 	static int maintenanceNeeded(ImprovementType imptype);
 	static bool isFigureType(ImprovementType imptype);
 	static bool isBuildingType(ImprovementType imptype);
@@ -149,6 +148,8 @@ public:
 	bool m_sell(int index);
 	void m_buy(int price);
 	void m_announceCannotMaintain(ImprovementType imptype);
+	const std::vector<CityImprovement>& m_Improvements(){return m_improvements;}
+	void m_shrink();
 	friend class Settlers;
 };
 

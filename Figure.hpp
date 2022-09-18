@@ -14,6 +14,7 @@
 #include <exception>
 #include <stdexcept>
 #include "LetterTextureContainer.hpp"
+#include <sstream>
 
 class Field;
 class Nation;
@@ -106,8 +107,26 @@ public:
 	m_figureState = DONE_WITH_TURN; \
 	m_nationality->m_removeFromQueue(shared_from_this());\
 return;}
-#define DEFAULT_MOVING_POINTS(CLASS, DEFAULT) short unsigned int CLASS::m_defaultMovementPoints(){return DEFAULT*3;}
+#define DEFAULT_MOVING_POINTS(CLASS, DEFAULT) short unsigned int CLASS::m_defaultMovementPoints(){return DEFAULT*ONE_MOVEMENT_POINT;}
 //Man beachte, dass zwecks Ermöglichung von Drittelpunkten in Dreierschritten gezählt wird.
 #define NORMAL_MOVING(CLASS) DEFAULT_MOVING_POINTS(CLASS, 1)
 #define CARGO_COUNT_MAX(CLASS, NUMBER) short unsigned int CLASS::m_cargoCountMax(){return NUMBER;}
+#define VISIBILITY(CLASS,DEFAULT) short unsigned int CLASS::m_visibilityRange(){return DEFAULT;}
+#define CREATE_IMAGE(TYPE)std::shared_ptr<MovableThing> TYPE::m_createImage(){\
+		int x = m_whereItStands->m_X() + (STANDARD_FIELD_SIZE - City::figureWidth(m_FigureType()))/2, y  = m_whereItStands->m_Y()+(STANDARD_FIELD_SIZE - City::figureHeight(m_FigureType()))/2;\
+		std::stringstream s;\
+		s<<"bilder/Figures/"<<m_FigureType()<<"/"<<m_FigureType()<<m_nationality->m_colorString();\
+		s.flush();\
+		std::string imageString = s.str();\
+		m_image = std::make_shared<MovableThing>(theRenderer, City::figureWidth(m_FigureType()), City::figureHeight(m_FigureType()), imageString.c_str(), x, y);\
+		return m_image;\
+}
+#define DECONSTRUCTOR(CLASS) CLASS::~CLASS(){}\
+CLASS::	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+:NormalUnit(whereToStart,nationality,home,isVeteran){\
+	m_resetMovementPoints();\
+	if(!m_initImage()) std::cout<<"Fatal error: MovableThing not created"<<std::endl;\
+}\
+CREATE_IMAGE(CLASS)
+#define FIGURE_TYPE(CLASS,TYPE)FigureType CLASS::m_FigureType(){return TYPE;}
 #endif /* FIGURE_HPP_ */

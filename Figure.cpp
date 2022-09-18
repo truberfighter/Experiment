@@ -137,14 +137,26 @@ MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 				==OCEAN ?
 						ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 	case FLIGHT:
-		return m_movementPoints.m_movementPoints >= ONE_MOVEMENT_POINT ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
-	case GROUND:
+		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()!=OCEAN){
+			return ONE_MOVEMENT_POINT;
+		}
+		else{
+			bool allowed = m_whereItStands->m_getNeighbouringField(whereToGo)->m_getCargoCapability(*this) > 0 ? true : false;
+			if(allowed){
+				m_figureState = SENTRIED;
+			}
+			return  allowed ? m_movementPoints : ONE_MOVEMENT_POINT;
+		}
+case GROUND:
 	{
 		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()!=OCEAN)
 		return m_calculateMoveCostGround(whereToGo);
 		else{
-			m_figureState = SENTRIED;
-			return m_whereItStands->m_getNeighbouringField(whereToGo)->m_getCargoCapability(*this) > 0 ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
+			bool allowed = m_whereItStands->m_getNeighbouringField(whereToGo)->m_getCargoCapability(*this) > 0;
+			if(allowed){
+				m_figureState = SENTRIED;
+			}
+			return  allowed ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 		}
 	}
 	}
@@ -156,6 +168,13 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,RIGHT, UP_LEFT, UP, UP_RIGHT};
 	std::shared_ptr<Figure> thisFigure = shared_from_this();
 	Field& fieldWhereToGo = *(m_whereItStands->m_getNeighbouringField(whereToGo));
+	if(m_FigureType()!=FIGHTER){
+	for(const std::shared_ptr<Figure>& currentFigure: fieldWhereToGo.m_FiguresOnField()){
+		if(currentFigure->m_FigureCategory()==FLIGHT && currentFigure->m_Nationality()!=m_Nationality()){
+			return false;
+		}
+	}
+	}
 	MovementPoints movementCost = m_calculateMoveCost(whereToGo);
 	std::cout<<"figure tries move to field: nation = "<<m_nationality->m_Nation()<<", this = "<<this<<"2, figureState = "<<m_figureState<<", figureType = "<<m_FigureType()<<endl;
 	if(movementCost == MOVE_PROHIBITED){
@@ -239,8 +258,12 @@ void Figure::m_move(Direction whereToGo){
 	{
 		m_whereItStands = (m_whereItStands->m_getNeighbouringField(whereToGo));
 		if(m_whereItStands->m_getCargoCapability(*this) > 0 || m_whereItStands->m_CityContained()!= nullptr){
-			m_finishMove();
-			m_figureState = SENTRIED;
+			if(m_whereItStands->m_getCargoCapability(*this)>0){
+				std::cout<<"m_whereItStands->cargo: "<<m_whereItStands->m_getCargoCapability(*this)<<std::endl;
+				std::cout<<"sentrying plane"<<std::endl;
+				m_figureState = SENTRIED;
+			std::cout<<"alphakevin"<<std::endl;
+		}
 		}
 		break;
 	}
@@ -390,8 +413,10 @@ void Figure::m_setInstructionsForDrawingElement(){
 }
 
 void Figure::m_integrateInto(Drawing& drawing){
+	std::cout<<"image: "<<m_image.get()<<std::endl;
 	shared_ptr<DrawingElement> temp = make_shared<FigureElement>(theRenderer, m_image.get());
 	drawing.m_add(temp);
+	std::cout<<"lolh"<<std::endl;
 	for(MovableDrawingElement* currentElement: m_image->m_HowDrawn()){
 		currentElement->m_setFigure(this);
 	}

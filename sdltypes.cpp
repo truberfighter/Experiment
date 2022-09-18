@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <SDL2\SDL_image.h>
+#include <algorithm>
 
 
 unsigned int settlersCount = 0;
@@ -184,6 +185,8 @@ std::ostream& operator<<(std::ostream& os, Nationality nationality){
 	case AMERICAN: PRINT("AMERICAN")
 	case ZULU: PRINT("ZULU")
 	case BABYLONIAN: PRINT("BABYLONIAN")
+	case NO_NATIONALITY: PRINT("NO_NATIONALITY")
+	default: PRINT("WEIRD NATIONALITY");
 	}
 	return os;
 }
@@ -212,7 +215,14 @@ std::ostream& operator<<(std::ostream& os, FigureType figureType){
 	case TRANSPORT: {os<<"TRANSPORT"; break;}
 	case SAIL: {os<<"SAIL"; break; }
 	case TRIREME: {os<<"TRIREME"; break;}
-	default: {os<<"UNKNOWN"; break;}
+	default: {
+		std::stringstream s;
+		s<<(ImprovementType)figureType;
+		s.flush();
+		std::string String = s.str();
+		std::transform(String.begin(), String.end(), String.begin(),[](unsigned char c){ return toupper(c); });
+		os<<String;
+	}
 	}
 	return os;
 }
@@ -570,12 +580,58 @@ std::vector<Coordinate> coordinatesAroundField(int visibilityRange){
 
 std::ostream& operator<<(std::ostream& os, ImprovementType imptype){
 	switch(imptype){
+	case IMPROVEMENT_ARTILLERY: os<<"Artillery"; break;
 	case IMPROVEMENT_SETTLERS: os<<"Settlers"; break;
 	case IMPROVEMENT_TRIREME: os<<"Trireme"; break;
+	case IMPROVEMENT_BOMBER: os<<"Bomber"; break;
+	case IMPROVEMENT_CAVALRY: os<<"Cavalry"; break;
+	case IMPROVEMENT_DIPLOMAT: os<<"Diplomat"; break;
+	case IMPROVEMENT_CARRIER: {os<<"Carrier"; break;}
+	case IMPROVEMENT_FIGHTER: {os<<"Fighter"; break;}
 	case PALACE: os<<"Palace"; break;
 	case TEMPLE: os<<"Temple"; break;
 	case GRANARY: os<<"Granary"; break;
 	case COURTHOUSE: os<<"Courthouse";break;
+	case AQUEDUCT: os<<"Aqueduct"; break;
+	case BANK: os<<"Bank"; break;
+	case LIBRARY: os<<"Library"; break;
+	case MFG_PLANT: os<<"Mfg Plant"; break;
+	case CATHEDRAL: os<<"Cathedral"; break;
+	case BARRACKS: os<<"Barracks"; break;
+	case NUCLEAR_PLANT: os<<"Nuclear Plant"; break;
+	case COLOSSEUM: os<<"Colosseum"; break;
+	case POWER_PLANT: os<<"Power Plant"; break;
+	case MARKETPLACE: os<<"Marketplace"; break;
+	case MASS_TRANSIT: os<<"Mass Transit"; break;
+	case RECYCLING_CENTER: os<<"Recycling Center"; break;
+	case SDI_DEFENSE: os<<"SDI Defense"; break;
+	case CITY_WALLS: os<<"City Walls"; break;
+	case UNIVERSITY: os<<"University"; break;
+	case HYDRO_PLANT: os<<"Hydro Plant"; break;
+	case APOLLO_PROGRAM: os<<"Apollo Program"; break;
+	case GREAT_WALL: os<<"Great Wall"; break;
+	case DARWINS_VOYAGE: os<<"Darwin's Voyage"; break;
+	case MAGELLANS_EXPEDITION: os<<"Magellan's Expedition"; break;
+	case WOMENS_SUFFRAGE: os<<"Women's Suffrage"; break;
+	case GREAT_LIBRARY: os<<"Great Library"; break;
+	case HOOVER_DAM: os<<"Hoover Dam"; break;
+	case HANGING_GARDENS: os<<"Hanging Gardens"; break;
+	case ISAAC_NEWTONS_COLLEGE: os<<"Isaac Newton's College"; break;
+	case BACH_CATHEDRAL: os<<"Bach's Cathedral"; break;
+	case MICHELANGELOS_CHAPEL: os<<"Michelangelo' Chapel"; break;
+	case COLOSSUS: os<<"Colossus"; break;
+	case COPERNICUS_OBSERVATORY: os<<"Copernicus' Observatory"; break;
+	case CURE_FOR_CANCER: os<<"Cure for Cancer"; break;
+	case LIGHTHOUSE: os<<"Lighthouse"; break;
+	case MANHATTAN_PROJECT: os<<"Manhattan Project"; break;
+	case ORACLE: os<<"Oracle"; break;
+	case PYRAMIDS: os<<"Pyramids"; break;
+	case SETI_PROGRAM: os<<"SETI Program"; break;
+	case SHAKESPEARES_THEATRE: os<<"Shakespeare's Theatre"; break;;
+	case UNITED_NATIONS: os<<"United Nations"; break;
+	case SS_STRUCTURAL: os<<"SS Structural"; break;
+	case SS_MODULE: os<<"SS Module"; break;
+	case SS_COMPONENT: os<<"SS Component"; break;
 	default: os<<(int)imptype; break;
 	}
 	return os;
@@ -624,6 +680,9 @@ SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y,
 			SDL_Surface* surface = TTF_RenderText_Blended(theFont, temporaryString.c_str(), color);
 			//	std::cout<<temporaryString<<std::endl;
 			temporaryString = "";
+			if(!surface){
+				continue;
+			}
 			maxWidth=std::max(maxWidth,surface->w);
 			height+=surface->h;
 			textures.push_back(surface);
@@ -635,7 +694,6 @@ SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y,
 		SDL_RenderFillRect(theRenderer, &rectToFill);
 	}
 	for(SDL_Surface* currentSurface: textures){
-		std::cout<<"lol"<<std::endl;
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, currentSurface);
 		SDL_Rect textRect{x, reachedHeight+y, currentSurface->w, currentSurface->h};
 		reachedHeight+=currentSurface->h;
@@ -643,6 +701,7 @@ SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y,
 		SDL_FreeSurface(currentSurface);
 		SDL_DestroyTexture(texture);
 	}
+			std::cout<<234456<<std::endl;
 	return rectToFill;
 }
 

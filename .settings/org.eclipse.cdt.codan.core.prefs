@@ -20,7 +20,7 @@ org.eclipse.cdt.codan.internal.checkers.AssignmentInConditionProblem.params={lau
 org.eclipse.cdt.codan.internal.checkers.AssignmentToItselfProblem=Error
 org.eclipse.cdt.codan.internal.checkers.AssignmentToItselfProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Assignment to itself\\")"}
 org.eclipse.cdt.codan.internal.checkers.BlacklistProblem=-Warning
-org.eclipse.cdt.codan.internal.checkers.BlacklistProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Function or method is blacklisted\\")",blacklist\=>()}
+org.eclipse.cdt.codan.internal.checkers.BlacklistProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"std::function or method is blacklisted\\")",blacklist\=>()}
 org.eclipse.cdt.codan.internal.checkers.CStyleCastProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.CStyleCastProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"C-Style cast instead of C++ cast\\")",checkMacro\=>true}
 org.eclipse.cdt.codan.internal.checkers.CaseBreakProblem=Warning
@@ -39,8 +39,8 @@ org.eclipse.cdt.codan.internal.checkers.FieldResolutionProblem=Error
 org.eclipse.cdt.codan.internal.checkers.FieldResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Field cannot be resolved\\")"}
 org.eclipse.cdt.codan.internal.checkers.FloatCompareProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.FloatCompareProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Direct float comparison\\")"}
-org.eclipse.cdt.codan.internal.checkers.FunctionResolutionProblem=Error
-org.eclipse.cdt.codan.internal.checkers.FunctionResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Function cannot be resolved\\")"}
+org.eclipse.cdt.codan.internal.checkers.std::functionResolutionProblem=Error
+org.eclipse.cdt.codan.internal.checkers.std::functionResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"std::function cannot be resolved\\")"}
 org.eclipse.cdt.codan.internal.checkers.GotoStatementProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.GotoStatementProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Goto statement used\\")"}
 org.eclipse.cdt.codan.internal.checkers.InvalidArguments=Error
@@ -65,8 +65,8 @@ org.eclipse.cdt.codan.internal.checkers.MissSelfCheckProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.MissSelfCheckProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Missing self check in assignment operator\\")"}
 org.eclipse.cdt.codan.internal.checkers.MultipleDeclarationsProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.MultipleDeclarationsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Multiple variable declaration\\")"}
-org.eclipse.cdt.codan.internal.checkers.NamingConventionFunctionChecker=-Info
-org.eclipse.cdt.codan.internal.checkers.NamingConventionFunctionChecker.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Name convention for function\\")",pattern\=>"^[a-z]",macro\=>true,exceptions\=>()}
+org.eclipse.cdt.codan.internal.checkers.NamingConventionstd::functionChecker=-Info
+org.eclipse.cdt.codan.internal.checkers.NamingConventionstd::functionChecker.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Name convention for std::function\\")",pattern\=>"^[a-z]",macro\=>true,exceptions\=>()}
 org.eclipse.cdt.codan.internal.checkers.NoDiscardProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.NoDiscardProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Return value not evaluated\\")",macro\=>true}
 org.eclipse.cdt.codan.internal.checkers.NonVirtualDestructorProblem=Warning
@@ -95,10 +95,10 @@ org.eclipse.cdt.codan.internal.checkers.SymbolShadowingProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.SymbolShadowingProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Symbol shadowing\\")",paramFuncParameters\=>true}
 org.eclipse.cdt.codan.internal.checkers.TypeResolutionProblem=Error
 org.eclipse.cdt.codan.internal.checkers.TypeResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Type cannot be resolved\\")"}
-org.eclipse.cdt.codan.internal.checkers.UnusedFunctionDeclarationProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.UnusedFunctionDeclarationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Unused function declaration\\")",macro\=>true}
-org.eclipse.cdt.codan.internal.checkers.UnusedStaticFunctionProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.UnusedStaticFunctionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Unused static function\\")",macro\=>true}
+org.eclipse.cdt.codan.internal.checkers.Unusedstd::functionDeclarationProblem=Warning
+org.eclipse.cdt.codan.internal.checkers.Unusedstd::functionDeclarationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Unused std::function declaration\\")",macro\=>true}
+org.eclipse.cdt.codan.internal.checkers.UnusedStaticstd::functionProblem=Warning
+org.eclipse.cdt.codan.internal.checkers.UnusedStaticstd::functionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Unused static std::function\\")",macro\=>true}
 org.eclipse.cdt.codan.internal.checkers.UnusedVariableDeclarationProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.UnusedVariableDeclarationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Unused variable declaration in file scope\\")",macro\=>true,exceptions\=>("@(\#)","$Id")}
 org.eclipse.cdt.codan.internal.checkers.UsingInHeaderProblem=-Warning

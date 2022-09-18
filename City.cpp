@@ -12,6 +12,7 @@
 #include "Game.hpp"
 #include <algorithm>
 #include "GameMain.hpp"
+#include "Artillery.hpp"
 
 City::~City() {
 	// TODO Auto-generated destructor stub
@@ -393,6 +394,7 @@ void City::m_sortFiguresByValue(){
 }
 
 void City::m_startNewTurn(){
+	m_buyInTurn = false;
 	//The case of food storage exhaustion is gonna be handled some days later
 	if(m_food == m_foodStorageSize()){
 		m_food = 0;
@@ -468,133 +470,8 @@ bool City::m_placeCitizen(std::shared_ptr<Field> fieldClickedOn){
 	return false;
 }
 
-int City::shieldsNeeded(ImprovementType imptype){
-	switch(imptype){
-	case IMPROVEMENT_SETTLERS: return 40;
-	case IMPROVEMENT_TRIREME: return 40;
-	case TEMPLE: return 40;
-	case COURTHOUSE: return 80;
-	case PALACE: return 200;
-	case GRANARY: return 60;
-	default:
-	{
-		std::stringstream s;
-		s<<imptype <<" does not have any shield cost data given!";s.flush();
-		throw NoGivenData(s.str());
-	}
-	}
-}
 
-int City::maintenanceNeeded(ImprovementType imptype){
-	if(!isBuildingType(imptype)){
-		throw imptype;
-	}
-	switch(imptype){
-	case TEMPLE: return 1;
-	case GRANARY: return 1;
-	case COURTHOUSE: return 2;
-	case PALACE: return 0; //forget Civilopedia!
-	default:
-	{
-		std::stringstream s;
-		s<<imptype <<" does not have any maintanance data given!";s.flush();
-		throw NoGivenData(s.str());
-	}
-	}
-}
 
-std::vector<ImprovementType> City::buildingTypes(){
-	return std::vector<ImprovementType>{PALACE, GRANARY, TEMPLE};
-}
-
-std::vector<ImprovementType> City::figureTypes(){
-	return std::vector<ImprovementType>{IMPROVEMENT_SETTLERS, IMPROVEMENT_TRIREME};
-}
-
-std::vector<ImprovementType> City::wonderTypes(){
-	return std::vector<ImprovementType>{};
-}
-
-bool City::isWonderType(ImprovementType imptype){
-	for(ImprovementType imptype2: wonderTypes()){
-		if(imptype2==imptype){
-			return true;
-		}
-	}
-	return false;
-}
-
-bool City::isBuildingType(ImprovementType imptype){
-	for(ImprovementType imptype2: buildingTypes()){
-		if(imptype2==imptype){
-			return true;
-		}
-	}
-	return false;
-}
-
-bool City::isFigureType(ImprovementType imptype){
-	for(ImprovementType imptype2: figureTypes()){
-		if(imptype2==imptype){
-			return true;
-		}
-	}
-	return false;
-}
-
-bool City::m_maybeFinishProduction(){
-	if((m_shields+=m_shieldProduction())<shieldsNeeded(m_whatIsBuilt)){
-		return false;
-	}
-	m_shields = 0;
-	std::shared_ptr<Figure> newFigure;
-	bool gonnaBeVeteran  = false;
-	std::shared_ptr<CityImprovement> newImprovement = m_maybeBuild(m_whatIsBuilt);
-	if(newImprovement != nullptr){
-		m_improvements.push_back(*newImprovement);
-	}
-	switch(m_whatIsBuilt){
-	case IMPROVEMENT_SETTLERS:
-	{
-		std::shared_ptr<Figure> newFigure = std::make_shared<Settlers>(m_whereItStands, m_owningNation, shared_from_this(), gonnaBeVeteran);
-		m_owningNation->m_addFigure(newFigure);
-		m_whereItStands->m_takeFigure(newFigure);
-		newFigure->m_integrateInto(*someDrawing);
-		return true;
-	}
-	default: return false;
-	}
-}
-#ifdef RETURN_FOR
-#undef RETURN_FOR
-#endif
-#define RETURN_FOR(A,B) case A: {return B;}
-std::string City::improvementString(ImprovementType imptype){
-	switch(imptype){
-	RETURN_FOR(IMPROVEMENT_SETTLERS, "Settlers")
-	RETURN_FOR(IMPROVEMENT_TRIREME, "Trireme")
-	RETURN_FOR(PALACE, "Palace")
-	RETURN_FOR(TEMPLE, "Temple")
-	RETURN_FOR(GRANARY, "Granary")
-	RETURN_FOR(COURTHOUSE, "Courthouse")
-	default: return "Hä?";
-	}
-	return "Hä????";
-}
-
-#define IF_UNBUILT(A,B) if(!m_contains(A)&&B)whatToReturn.push_back(A);
-std::vector<ImprovementType> City::m_whatCanBeBuilt(){
-	std::vector<ImprovementType> whatToReturn;
-	whatToReturn.push_back(IMPROVEMENT_SETTLERS);
-	if(m_whereItStands->m_closeToOcean()){
-		whatToReturn.push_back(IMPROVEMENT_TRIREME);
-	}
-	IF_UNBUILT(PALACE,true)
-	IF_UNBUILT(TEMPLE,true)
-	IF_UNBUILT(GRANARY,true)
-	IF_UNBUILT(COURTHOUSE,true)
-	return whatToReturn;
-}
 
 bool City::m_contains(ImprovementType imptype){
 	for(CityImprovement& currentImprovement: m_improvements){
@@ -615,17 +492,25 @@ std::shared_ptr<CityImprovement> City::m_maybeBuild(ImprovementType imptype){
 	if(m_contains(imptype)){
 		return nullptr;
 	}
+	if(!isWonderType(imptype)||isBuildingType(imptype)){
+		return nullptr;
+	}
+	if(City::isWonderType(imptype)){
+		WonderData& wd = theGame->m_HasWonderBeenBuilt()[imptype - WONDER_MIN];
+		if(!wd.who == NO_NATIONALITY){
+			return nullptr;
+		}
+		wd.who = m_owningNation->m_Nation();
+	}
 	switch(imptype){
 	case PALACE:
 	{
 		m_owningNation->m_setCapitalCity(shared_from_this());
 		return std::make_shared<CityImprovement>(PALACE, this);
 	}
-	case GRANARY: {
-		return std::make_shared<CityImprovement>(GRANARY, this);
-	}
-	case TEMPLE: {
-		return std::make_shared<CityImprovement>(TEMPLE, this);
+	default:
+	{
+		return std::make_shared<CityImprovement>(imptype, this);
 	}
 	}return nullptr;
 }
@@ -760,22 +645,8 @@ bool City::m_sell(int index){
 	return true;
 }
 
-int City::m_buyingPrice(ImprovementType imptype){
-	if(m_shields!=0){
-		return (shieldsNeeded(imptype)-m_shields)/2;
-	}
-	if(!City::isFigureType(imptype)){
-		return 4*shieldsNeeded(imptype);
-	}
-	if(shieldsNeeded(imptype)==40){
-		return 320;
-	}
-	switch(imptype){
-	}
-	throw imptype;
-}
-
 void City::m_buy(int price){
+	m_buyInTurn = true;
 	m_shields = shieldsNeeded(m_whatIsBuilt);
 	m_owningNation->m_receiveMoney(-price);
 }
@@ -831,4 +702,8 @@ void City::m_cityEconomy(){
 			}
 		}
 	}
+}
+
+void City::m_shrink(){
+	m_citizens.back().m_whereItWorks->m_setCitizenWorking(nullptr);
 }

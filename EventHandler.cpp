@@ -27,6 +27,7 @@ EventHandler::EventHandler()
 {}
 
 void GameMain::m_showNationInfo(){
+	std::cout<<44444<<std::endl;
 	SDL_Color backgroundColor = infoTextBackgroundColor;
 	SDL_Rect rectToFill{0,NATION_INFO_Y, FIGURE_INFO_WIDTH, NATION_INFO_HEIGHT};
 	SDL_SetRenderDrawColor(theRenderer,backgroundColor);
@@ -35,6 +36,7 @@ void GameMain::m_showNationInfo(){
 	Nation& nation = *theGame->m_NationAtCurrentTurn();
 	theStringstream<<theGame->m_CurrentYear().m_yearString()<<std::endl;
 	theStringstream<<std::setw(5)<<nation.m_Treasury()<<"$"<<"; "<<nation.m_TaxRate()<<"."<<nation.m_LuxuriesRate()<<"."<<nation.m_ScienceRate()<<std::endl;
+	std::cout<<theStringstream.str()<<std::endl;
 	Miscellaneous::printMultipleLines(theStringstream, 0, NATION_INFO_Y, whiteColor);
 }
 
@@ -55,7 +57,9 @@ void GameMain::m_showFigureInfo(){
 		theStringstream<<m_whatToMove->m_figureOverview()<<std::endl;
 		theStringstream<<"Moves: "<<m_whatToMove->m_MovementPoints()<<std::endl;
 	}
+	std::cout<<300000<<std::endl;
 	Miscellaneous::printMultipleLines(theStringstream, 0, FIGURE_INFO_Y, whiteColor);
+	std::cout<<234<<std::endl;
 	//std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
 
 }

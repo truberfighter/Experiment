@@ -48,8 +48,8 @@ MovableThing::MovableThing(SDL_Renderer* renderer, int width, int height, const 
 	m_texture = s;
 	if(!m_texture)
 		cout<<"Fehler für "<<filename<<endl;
-	m_standardXVelocity = m_texture->m_Width();
-	m_standardYVelocity = m_texture->m_Height();
+	m_standardXVelocity = STANDARD_FIELD_SIZE;
+	m_standardYVelocity = STANDARD_FIELD_SIZE;
 }
 
 

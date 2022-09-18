@@ -8,7 +8,7 @@ class Nation;
 class City;
 
 class Ship: public Figure{
-private:
+protected:
 	bool m_isCarrier = false;
 public:
 	virtual FigureType m_FigureType() override = 0;

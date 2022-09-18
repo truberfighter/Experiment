@@ -9,7 +9,7 @@ FigureCategory Ship::m_FigureCategory(){
 	return SEA;
 }
 
-std::string Ship::m_orderOverview(){return "H: HomeCity, I: Irrigate, S: Sentry, F: Fortify (possibly)";}
+std::string Ship::m_orderOverview(){return "H: HomeCity,  S: Sentry, F: Fortify (possibly)";}
 
 Ship::Ship(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)
 : Figure(whereToStart, nationality, home, isVeteran)

@@ -386,7 +386,10 @@ void CitySurface::m_drawShields(){
 	for(int shieldIndex(0); shieldIndex<shieldCount; shieldIndex++){
 		Graphics::Civ::drawShield(theRenderer, storageRect.x + distance*(shieldIndex%shieldsPerRow), storageRect.y + 8*RESOURCES_SCALEFACTOR*(shieldIndex/shieldsPerRow), RESOURCES_SCALEFACTOR);
 	}
-	SDL_Surface* infoSurface = TTF_RenderText_Solid(theFont, City::improvementString(m_associatedCity->m_WhatIsBuilt()).c_str(), whiteColor);
+	std::stringstream s;
+	s<<m_associatedCity->m_WhatIsBuilt();
+	s.flush();
+	SDL_Surface* infoSurface = TTF_RenderText_Solid(theFont, s.str().c_str(), whiteColor);
 	SDL_Texture* infoTexture = SDL_CreateTextureFromSurface(theRenderer, infoSurface);
 	int xToStart = SCREEN_WIDTH - SHIELD_OVERVIEW_WIDTH;
 	int yToStart = SCREEN_HEIGHT - SHIELD_OVERVIEW_HEIGHT;
@@ -400,6 +403,9 @@ void CitySurface::m_drawShields(){
 }
 
 bool CitySurface::m_changeWhatIsBuilt(){
+	if(m_associatedCity->m_buyInTurn == true){
+		return false;
+	}
 	std::vector<std::shared_ptr<SelectionElement>> whatToSelectFrom;
 	std::vector<ImprovementType> whatIsPossible = m_associatedCity->m_whatCanBeBuilt();
 	for(ImprovementType imptype: whatIsPossible){
@@ -483,9 +489,12 @@ void CitySurface::m_drawRevenueProduction(){
 void CitySurface::m_createSellingButtonElements(){
 	m_sellingElements.clear();
 	for(int i(0);i+m_indexForImprovementOverview<std::min((int)m_associatedCity->m_improvements.size(),IMPROVEMENT_OVERVIEW_HEIGHT_NORMED - 1);i++){
+		std::stringstream s;
+		s<<m_associatedCity->m_improvements[i+m_indexForImprovementOverview].m_what;
+		s.flush();
 		std::shared_ptr<ButtonElement> whatToAdd = std::make_shared<ButtonElement>(SCREEN_WIDTH-IMPROVEMENT_OVERVIEW_WIDTH, i*STANDARD_TEXT_HEIGHT, IMPROVEMENT_OVERVIEW_WIDTH,
 STANDARD_TEXT_HEIGHT, Graphics::Civ::brightCityBackgroundColor(),Graphics::Civ::resourcesWhiteColor(),
-City::improvementString((m_associatedCity->m_improvements)[i+m_indexForImprovementOverview].m_what));
+s.str());
 		m_sellingElements.push_back(whatToAdd);
 	}
 	if(m_associatedCity->m_improvements.size()>=IMPROVEMENT_OVERVIEW_HEIGHT_NORMED){

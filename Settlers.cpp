@@ -19,7 +19,7 @@ Settlers::Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation>
 {
 	m_resetMovementPoints();
 if(!m_initImage()) cout<<"Fatal error: MovableThing for Settlers not created"<<endl;
-cout<<"Settlerskonstruktor"<<theRenderer<<endl;
+cout<<"Settlerskonstruktor"<<this<<endl;
 }
 
 
@@ -181,7 +181,7 @@ bool Settlers::m_startFoundingNewCity(){
 				}
 				else if(currentEvent.type == SDL_TEXTINPUT && cityNameSuggestion.length()<MAX_CITY_NAME_LENGTH){
 					//Not copy or pasting, taken from lazyfoo
-					if( !(( SDL_GetModState() & KMOD_CTRL) && ( currentEvent.text.text[ 0 ] == 'c' || currentEvent.text.text[ 0 ] == 'C' || currentEvent.text.text[ 0 ] == 'v' || currentEvent.text.text[ 0 ] == 'V' ) ) ){
+					if(!(( SDL_GetModState() & KMOD_CTRL) && ( currentEvent.text.text[ 0 ] == 'c' || currentEvent.text.text[ 0 ] == 'C' || currentEvent.text.text[ 0 ] == 'v' || currentEvent.text.text[ 0 ] == 'V' ) ) ){
 						cityNameSuggestion += currentEvent.text.text;
 						renderText = true;
 					}

@@ -31,7 +31,7 @@ private:
 	bool m_directlyMakingFiguresActive = false;
 	short unsigned int m_taxRate = 5;
 	short unsigned int m_luxuriesRate = 0;
-	int m_treasury = 500;
+	int m_treasury = 5000;
 	std::vector<Technology> m_exploredTechnologies;
 	Technology m_whatToExplore = NO_TECHNOLOGY;
 	int m_explorationProgress = 0;
@@ -55,7 +55,7 @@ public:
 	void m_setLuxuriesRate(short unsigned int luxuries);
 	void m_setMakingActive(bool setting){m_directlyMakingFiguresActive = setting;}
 	std::shared_ptr<City> m_CapitalCity(){return m_capitalCity;}
-	void m_setCapitalCity(std::shared_ptr<City> city){m_capitalCity = city;}
+	void m_setCapitalCity(std::shared_ptr<City> city);
 	std::vector<std::shared_ptr<City>>& m_Cities(){return m_cities;}
 	~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 	static Coordinate getStandardCoordinateForNation(Nationality n);

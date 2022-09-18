@@ -317,7 +317,7 @@ bool Field::m_militaryProblem(std::shared_ptr<Figure> movingFigure){
 	return false;
 }
 
-short unsigned int Field::m_getCargoCapability(Figure& figureToEnter){
+short int Field::m_getCargoCapability(Figure& figureToEnter){
 	if(figureToEnter.m_FigureCategory()==SEA)
 		return 0;
 	if(m_figuresOnField.empty() || m_figuresOnField.front()->m_Nationality()!=figureToEnter.m_Nationality())
@@ -325,6 +325,7 @@ short unsigned int Field::m_getCargoCapability(Figure& figureToEnter){
 	short unsigned int cargoCount = 0;
 	for(std::shared_ptr<Figure> currentFigure: m_figuresOnField){
 		if((currentFigure->m_FigureCategory() == SEA) && figureToEnter.m_FigureCategory() == (currentFigure->m_FigureType() == CARRIER) ? FLIGHT : GROUND){
+			std::cout<<"increasing capability via"<<currentFigure->m_FigureType()<<std::endl;
 			cargoCount += reinterpret_cast<Ship*>(currentFigure.get())->m_cargoCountMax();
 			continue;
 		}
@@ -447,11 +448,11 @@ bool Field::m_isVisible(Nationality nationality){
 	return false;
 }
 
-bool Field::m_closeToOcean(){
+bool Field::m_closeToLandscape(Landscape ls){
 std::vector<Coordinate> coordinates = coordinatesAroundField();
 for(Coordinate& currentCoordinate: coordinates){
 	try{
-	if(m_getNeighbouringField(currentCoordinate)->m_Landscape()==OCEAN){
+	if(m_getNeighbouringField(currentCoordinate)->m_Landscape()==ls){
 		return true;
 	}
 	}

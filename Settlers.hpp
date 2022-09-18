@@ -20,17 +20,17 @@ private:
 	SettlersWork m_currentWork = NONE;
 public:
 	bool m_startFoundingNewCity();
-	FigureType m_FigureType() override;
-	void m_loseOneWorkPoint();
-	Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
-	~Settlers();
-	bool m_takeOrder(char order) ;
 	short int m_WorkStepsCount();
-	int m_drawSettlersWork(SDL_Rect& rectToDraw);
 	void m_work();
 	void m_work(SettlersWork work);
 	void m_finishWork(); //set m_workStepsCount to 0
 	SettlersWork m_CurrentWork();
+	int m_drawSettlersWork(SDL_Rect& rectToDraw);
+	void m_loseOneWorkPoint();
+	FigureType m_FigureType() override;
+	Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	~Settlers();
+	bool m_takeOrder(char order) ;
 	virtual std::string m_orderOverview();
 	virtual float m_attackingStrength();
 	float m_defensiveStrength();
@@ -39,9 +39,9 @@ public:
 	short unsigned int m_defaultMovementPoints();
 	FigureCategory m_FigureCategory()override;
 	std::shared_ptr<City> m_foundNewCity(std::string name);
-	bool m_addToCity();
-	std::shared_ptr<MovableThing> m_createImage() override;
 	int m_shieldCost();
+	std::shared_ptr<MovableThing> m_createImage() override;
+	bool m_addToCity();
 	bool m_canBuildRailroad();
 	bool m_canBuildBridges();
 	friend class Figurebutton;

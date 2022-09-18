@@ -64,7 +64,7 @@ public:
 	static std::vector<Coordinate> coordinatesAroundCity();
 	Citizen* m_CitizenWorking(){return m_citizenWorking;}
 	bool m_setCitizenWorking(Citizen* citizen){if(m_cityContained!=nullptr) return false; m_citizenWorking = citizen; return true;}
-	short unsigned int m_getCargoCapability(Figure& figureToEnter);
+	short int m_getCargoCapability(Figure& figureToEnter);
 	bool m_HasFortress(){return m_hasFortress;}
 	const std::list<std::shared_ptr<Figure>>& m_FiguresOnField(){return m_figuresOnField;}
 	virtual ~Field();
@@ -97,7 +97,7 @@ public:
 	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
 	std::shared_ptr<Field> m_getNeighbouringField(Coordinate differenceCoordinate);
 	void m_drawField();
-	bool m_closeToOcean();
+	bool m_closeToLandscape(Landscape ls);
 	std::vector<std::shared_ptr<Field>> m_cityFieldsAround();
 	friend std::ostream& operator<<(std::ostream&, Field&);
 	friend class FieldContainer;

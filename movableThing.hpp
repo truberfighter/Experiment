@@ -15,7 +15,7 @@ struct Velocity{
 class MovableDrawingElement;
 
 enum ATOMIC_VELOCITY{STANDARD_x_VELOCITY = 100, STANDARD_y_VELOCITY = STANDARD_x_VELOCITY, NOT_MOVING = 0};
-class MovableThing{//Redactoring coming: Rect-Farb-Version muss kommen
+class MovableThing{
 protected:
 	std::list<MovableDrawingElement*> m_howDrawn;
 	unsigned int m_whenMoved = 0;

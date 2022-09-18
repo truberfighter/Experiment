@@ -17,6 +17,12 @@
 class City;
 class NationTurn;
 
+struct WonderData{
+	ImprovementType what;
+	Nationality who;
+	bool isDestroyed;
+};
+
 class Game{
 public: class Year{
 public:
@@ -26,6 +32,7 @@ public:
 	std::vector<std::shared_ptr<NationTurn>> m_turns;
 };
 private:
+	std::vector<WonderData> m_hasWonderBeenBuilt;
 	std::vector<std::shared_ptr<City>> m_allCities;
 	std::random_device m_theRandomDevice;
 	std::vector<std::shared_ptr<City>> m_cities;
@@ -35,6 +42,7 @@ private:
 	std::vector<std::shared_ptr<Nation>> m_nationsPlaying;
 	void m_startNewTurn();
 public:
+	std::vector<WonderData>& m_HasWonderBeenBuilt(){return m_hasWonderBeenBuilt;}
 	Year& m_CurrentYear(){return m_currentYear;}
 	std::vector<std::shared_ptr<City>>& m_AllCities(){return m_allCities;}
 	std::vector<std::shared_ptr<Nation>>& m_NationsPlaying(){return m_nationsPlaying;}

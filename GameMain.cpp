@@ -151,6 +151,7 @@ void GameMain::doSomething(){
 		someDrawing->m_draw();
 
 		m_showFigureInfo();
+		m_showNationInfo();
 		SDL_RenderPresent(m_currentRenderer);
 
 

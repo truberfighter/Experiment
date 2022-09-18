@@ -26,11 +26,11 @@ Nation::Nation(Nationality nationality, std::string leaderName, Difficulty diffi
 }
 
 bool Nation::m_canBuildRailroad(){
-	return true;
+	return m_hasExplored(TECHNOLOGY_RAILROAD);
 }
 
 bool Nation::m_canBuildBridges(){
-	return true;
+	return m_hasExplored(TECHNOLOGY_BRIDGE_BUILDING);
 }
 
 const std::string& Nation::m_LeaderName(){
@@ -452,3 +452,16 @@ void Nation::m_addProgress(int progress){
 		}
 	}
 }
+
+void Nation::m_setCapitalCity(std::shared_ptr<City> city){
+	if(m_capitalCity){
+		for(int improvementIndex(0); improvementIndex<m_capitalCity->m_Improvements().size(); improvementIndex++){
+			if(m_capitalCity->m_Improvements()[improvementIndex].m_what==PALACE){
+				m_capitalCity->m_sell(improvementIndex);
+				break;
+			}
+		}
+	}
+	m_capitalCity = city;
+}
+

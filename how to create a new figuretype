@@ -1,0 +1,7 @@
+How to create a new figuretype:
+1) shieldsNeeded
+2) buyingPrice
+3) operator<<(imptype)
+4) class 
+5) maybeFinishProduction
+6) height, width

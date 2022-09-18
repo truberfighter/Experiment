@@ -15,19 +15,19 @@
 class Nation;
 class City;
 
-class Trireme: public Ship{
-private:
-public:
-	FigureType m_FigureType() override;
-	Trireme(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
-	~Trireme();
-	float m_attackingStrength();
-	float m_defensiveStrength();
-	int m_shieldCost();
-	short unsigned int m_visibilityRange();
-	short unsigned int m_defaultMovementPoints();
-	std::shared_ptr<MovableThing> m_createImage() override;
-	short unsigned int m_cargoCountMax();
+#define SHIP_CLASS(CLASS) class CLASS: public Ship{\
+private:\
+public:\
+	FigureType m_FigureType() override;\
+	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
+	~CLASS();\
+	float m_attackingStrength();\
+	float m_defensiveStrength();\
+	int m_shieldCost();\
+	short unsigned int m_visibilityRange();\
+	short unsigned int m_defaultMovementPoints();\
+	std::shared_ptr<MovableThing> m_createImage() override;\
+	short unsigned int m_cargoCountMax();\
 };
 
 
