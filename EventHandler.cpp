@@ -141,6 +141,9 @@ bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){
 		if(keyCode == keyCharPossibilities[i]){
 			try{
 			if(m_whatToMove->m_takeOrder(orders[i])){
+				if(keyCode == SDLK_b){
+					m_whatToMove->m_WhereItStands().m_CityContained()->m_createCitySurface().m_displaySurface(m_currentRenderer);
+				}
 				m_whatToMove->m_setInstructionsForDrawingElement();
 				m_currentDrawing->m_draw();
 			}

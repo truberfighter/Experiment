@@ -3,5 +3,5 @@ How to create a new figuretype:
 2) buyingPrice
 3) operator<<(imptype)
 4) class 
-5) maybeFinishProduction
-6) height, width
+5) height, width
+6) (maybeFinishProduction)

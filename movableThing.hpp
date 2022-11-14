@@ -53,6 +53,7 @@ public:
 	Velocity m_getStandardVelocity(Direction d = DOWN_RIGHT);
 	Coordinate getPosition();
 	unsigned int WhenMoved();
+	void m_setTexture(std::shared_ptr<Texture>);
 	void m_setDrawingInstructions(int (*foo) (int, int, SDL_Renderer*));
 	//void setWhenMoved(unsigned int whenMoved);
 };

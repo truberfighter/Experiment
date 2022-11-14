@@ -12,7 +12,6 @@
 #include "Nation.hpp"
 #include "LetterTextureContainer.hpp"
 #include "Drawing.hpp"
-//#include "Drawing.cpp"
 #include <String>
 
 struct NationKnows{
@@ -57,6 +56,7 @@ protected:
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
+	int m_distanceTo(std::shared_ptr<City>);
 	bool m_isVisible(Nationality nationality);
 	void m_makeVisible(Nationality nationality);
 	void m_initNationFogInfo(std::vector<Nationality>& nationalities);

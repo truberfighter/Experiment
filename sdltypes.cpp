@@ -22,9 +22,9 @@ TTF_Font* theFont = nullptr; TTF_Font* citySizeFont = nullptr;
 Figure* figureToDraw = nullptr;
 Field* fieldToDraw = nullptr;
 SDL_Color whiteColor{250, 250, 250};
-SDL_Color blackColor{0,0,0};
+SDL_Color blackColor{1,1,1};
 SDL_Color brownColor{130,80,0};
-SDL_Color infoTextColor{0,0,0};
+SDL_Color infoTextColor = blackColor;
 SDL_Color infoTextBackgroundColor{125,125,140};
 SDL_Color Graphics::Civ::cityNameColor(){return SDL_Color{30,200,200};}
 SDL_Color Graphics::Civ::cityOccupiedColor(){return blackColor;}
@@ -577,9 +577,29 @@ std::vector<Coordinate> coordinatesAroundField(int visibilityRange){
 	}
 	return whatToReturn;
 }
-
+#define STREAM(INPUT,OUTPUT) case (ImprovementType) INPUT: {os<<OUTPUT;break;}
 std::ostream& operator<<(std::ostream& os, ImprovementType imptype){
 	switch(imptype){
+	STREAM(LEGION,"Legion")
+	STREAM(CHARIOT,"Chariot")
+	STREAM(IRONCLAD,"Ironclad")
+	STREAM(CRUISER,"Cruiser")
+	STREAM(SUBMARINE,"Submarine")
+	STREAM(MECH_INF,"Mech Inf")
+	STREAM(ARMOR,"Armor")
+	STREAM(KNIGHTS,"Knights")
+	STREAM(MUSKETEERS,"Musketeers")
+	STREAM(RIFLEMEN,"Riflemen")
+	STREAM(BATTLESHIP,"Battleship")
+	STREAM(NUCLEAR,"Nuclear")
+	STREAM(SAIL,"Sail")
+	STREAM(CARAVAN,"Caravan")
+	STREAM(CANNON,"Cannon")
+	STREAM(CATAPULT,"Catapult")
+	STREAM(TRANSPORT,"Transport")
+	STREAM(FRIGATE,"Frigate")
+	STREAM(MILITIA,"Militia")
+	STREAM(PHALANX,"Phalanx")
 	case IMPROVEMENT_ARTILLERY: os<<"Artillery"; break;
 	case IMPROVEMENT_SETTLERS: os<<"Settlers"; break;
 	case IMPROVEMENT_TRIREME: os<<"Trireme"; break;
@@ -701,8 +721,32 @@ SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y,
 		SDL_FreeSurface(currentSurface);
 		SDL_DestroyTexture(texture);
 	}
-			std::cout<<234456<<std::endl;
 	return rectToFill;
 }
 
 SDL_Color Graphics::redColor(){return SDL_Color{255,0,0};}
+
+void Miscellaneous::displayText(std::stringstream& str, int x, int y, SDL_Color color, bool shaded, SDL_Color backgroundColor){
+	printMultipleLines(str,x,y,color,shaded,backgroundColor);
+	SDL_RenderPresent(theRenderer);
+	SDL_Event e;
+	bool quitSurface = false;
+	while(!quitSurface){
+		try{
+		while(SDL_PollEvent(&e)){
+			if(e.type == SDL_QUIT){
+				throw SDLQuitException();
+			}
+			if(e.type==SDL_KEYDOWN){
+				quitSurface = true;
+			}
+		}
+		}
+		catch(QuitSurface &qs){
+			quitSurface = true;
+		}
+		catch(SDLQuitException& sdlqe){
+			throw sdlqe;
+		}
+	}
+}

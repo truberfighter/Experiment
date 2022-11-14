@@ -5,6 +5,7 @@
  *      Author: uwe-w
  */
 
+#include <algorithm>
 #include "Figure.hpp"
 #include <memory>
 #include "FieldContainer.hpp"
@@ -15,6 +16,7 @@
 #include "Nation.hpp"
 #include "Ship.hpp"
 #include "City.hpp"
+#include "Diplomat.hpp"
 
 using namespace std;
 
@@ -118,6 +120,11 @@ bool Figure::m_initImage(){
 
 MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 	std::shared_ptr<Field> aim =  m_whereItStands->m_getNeighbouringField(whereToGo);
+	if(aim->m_CityContained()&&aim->m_FiguresOnField().empty()&&m_FigureCategory()!=GROUND){
+		if(aim->m_CityContained()->m_OwningNation()->m_Nation()!=m_nationality->m_Nation()){
+			return MOVE_PROHIBITED;
+		}
+	}
 	switch(m_FigureCategory()){
 	case SEA:
 		if(aim->m_Landscape()==OCEAN){
@@ -126,7 +133,7 @@ MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 		}
 		if(!aim->m_FiguresOnField().empty()){
 			std::cout<<"field aimed at is not empty"<<std::endl;
-			return (aim->m_FiguresOnField().front()->m_Nationality()==m_Nationality()) ? MOVE_PROHIBITED : ONE_MOVEMENT_POINT;
+			return (aim->m_FiguresOnField().front()->m_Nationality()==m_Nationality()) ? (aim->m_CityContained() ? m_movementPoints : MOVE_PROHIBITED) : ONE_MOVEMENT_POINT;
 		}
 		if(aim->m_CityContained()!=nullptr){
 			return MovementPoints(m_movementPoints);
@@ -137,6 +144,9 @@ MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 				==OCEAN ?
 						ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 	case FLIGHT:
+		if(aim->m_CityContained()!=nullptr){
+			return MovementPoints(m_movementPoints);
+		}
 		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()!=OCEAN){
 			return ONE_MOVEMENT_POINT;
 		}
@@ -168,9 +178,14 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	Direction directions[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT,RIGHT, UP_LEFT, UP, UP_RIGHT};
 	std::shared_ptr<Figure> thisFigure = shared_from_this();
 	Field& fieldWhereToGo = *(m_whereItStands->m_getNeighbouringField(whereToGo));
+	if(m_FigureType()==DIPLOMAT){
+		if(!reinterpret_cast<Diplomat*>(this)->m_doDiplomatThings(fieldWhereToGo)){
+			return false;
+		}
+	}
 	if(m_FigureType()!=FIGHTER){
 	for(const std::shared_ptr<Figure>& currentFigure: fieldWhereToGo.m_FiguresOnField()){
-		if(currentFigure->m_FigureCategory()==FLIGHT && currentFigure->m_Nationality()!=m_Nationality()){
+		if(currentFigure->m_FigureCategory()==FLIGHT && currentFigure->m_Nationality()!=m_Nationality()&&fieldWhereToGo.m_CityContained()!=nullptr){
 			return false;
 		}
 	}
@@ -229,6 +244,9 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 			throw(fight);
 		}
 		m_movementPoints.m_movementPoints = max(m_movementPoints.m_movementPoints - ONE_MOVEMENT_POINT, 0);
+		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_CityContained()){
+			m_whereItStands->m_getNeighbouringField(whereToGo)->m_CityContained()->m_shrink();
+		}
 		if(m_movementPoints == 0){
 			m_finishMove();
 			if(!m_nationality->m_removeFromQueue(shared_from_this())){
@@ -275,6 +293,10 @@ void Figure::m_move(Direction whereToGo){
 		break;
 	}
 	}
+}
+
+int Figure::m_desertationCost(){
+	return City::shieldsNeeded((ImprovementType)m_FigureType())*(int)(m_nationality->m_Treasury()+750)/(int)(m_whereItStands->m_distanceTo(m_nationality->m_CapitalCity()))/10/(m_FigureType()==SETTLERS ? 1 : 2);
 }
 
 MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
@@ -493,7 +515,7 @@ bool Figure::m_isVisible(Nationality nationality){
 	return isInVector<Nationality>(m_visibilityInfo, nationality, [](Nationality& n1, Nationality& n2){return n1==n2;});
 }
 
-void Figure::m_makeVisibleAround(std::shared_ptr<Field> fieldBase){
+void Figure::m_makeFiguresVisibleAround(std::shared_ptr<Field> fieldBase){
 	if(fieldBase == nullptr){
 		fieldBase = m_whereItStands;
 	}
@@ -501,7 +523,6 @@ void Figure::m_makeVisibleAround(std::shared_ptr<Field> fieldBase){
 	for(Coordinate& currentCoordinate: coordinates){
 		std::cout<<*fieldBase->m_getNeighbouringField(currentCoordinate)<<std::endl;
 		for(const std::shared_ptr<Figure>& currentFigure: fieldBase->m_getNeighbouringField(currentCoordinate)->m_FiguresOnField()){
-			std::cout<<"aaaaa"<<currentFigure->m_Nationality()<<currentFigure->m_FigureType()<<std::endl;
 			if(currentFigure->m_Nationality()!=m_Nationality()){
 				currentFigure->m_makeVisible(m_Nationality());
 				m_makeVisible(currentFigure->m_Nationality());
@@ -526,4 +547,41 @@ int FigureElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer)
 	else{
 		return 0;
 	}
+}
+
+void Figure::m_hideFrom(Nationality nationality){
+	std::cout<<"hide from "<<nationality<<", size: "<<m_visibilityInfo.size();
+	for(Nationality& n: m_visibilityInfo){
+		if(n==nationality){
+			n = m_visibilityInfo.back();
+			m_visibilityInfo.pop_back();
+			break;
+		}
+	}
+	std::cout<<", later: "<<m_visibilityInfo.size()<<std::endl;
+}
+
+void Figure::m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr<City> newCity){
+	m_nationality->m_removeFigure(shared_from_this());
+	newNation->m_addFigure(shared_from_this());
+	if(m_home){
+	m_home->m_releaseFigure(shared_from_this());
+	}
+	std::cout<<3445454<<std::endl;
+	newCity->m_takeFigure(shared_from_this());
+	std::cout<<1<<std::endl;
+	m_home = newCity;
+	m_nationality = newNation;
+	if(m_FigureType()==SETTLERS){
+		reinterpret_cast<Settlers*>(this)->m_currentWork = NONE;
+	}
+	std::stringstream s;
+	s<<"bilder/Figures/"<<m_FigureType()<<"/"<<m_FigureType()<<m_nationality->m_colorString();
+	s.flush();
+	std::string imageString = s.str();
+	SDL_Texture* newTexture = IMG_LoadTexture(theRenderer,imageString.c_str());
+	m_image->m_setTexture(
+			std::make_shared<Texture>(newTexture,
+City::figureWidth(m_FigureType()), City::figureHeight(m_FigureType())));
+
 }

@@ -15,9 +15,12 @@
 #include <functional>
 #include <iomanip>
 #include "GameMain.hpp"
+#include <algorithm>
+#include "Embassy.hpp"
 
 using namespace std;
 
+Nation::~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 
 
 Nation::Nation(Nationality nationality, std::string leaderName, Difficulty difficulty, bool directlyMakingFiguresActive): m_nation(nationality), m_directlyMakingFiguresActive(directlyMakingFiguresActive), m_leaderName(leaderName), m_difficulty(difficulty),enable_shared_from_this()
@@ -247,18 +250,7 @@ bool Nation::m_destroyFigure(std::shared_ptr<Figure> figureToRemove){
 		if(!figureToRemove->m_Home()->m_releaseFigure(figureToRemove))
 			throw 1111;
 	}
-	int previousListSize = m_figures.size();
-	m_activeFigures.remove(figureToRemove);
-	for(int i(0); i<previousListSize; i++){
-		if(m_figures[i].get()==figureToRemove.get()){
-			for(int j=i; j<previousListSize - 1; j++){
-				m_figures[j] = m_figures[j+1];
-			}
-			break;
-		}
-	}
-	m_figures.pop_back();
-	std::cout<<"previousListSize (destroyFigure): "<<previousListSize<<", listSize: "<<m_figures.size()<<std::endl;
+	m_removeFigure(figureToRemove);
 	return true;
 }
 
@@ -299,7 +291,7 @@ std::string Nation::m_colorString(){
 SDL_Color Nation::standardNationColor(Nationality nationalityToDraw){
 	switch(nationalityToDraw){
 	case ROMAN:
-		return SDL_Color{170,170,170};
+		return SDL_Color{220,220,220};
 	case RUSSIAN:
 		return SDL_Color{220,220,220};
 	case BABYLONIAN:
@@ -465,3 +457,114 @@ void Nation::m_setCapitalCity(std::shared_ptr<City> city){
 	m_capitalCity = city;
 }
 
+void Nation::m_destroyCity(std::shared_ptr<City> cityToDestroy){
+	for(std::vector<std::shared_ptr<City>>::iterator it = theGame->m_CitiesAlive().begin();it!=theGame->m_CitiesAlive().end();it++){
+		if(cityToDestroy.get()==it->get()){
+			theGame->m_CitiesAlive().erase(it);
+			break;
+		}
+	}
+	//clear the contents of the city
+
+	while(!cityToDestroy->m_tradeRoutes.empty()){
+		cityToDestroy->m_tradeRoutes.front()->m_destroyItself();
+	}
+	while(!cityToDestroy->m_figuresOwned.empty()){
+		cityToDestroy->m_figuresOwned.front()->m_WhereItStands().m_releaseFigure(cityToDestroy->m_figuresOwned.front());
+		m_destroyFigure(cityToDestroy->m_figuresOwned.front());
+	}
+	cityToDestroy->m_WhereItStands()->m_CityContained()=nullptr;
+	cityToDestroy->m_WhereItStands()->m_DrawingElement()->m_setAdditionalInstructions([](int x,int y,SDL_Renderer* renderer)->int{return 0;});
+}
+
+void TradeRoute::m_destroyItself(){
+	std::vector<std::shared_ptr<TradeRoute>>& theVector = m_city1->m_tradeRoutes;
+	for(auto it = theVector.begin(); it!= theVector.end(); it++){
+		if(this==it->get()){
+			theVector.erase(it);
+			break;
+		}
+	}
+	theVector = m_city2->m_tradeRoutes;
+	for(auto it = theVector.begin(); it!= theVector.end(); it++){
+		if(this==it->get()){
+			theVector.erase(it);
+			break;
+		}
+	}
+}
+
+void Nation::m_captureCity(std::shared_ptr<City> cityToCapture){
+	int loot = cityToCapture->m_capturingValue();
+	std::stringstream captureStream;
+	captureStream<<cityToCapture->m_Name()<<" captured by "<<m_nation<<"!\n "<<loot<<" gold pieces plundered!"<<std::endl;
+	Miscellaneous::displayText(captureStream, 200, 200, standardNationColor(m_nation), true, m_nation == ROMAN || m_nation == RUSSIAN ? blackColor : Graphics::Civ::resourcesWhiteColor());
+	//now remove some buildings
+	for(std::vector<std::shared_ptr<City>>::iterator it = cityToCapture->m_OwningNation()->m_cities.begin(); it!= cityToCapture->m_OwningNation()->m_cities.end();it++){
+		if(it->get() == cityToCapture.get()){
+			cityToCapture->m_OwningNation()->m_cities.erase(it);
+			break;
+		}
+	}
+	cityToCapture->m_shrink();
+	std::cout<<"shrinked!"<<std::endl;
+	bool destroy = false;
+	std::vector<ImprovementType> eraseData;
+	for(int index(0); index<cityToCapture->m_improvements.size();index++){
+		if(cityToCapture->m_Improvements()[index].m_what==PALACE){
+			destroy = false;
+			eraseData.push_back(PALACE);
+			cityToCapture->m_OwningNation()->m_capitalCity = nullptr;
+		}
+		if(destroy){
+			eraseData.push_back(cityToCapture->m_improvements[index].m_what);
+		}
+		destroy = !destroy;
+	}
+	std::cout<<"citytocapture: "<<cityToCapture.get()<<std::endl;
+	for(ImprovementType imptype: eraseData){
+		forbegin:
+		for(std::vector<CityImprovement>::iterator it = cityToCapture->m_improvements.begin(); it!= cityToCapture->m_improvements.end();it++){
+			if(it->m_what == imptype){
+				cityToCapture->m_improvements.erase(it);
+				goto forbegin;
+			}
+		}
+	}
+	while(!cityToCapture->m_figuresOwned.empty()){
+		std::shared_ptr<Figure> figureToRelease = cityToCapture->m_figuresOwned.front();
+		std::cout<<"releasing "<<figureToRelease->m_FigureType()<<std::endl;
+		figureToRelease->m_WhereItStands().m_releaseFigure(figureToRelease);
+		cityToCapture->m_OwningNation()->m_destroyFigure(figureToRelease);
+	}
+	if(cityToCapture->m_size()!=0){
+		m_cities.push_back(cityToCapture);
+	}
+	for(std::vector<std::shared_ptr<City>>::iterator it = cityToCapture->m_OwningNation()->m_cities.begin(); it!= cityToCapture->m_OwningNation()->m_cities.end();it++){
+		if(it->get()==cityToCapture.get()){
+			cityToCapture->m_OwningNation()->m_cities.erase(it);
+			break;
+		}
+	}
+	cityToCapture->m_owningNation = shared_from_this();
+	std::cout<<"captured!"<<std::endl;
+}
+
+void Nation::m_establishEmbassy(std::shared_ptr<Nation> nationToTrack){
+	m_embassies.push_back(Embassy(nationToTrack));
+}
+
+void Nation::m_removeFigure(std::shared_ptr<Figure> figureToRemove){
+	int previousListSize = m_figures.size();
+	m_activeFigures.remove(figureToRemove);
+	for(int i(0); i<previousListSize; i++){
+		if(m_figures[i].get()==figureToRemove.get()){
+			for(int j=i; j<previousListSize - 1; j++){
+				m_figures[j] = m_figures[j+1];
+			}
+			break;
+		}
+	}
+	m_figures.pop_back();
+	std::cout<<"previousListSize (destroyFigure): "<<previousListSize<<", listSize: "<<m_figures.size()<<std::endl;
+}

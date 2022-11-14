@@ -19,6 +19,7 @@ Plane::	Plane(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nati
 }
 Plane::~Plane(){}
 void Plane::m_finishMove(){
+	m_makeFiguresVisibleAround();
 	m_figureState = DONE_WITH_TURN;
 	m_nationality->m_removeFromQueue(shared_from_this());
 	if(m_whereItStands->m_CityContained()!=nullptr || m_whereItStands->m_getCargoCapability(*this)>0){
@@ -26,10 +27,11 @@ void Plane::m_finishMove(){
 		return;
 	}
 	if(++m_turnsFlying>=m_maximumTurnsFlying()){
+		std::cout<<"Plane of "<<m_FigureType()<<" has crashed!"<<std::endl;
 		m_nationality->m_destroyFigure(shared_from_this());
 		std::stringstream s;
 		s<<"Plane of "<<m_FigureType()<<" has crashed!"<<std::endl;
-		Miscellaneous::printMultipleLines(s, 400, 400, whiteColor, true, Graphics::redColor());
+		Miscellaneous::displayText(s, 400, 400, whiteColor, true, Graphics::redColor());
 		SDL_RenderPresent(theRenderer);
 		SDL_Delay(250);
 	}
@@ -57,6 +59,26 @@ STRENGTH_OF Bomber WHEN_ATTACKING(12)
 STRENGTH_OF Bomber WHEN_DEFENDING(1)
 VISIBILITY(Bomber,2)
 MAXIMUM_TURNS_FLYING(Bomber,2)
+
+DECONSTRUCTOR_PLANE(Fighter)
+FIGURE_TYPE(Fighter,FIGHTER)
+SHIELD_COST(Fighter,60)
+CREATE_IMAGE(Fighter)
+DEFAULT_MOVING_POINTS(Fighter,10)
+STRENGTH_OF Fighter WHEN_ATTACKING(4)
+STRENGTH_OF Fighter WHEN_DEFENDING(2)
+VISIBILITY(Fighter,2)
+MAXIMUM_TURNS_FLYING(Fighter,1)
+
+DECONSTRUCTOR_PLANE(Nuclear)
+FIGURE_TYPE(Nuclear,NUCLEAR)
+SHIELD_COST(Nuclear,160)
+CREATE_IMAGE(Nuclear)
+DEFAULT_MOVING_POINTS(Nuclear,16)
+STRENGTH_OF Nuclear WHEN_ATTACKING(99)
+STRENGTH_OF Nuclear WHEN_DEFENDING(0)
+VISIBILITY(Nuclear,1)
+MAXIMUM_TURNS_FLYING(Nuclear,2)
 
 
 #endif /* PLANE_CPP_ */

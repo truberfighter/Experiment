@@ -52,6 +52,7 @@ MovableThing::MovableThing(SDL_Renderer* renderer, int width, int height, const 
 	m_standardYVelocity = STANDARD_FIELD_SIZE;
 }
 
+void MovableThing::m_setTexture(std::shared_ptr<Texture> newTexture){m_texture = newTexture;}
 
 bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, std::shared_ptr<Texture> texture){
 

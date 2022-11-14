@@ -6,6 +6,7 @@
  */
 
 #include "Field.hpp"
+#include "City.hpp"
 #include "Drawing.hpp"
 #include "Settlers.hpp"
 #include "FieldContainer.hpp"
@@ -249,15 +250,43 @@ void Field::m_releaseFigure(std::shared_ptr<Figure> movingFigure){
 		std::cout<<("Fail: Released figure not removed!")<<std::endl;
 }
 
+int Field::m_distanceTo(std::shared_ptr<City> comparedCity){
+	if(!comparedCity){
+		std::cout<<"compared City not found"<<std::endl;
+		return 32;
+	}
+	int horizontalDistance = std::abs(comparedCity->m_WhereItStands()->m_x - m_x)/STANDARD_FIELD_SIZE;
+	horizontalDistance = std::min(horizontalDistance, WORLD_LENGTH - 1 - horizontalDistance);
+	int verticalDistance = std::abs(comparedCity->m_WhereItStands()->m_y - m_y)/STANDARD_FIELD_SIZE;
+	std::cout<<"horizontal distance: "<<horizontalDistance<<"verticaldistance: "<<verticalDistance<<std::endl;
+	return std::max(horizontalDistance, verticalDistance);
+}
+
 void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 	std::cout<<"m_takeFigure aufgerufen: this = "<<*this<<", previousField: "<<movingFigure->m_WhereItStands()<<std::endl;
 	Field& previousField = movingFigure->m_WhereItStands();
 	if(m_figuresOnField.empty()){
 		std::cout<<"auf leeren Stack"<<std::endl;
+		if(m_cityContained && m_cityContained->m_OwningNation()->m_Nation()!=movingFigure->m_Nationality()){
+			movingFigure->m_Nation()->m_captureCity(m_cityContained);
+			if(m_cityContained){
+				m_cityContained->m_createCitySurface().m_displaySurface(theRenderer);
+			}
+		}
 		previousField.m_releaseFigure(movingFigure);
 		m_figuresOnField.push_front(movingFigure);
 		m_makeVisibleAround(movingFigure->m_visibilityRange());
-		movingFigure->m_makeVisibleAround(shared_from_this());
+		movingFigure->m_makeFiguresVisibleAround(shared_from_this());
+		if(m_citizenWorking){
+			std::cout<<"handle ctizen working"<<std::endl;
+			std::cout<<m_citizenWorking->m_state<<std::endl;
+			if(m_citizenWorking->m_home.m_OwningNation()->m_Nation()!=movingFigure->m_Nationality()){
+				std::cout<<"handle ctizen working"<<std::endl;
+				m_citizenWorking->m_state = ENTERTAINER;
+				m_citizenWorking->m_whereItWorks = nullptr;
+				m_citizenWorking = nullptr;
+			}
+		}
 		return;
 	}
 	std::shared_ptr<Figure> frontFigure = m_figuresOnField.front();
@@ -268,7 +297,7 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		m_figuresOnField.sort([](std::shared_ptr<Figure> figure1, std::shared_ptr<Figure> figure2)->bool {return figure1->m_defensiveStrength()<figure1->m_defensiveStrength();});
 		std::cout<<", newSize: "<<m_figuresOnField.size()<<std::endl;
 		m_makeVisibleAround(movingFigure->m_visibilityRange());
-		movingFigure->m_makeVisibleAround(shared_from_this());
+		movingFigure->m_makeFiguresVisibleAround(shared_from_this());
 		return;
 	}
 	if(frontFigure->m_Nationality()!=movingFigure->m_Nationality()){
@@ -339,7 +368,7 @@ short int Field::m_getCargoCapability(Figure& figureToEnter){
 
 std::vector<std::shared_ptr<Field>> Field::m_cityFieldsAround(){
 	std::vector<std::shared_ptr<Field>> whatToReturn;
-	Direction direction1[] = {UP,    UP,UP,UP_LEFT,UP,UP_RIGHT,UP_LEFT,UP_RIGHT,LEFT,LEFT,RIGHT,RIGHT,STANDING_STILL,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN,DOWN};
+	Direction direction1[] = {UP,UP,UP,UP_LEFT,UP,UP_RIGHT,UP_LEFT,UP_RIGHT,LEFT,LEFT,RIGHT,RIGHT,STANDING_STILL,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN,DOWN};
 	Direction direction2[] = {UP_LEFT,UP,UP_RIGHT,STANDING_STILL,STANDING_STILL,STANDING_STILL,LEFT,
 RIGHT,LEFT,STANDING_STILL,STANDING_STILL,RIGHT,
 STANDING_STILL,LEFT,STANDING_STILL,STANDING_STILL,STANDING_STILL,RIGHT,DOWN_LEFT,DOWN,DOWN_RIGHT};

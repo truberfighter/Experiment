@@ -35,7 +35,7 @@ private:
 	std::vector<WonderData> m_hasWonderBeenBuilt;
 	std::vector<std::shared_ptr<City>> m_allCities;
 	std::random_device m_theRandomDevice;
-	std::vector<std::shared_ptr<City>> m_cities;
+	std::vector<std::shared_ptr<City>> m_citiesAlive;
 	void m_beginNewYear();
 	Year m_currentYear = Year(0);
 	int m_nationAtCurrentTurnIndex = 0;
@@ -44,6 +44,7 @@ private:
 public:
 	std::vector<WonderData>& m_HasWonderBeenBuilt(){return m_hasWonderBeenBuilt;}
 	Year& m_CurrentYear(){return m_currentYear;}
+	std::vector<std::shared_ptr<City>>& m_CitiesAlive(){return m_citiesAlive;}
 	std::vector<std::shared_ptr<City>>& m_AllCities(){return m_allCities;}
 	std::vector<std::shared_ptr<Nation>>& m_NationsPlaying(){return m_nationsPlaying;}
 	Game(std::vector<Nationality>& nationsToPlay);

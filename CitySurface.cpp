@@ -203,12 +203,15 @@ void CitySurface::m_drawCityFields(){
 	std::vector<std::shared_ptr<Field>> fieldVector = m_associatedCity->m_WhereItStands()->m_cityFieldsAround();
 	for (int i(0); i<21; i++){
 		bool drawProduction = false;
-		for(Citizen& currentCitizen: m_associatedCity->m_citizens){
-			if(currentCitizen.m_whereItWorks == fieldVector[i]){
+		for(std::shared_ptr<Citizen>& currentCitizen: m_associatedCity->m_citizens){
+			if(currentCitizen->m_whereItWorks == fieldVector[i]){
 				drawProduction = true;
 			}
 		}
 		fieldVector[i]->m_DrawingElement()->m_drawAt(xToStart + (2+coordinateVector[i].x)*STANDARD_FIELD_SIZE, yToStart+(2+coordinateVector[i].y)*STANDARD_FIELD_SIZE, theRenderer);
+		if(!fieldVector[i]->m_FiguresOnField().empty() && fieldVector[i]->m_FiguresOnField().front()->m_Nationality()!=m_associatedCity->m_OwningNation()->m_Nation() && fieldVector[i]->m_isVisible(m_associatedCity->m_OwningNation()->m_Nation())){
+			fieldVector[i]->m_FiguresOnField().front()->m_drawFigureSomewhere(xToStart + (2+coordinateVector[i].x)*STANDARD_FIELD_SIZE, yToStart+(2+coordinateVector[i].y)*STANDARD_FIELD_SIZE);
+		}
 		int fieldX = xToStart + (2+coordinateVector[i].x)*STANDARD_FIELD_SIZE;
 		int fieldY =  yToStart+(2+coordinateVector[i].y)*STANDARD_FIELD_SIZE;
 		if(!drawProduction && fieldVector[i]!=m_associatedCity->m_whereItStands){

@@ -29,19 +29,22 @@ public:
 	virtual int m_shieldCost() override = 0;
 };
 
-class Bomber: public Plane{
-public:
-	virtual FigureType m_FigureType() override;
-	Bomber(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
-	virtual ~Bomber();
-	virtual float m_attackingStrength();
-	virtual float m_defensiveStrength();
-	virtual short unsigned int m_visibilityRange();
-	virtual short unsigned int m_defaultMovementPoints();
-	std::shared_ptr<MovableThing> m_createImage() override;
-	int m_maximumTurnsFlying();
-	int m_shieldCost();
+#define PLANE(CLASS) class CLASS: public Plane{\
+public:\
+	virtual FigureType m_FigureType() override;\
+	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
+	virtual ~CLASS();\
+	virtual float m_attackingStrength();\
+	virtual float m_defensiveStrength();\
+	virtual short unsigned int m_visibilityRange();\
+	virtual short unsigned int m_defaultMovementPoints();\
+	std::shared_ptr<MovableThing> m_createImage() override;\
+	int m_maximumTurnsFlying();\
+	int m_shieldCost();\
 };
+PLANE(Bomber)
+PLANE(Nuclear)
+PLANE(Fighter)
 
 #define MAXIMUM_TURNS_FLYING(CLASS,TURNS) int CLASS::m_maximumTurnsFlying(){return TURNS;}
 #define DECONSTRUCTOR_PLANE(CLASS)CLASS::~CLASS(){std::cout<<m_FigureType()<<"-Destruktor, this = "<<this<<std::endl;}\

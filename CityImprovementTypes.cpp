@@ -17,25 +17,83 @@
 
 int City::figureWidth(FigureType figtype){
 	switch(figtype){
+	case SETTLERS: return 56;
+	case NUCLEAR: return 32;
 	case DIPLOMAT: return 36;
+	case CATAPULT: return 52;
+	case CARAVAN: return 56;
+	case CRUISER: return 56;
+	case MILITIA: return 56;
+	case ARMOR: return 48;
+	case IRONCLAD: return 56;
+	case PHALANX: return 48;
+	case KNIGHTS: return 56;
+	case SAIL: return 52;
+	case MUSKETEERS: return 40;
 	default: return 60;
+	case RIFLEMEN: return 44;
+	case CHARIOT: return 56;
+	case TRANSPORT: return 56;
+	case SUBMARINE: return 56;
 	}
 }
 
 int City::figureHeight(FigureType figtype){
 	switch(figtype){
-	case SETTLERS: return 60;
+	case SUBMARINE: return 24;
+	case SAIL: return 48;
+	case TRANSPORT: return 56;
+	case CHARIOT: return 56;
+	case SETTLERS: return 56;
+	case RIFLEMEN: return 56;
+	case BATTLESHIP: return 32;
+	case IRONCLAD: return 40;
+	case KNIGHTS: return 48;
+	case PHALANX: return 56;
+	case MILITIA: return 56;
+	case ARMOR: return 56;
+	case MUSKETEERS: return 56;
+	case NUCLEAR: return 56;
+	case CRUISER: return 28;
+	case CATAPULT: return 48;
 	case DIPLOMAT: return 60;
 	case ARTILLERY: return 60;
 	case TRIREME: return 44;
 	case CAVALRY: return 60;
 	case CARRIER: return 36;
+	case CANNON: return 44;
+	case CARAVAN: return 56;
 	default: return 60;
 	}
 }
 
 int City::shieldsNeeded(ImprovementType imptype){
+	if(isFigureType(imptype)){
+		switch((FigureType)imptype){
+		case NUCLEAR: return 160;
+		case CHARIOT: return 40;
+		case KNIGHTS: return 40;
+		case TRANSPORT: return 50;
+		case SUBMARINE: return 50;
+		case IRONCLAD: return 60;
+		case CRUISER: return 80;
+		case FRIGATE: return 40;
+		case BATTLESHIP: return 160;
+		case MILITIA: return 10;
+		case PHALANX: return 20;
+		case CARAVAN: return 50;
+		case RIFLEMEN: return 30;
+		case MUSKETEERS: return 30;
+		case MECH_INF: return 50;
+		case CATAPULT: return 40;
+		case CANNON:return 40;
+		case ARMOR: return 80;
+		case LEGION: return 20;
+		case DIPLOMAT: return 30;
+		}
+	}
 	switch(imptype){
+	case IMPROVEMENT_LEGION: return 20;
 	case IMPROVEMENT_BOMBER: return 120;
 	case IMPROVEMENT_FIGHTER: return 60;
 	case IMPROVEMENT_ARTILLERY: return 60;
@@ -143,7 +201,7 @@ bool City::isBuildingType(ImprovementType imptype){
 }
 
 bool City::isFigureType(ImprovementType imptype){
-	return !(isBuildingType(imptype)||isWonderType((imptype)));
+	return !(isBuildingType(imptype)||isWonderType((imptype))||(SPACESHIP_MIN <= imptype && SPACESHIP_MAX >= imptype));
 }
 
 #define CASE_FOR_BUILDING(TYPE,CLASS) case TYPE:\
@@ -169,14 +227,17 @@ bool City::m_maybeFinishProduction(){
 		newFigure = std::make_shared<Settlers>(m_whereItStands, m_owningNation, shared_from_this(), gonnaBeVeteran);
 	figureMade:	m_owningNation->m_addFigure(newFigure);
 		m_whereItStands->m_takeFigure(newFigure);
+		m_takeFigure(newFigure);
 		newFigure->m_integrateInto(*someDrawing);
-		std::cout<<"lolj"<<std::endl;
 		return true;
 	}
+	CASE_FOR_BUILDING(IMPROVEMENT_FIGHTER,Fighter)
 	CASE_FOR_BUILDING(IMPROVEMENT_ARTILLERY,Artillery)
 	CASE_FOR_BUILDING(IMPROVEMENT_BOMBER,Bomber)
 	CASE_FOR_BUILDING(IMPROVEMENT_CARRIER,Carrier)
 	CASE_FOR_BUILDING(IMPROVEMENT_CAVALRY,Cavalry)
+	CASE_FOR_BUILDING(IMPROVEMENT_LEGION, Legion)
+	CASE_FOR_BUILDING(IMPROVEMENT_DIPLOMAT, Diplomat)
 	default: return false;
 	}
 }
@@ -192,14 +253,35 @@ int City::m_buyingPrice(ImprovementType imptype){
 		return 320;
 	}
 	switch((FigureType)imptype){
+	case SETTLERS: return 320;
+	case TRIREME: return 320;
 	case ARTILLERY: return 600;
+	case LEGION: return 120;
 	case BOMBER: return 1920;
 	case FIGHTER: return 600;
 	case CAVALRY: return 120;
 	case DIPLOMAT: return 210;
 	case CARRIER: return 1200;
+	case ARMOR: return 960;
+	case CANNON: return 320;
+	case CARAVAN: return 450;
+	case CATAPULT: return 320;
+	case KNIGHTS: return 320;
+	case MECH_INF: return 450;
+	case MUSKETEERS: return 210;
+	case PHALANX: return 120;
+	case RIFLEMEN: return 210;
+	case MILITIA: return 50;
+	case BATTLESHIP: return 3200;
+	case CRUISER: return 960;
+	case FRIGATE: return 320;
+	case IRONCLAD: return 600;
+	case SAIL: return 320;
+	case TRANSPORT: return 450;
+	case SUBMARINE: return 450;
+	case NUCLEAR: return 3200;
 	default:
-	throw imptype;
+		return ((shieldsNeeded(imptype)/10)+4)*shieldsNeeded(imptype);
 	}
 }
 
@@ -209,6 +291,8 @@ std::vector<ImprovementType> City::m_whatCanBeBuilt(){
 	whatToReturn.push_back(IMPROVEMENT_SETTLERS);
 	whatToReturn.push_back(IMPROVEMENT_CAVALRY);
 	whatToReturn.push_back(IMPROVEMENT_BOMBER);
+	whatToReturn.push_back(IMPROVEMENT_LEGION);
+	whatToReturn.push_back(IMPROVEMENT_DIPLOMAT);
 	if(m_whereItStands->m_closeToLandscape(OCEAN)){
 		whatToReturn.push_back(IMPROVEMENT_CARRIER);
 	}

@@ -13,6 +13,7 @@
 #include <queue>
 
 class City;
+class Embassy;
 class NegativeTreasury{
 public:
 	int previousTreasury, treasuryNow;
@@ -23,6 +24,7 @@ class Nation: public std::enable_shared_from_this<Nation>{
 private:
 	std::shared_ptr<City> m_capitalCity;
 	std::vector<std::shared_ptr<City>> m_cities;
+	std::vector<std::shared_ptr<City>> m_foundedCities;
 	GovernmentType m_government = DESPOTISM;
 	Nationality m_nation;
 	std::string m_leaderName;
@@ -36,7 +38,11 @@ private:
 	Technology m_whatToExplore = NO_TECHNOLOGY;
 	int m_explorationProgress = 0;
 	Difficulty m_difficulty;
+	std::vector<Embassy> m_embassies;
 public:
+	std::vector<std::shared_ptr<City>> m_FoundedCities(){return m_foundedCities;}
+	void m_giveCity(std::shared_ptr<City> cityToGive,std::shared_ptr<Nation> whoToGiveTo);
+	void m_destroyCity(std::shared_ptr<City> cityToDestroy);
 	void m_addProgress(int progress);
 	void m_setWhatToExplore(Technology tech){m_whatToExplore = tech;}
 	bool m_hasExplored(Technology tech);
@@ -57,10 +63,10 @@ public:
 	std::shared_ptr<City> m_CapitalCity(){return m_capitalCity;}
 	void m_setCapitalCity(std::shared_ptr<City> city);
 	std::vector<std::shared_ptr<City>>& m_Cities(){return m_cities;}
-	~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 	static Coordinate getStandardCoordinateForNation(Nationality n);
 	Nation(Nationality n = ROMAN, std::string leaderName = "", Difficulty difficulty = PLAYER_PRINCE, bool directlyMakingFiguresActive = false);
 	const std::string& m_LeaderName();
+	~Nation();
 	GovernmentType m_Government();
 	Nationality m_Nation() const;
 	bool m_canBuildRailroad();
@@ -79,6 +85,10 @@ public:
 	int m_Treasury(){return m_treasury;}
 	friend class Figurebutton;
 	static SDL_Color standardNationColor(Nationality nationalityToDraw);
+	void m_captureCity(std::shared_ptr<City> cityToCapture);
+	void m_establishEmbassy(std::shared_ptr<Nation> nationToTrack);
+	void m_removeFigure(std::shared_ptr<Figure> figureToRemove);
+	friend class Embassy;
 };
 
 inline GovernmentType Nation::m_Government(){

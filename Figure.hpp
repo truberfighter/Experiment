@@ -37,9 +37,10 @@ protected:
 	MovementPoints m_calculateStandardMoveCostGround(Field& fieldToVisit);
 	int m_drawFigureState(int, int, SDL_Renderer*);
 public:
+	void m_hideFrom(Nationality nationality);
 	bool m_isVisible(Nationality nationality);
 	void m_makeVisible(Nationality nationality);
-	virtual void m_makeVisibleAround(std::shared_ptr<Field> fieldBase = nullptr);
+	virtual void m_makeFiguresVisibleAround(std::shared_ptr<Field> fieldBase = nullptr);
 	void m_setFigureState (FigureState newState){m_figureState = newState;}
 	Nationality m_Nationality();
 	Figure(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
@@ -79,6 +80,8 @@ public:
 	virtual int m_shieldCost() = 0;
 	std::shared_ptr<Nation> m_Nation(){return m_nationality;}
 	bool m_homeCity();
+	int m_desertationCost();
+	void m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr<City> newHome = nullptr);
 	friend class Figurebutton;
 };
 
@@ -105,6 +108,7 @@ public:
 #define ONE_MOVEMENT_POINT 3
 #define GOES_UNEVENTFUL ::m_finishMove(){std::cout<<"m_finishMove(), x = "<<m_image->getPosition().x<<", y = "<<m_image->getPosition().y<<std::endl;\
 	m_figureState = DONE_WITH_TURN; \
+	m_makeFiguresVisibleAround();\
 	m_nationality->m_removeFromQueue(shared_from_this());\
 return;}
 #define DEFAULT_MOVING_POINTS(CLASS, DEFAULT) short unsigned int CLASS::m_defaultMovementPoints(){return DEFAULT*ONE_MOVEMENT_POINT;}

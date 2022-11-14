@@ -100,12 +100,7 @@ FigureType Settlers::m_FigureType(){
 
 std::string Settlers::m_orderOverview(){return "H: HomeCity, B: Add to/Found new City, I: Irrigate, M: Mining, S: Sentry, P: Pillage";}
 
-std::shared_ptr<MovableThing> Settlers::m_createImage(){
-	int x = m_whereItStands->m_X(), y = m_whereItStands->m_Y();
-	//ändere das mit dem filename
-	m_image = make_shared<MovableThing>(theRenderer, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE, "bilder/Figures/Settlers/RomanRussianSettlers.png", x, y);
-	return m_image;
-}
+CREATE_IMAGE(Settlers)
 
 int Settlers::m_drawSettlersWork(SDL_Rect& rectToDraw){
 #ifdef DRAW_LETTER
@@ -133,8 +128,8 @@ bool Settlers::m_canBuildBridges(){
 }
 
 VISIBILITY_OF Settlers IS_NORMAL_VISIBILITY
-STRENGTH_OF Settlers WHEN_ATTACKING(1)
-STRENGTH_OF Settlers WHEN_DEFENDING(WEAK)
+STRENGTH_OF Settlers WHEN_ATTACKING(WEAK)
+STRENGTH_OF Settlers WHEN_DEFENDING(1)
 THE_END_OF_TURN_FOR Settlers GOES_UNEVENTFUL
 NORMAL_MOVING(Settlers)
 SHIELD_COST(Settlers, 40)
@@ -212,7 +207,9 @@ std::shared_ptr<City> Settlers::m_foundNewCity(std::string name){
 	m_whereItStands->m_cityContained = std::make_shared<City>(m_whereItStands, m_nationality, name);
 	m_nationality->m_destroyFigure(shared_from_this());
 	theGame->m_AllCities().push_back(m_whereItStands->m_CityContained());
+	theGame->m_CitiesAlive().push_back(m_whereItStands->m_CityContained());
 	m_nationality->m_Cities().push_back(m_whereItStands->m_CityContained());
+	m_nationality->m_FoundedCities().push_back(m_whereItStands->m_cityContained);
 	std::cout<<"nationCitiesSize: "<<m_nationality->m_Cities().size()<<std::endl;
 	if(m_nationality->m_Cities().size()==1){
 		m_whereItStands->m_CityContained()->m_improvements.push_back(CityImprovement(PALACE, m_whereItStands->m_CityContained().get()));

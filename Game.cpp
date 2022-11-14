@@ -47,9 +47,9 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 		Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
 		std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
 		std::shared_ptr<Field> fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y];
-		for(int i(0); i<3; i++){
-			std::shared_ptr<Bomber> theSettlersPointer =
-			std::make_shared<Bomber>(fieldPointer, nationPointer);
+		for(int i(0); i<1; i++){
+			std::shared_ptr<Settlers> theSettlersPointer =
+			std::make_shared<Settlers>(fieldPointer, nationPointer);
 			nation.m_addFigure(theSettlersPointer);
 			fieldPointer->m_takeFigure(theSettlersPointer);
 			std::shared_ptr<Trireme> theTriremePointer =
@@ -82,6 +82,11 @@ void Game::m_startNewTurn(){
 	if(m_NationAtCurrentTurn()->m_activeFiguresSize()!=0){
 		std::cout<<"turnendstooearly by activefigures"<<std::endl;
 		throw(TurnEndsTooEarly());
+	}
+	for(std::shared_ptr<Nation> currentNation: m_nationsPlaying){
+		for(std::shared_ptr<Figure> currentFigure: currentNation->m_Figures()){
+			currentFigure->m_hideFrom(m_NationAtCurrentTurn()->m_Nation());
+		}
 	}
 	(++m_nationAtCurrentTurnIndex)%= (m_nationsPlaying.size());
 	m_NationAtCurrentTurn()->m_startNewTurn();

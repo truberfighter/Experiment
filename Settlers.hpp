@@ -45,6 +45,7 @@ public:
 	bool m_canBuildRailroad();
 	bool m_canBuildBridges();
 	friend class Figurebutton;
+	friend void Figure::m_changeNationTo(std::shared_ptr<Nation>, std::shared_ptr<City>);
 };
 
 

@@ -200,7 +200,7 @@ bool CitySurface::m_handleCitizenClick(const SDL_MouseButtonEvent& event){
 #ifdef CHANGETO
 #undef CHANGETO
 #endif
-#define CHANGETO(x,y) case x: {(m_associatedCity->m_citizens)[quotientX].m_state = y; return true;}
+#define CHANGETO(x,y) case x: {(m_associatedCity->m_citizens)[quotientX]->m_state = y; return true;}
 	int xToStart = FIRST_CITIZEN_X;
 	int quotientX = (event.x - FIRST_CITIZEN_X)/(CITIZEN_MAX_WIDTH*CITIZEN_SCALEFACTOR);
 	if(quotientX < 0){
@@ -209,7 +209,7 @@ bool CitySurface::m_handleCitizenClick(const SDL_MouseButtonEvent& event){
 	if(quotientX >= m_associatedCity->m_size()){
 		return false;
 	}
-	switch(m_associatedCity->m_citizens[quotientX].m_state){
+	switch(m_associatedCity->m_citizens[quotientX]->m_state){
 	CHANGETO(ENTERTAINER, TAX_COLLECTOR)
 	CHANGETO(TAX_COLLECTOR, SCIENTIST)
 	CHANGETO(SCIENTIST, ENTERTAINER)

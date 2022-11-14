@@ -237,26 +237,26 @@ void technologyRightClick (Technology technology){
 	Miscellaneous::printMultipleLines(infoStream, 0, 0, Graphics::Civ::irrigationBlueColor(), true, Graphics::Civ::resourcesWhiteColor());
 	SDL_RenderPresent(theRenderer);
 	SDL_Event e;
-		bool quitSurface = false;
-		while(!quitSurface){
-			try{
-			while(SDL_PollEvent(&e)){
-				if(e.type == SDL_QUIT){
-					throw SDLQuitException();
-				}
-				if(e.type==SDL_KEYDOWN){
-					quitSurface = true;
-					break;
-				}
+	bool quitSurface = false;
+	while(!quitSurface){
+		try{
+		while(SDL_PollEvent(&e)){
+			if(e.type == SDL_QUIT){
+				throw SDLQuitException();
 			}
-			}
-			catch(QuitSurface &qs){
+			if(e.type==SDL_KEYDOWN){
 				quitSurface = true;
-			}
-			catch(SDLQuitException& sdlqe){
-				throw sdlqe;
+				break;
 			}
 		}
+		}
+		catch(QuitSurface &qs){
+			quitSurface = true;
+		}
+		catch(SDLQuitException& sdlqe){
+			throw sdlqe;
+		}
+	}
 }
 
 std::vector<Technology> Science::possibleStartingTechs(){

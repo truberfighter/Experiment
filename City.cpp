@@ -14,6 +14,9 @@
 #include "GameMain.hpp"
 #include "Artillery.hpp"
 
+Citizen::	~Citizen(){std::cout<<"Citizen-Destruktor: City: "<<m_home.m_Name()<<std::endl;}
+
+
 City::~City() {
 	// TODO Auto-generated destructor stub
 }
@@ -35,7 +38,7 @@ City::City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNa
 	if(m_owningNation->m_Cities().size()>=CITIES_PER_NATION){
 		throw(TooManyCities());
 	}
-	m_citizens.push_back(Citizen(*this,m_whereItStands->m_getNeighbouringField(UP)));
+	m_citizens.push_back(std::make_shared<Citizen>(*this,m_whereItStands->m_getNeighbouringField(UP)));
 	/*SDL_Surface* surface = SDL_CreateRGBSurface(0, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE, 8,0,0,0,0);
 	std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
 int i = m_citizens.size();
@@ -54,7 +57,7 @@ std::cout<<"SDL_Errorstr: "<<stream.str()<<std::endl;
 	SDL_FreeSurface(surface);
 	SDL_FreeSurface(textSurface);
 	*/
-	std::cout<<"City-Konstruktor"<<std::endl;
+	std::cout<<"City-Konstruktor"<<m_citizens.front()->m_state<<std::endl;
 	m_whereItStands->m_DrawingElement()->m_setAdditionalInstructions(drawCity);
 }
 
@@ -125,6 +128,7 @@ bool City::m_releaseFigure(std::shared_ptr<Figure> figureToRelease){
 		std::cout<<"City::m_releaseFigureFail: sizeBefore = "<<sizeBefore<<", sizeAfter = "<<sizeAfter<<std::endl;
 		return false;
 	}
+	std::cout<<"City::m_releaseFigureSuccess: sizeBefore = "<<sizeBefore<<", sizeAfter = "<<sizeAfter<<std::endl;
 	return true;
 }
 
@@ -144,7 +148,7 @@ bool City::m_takeFigure(std::shared_ptr<Figure> figureToTake){
 std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 	int contentBaseApplied = 0;
 	for(unsigned int index(0); index<m_citizens.size();index++){
-		if(m_citizens[index].m_state == ENTERTAINER && m_citizens[index].m_state == SCIENTIST && m_citizens[index].m_state == TAX_COLLECTOR){
+		if(m_citizens[index]->m_state == ENTERTAINER && m_citizens[index]->m_state == SCIENTIST && m_citizens[index]->m_state == TAX_COLLECTOR){
 			contentBaseApplied++;
 		}
 	}
@@ -159,14 +163,14 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 	for(UnitCostingResources& cost: m_unitCostVector()){
 		(cost.unhappyFaces < 0 ? contentByUnitCount : unhappyByUnitCount) -= cost.unhappyFaces;
 	}
-	for(Citizen& citizen: m_citizens){
-		if(citizen.m_state != ENTERTAINER && citizen.m_state != TAX_COLLECTOR && citizen.m_state != SCIENTIST){
+	for(std::shared_ptr<Citizen>& citizen: m_citizens){
+		if(citizen->m_state != ENTERTAINER && citizen->m_state != TAX_COLLECTOR && citizen->m_state != SCIENTIST){
 			if(contentBaseApplied<CONTENT_BASE){
-				citizen.m_state = CONTENT;
+				citizen->m_state = CONTENT;
 				contentBaseApplied++;
 			}
 			else{
-				citizen.m_state = UNHAPPY;
+				citizen->m_state = UNHAPPY;
 			}
 		}
 		else{
@@ -176,12 +180,12 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 		goto beginReturn;
 	}
 	for(unsigned int i(0);i<m_citizens.size();i++){
-		Citizen& citizen = m_citizens[size-1-i];
+		Citizen& citizen = *m_citizens[size-1-i];
 		try{
 			if(luxuriesApplied>=luxuriesToApply){
 				break;
 			}
-			++citizen.m_state;
+			++(citizen.m_state);
 			luxuriesApplied++;
 			std::cout<<"luxuriesApplied = "<<luxuriesApplied<<", luxuriesToApply = "<<luxuriesToApply<<std::endl;
 			if(luxuriesApplied>=luxuriesToApply){
@@ -199,7 +203,7 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 		goto beginReturn;
 	}
 	for(unsigned int i(0);i<m_citizens.size();i++){
-		Citizen& citizen = m_citizens[size-1-i];
+		Citizen& citizen = *m_citizens[size-1-i];
 		try{
 		if(contentApplied >= contentByUnitCount){
 			break;
@@ -220,12 +224,12 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 	if(flag==HAPPY_3){
 		goto beginReturn;
 	}
-	for(Citizen& citizen: m_citizens){
+	for(std::shared_ptr<Citizen>& citizen: m_citizens){
 		try{
 		if(unhappyApplied >= unhappyByUnitCount){
 			break;
 		}
-			--citizen.m_state;
+			--citizen->m_state;
 			unhappyApplied++;
 		}
 		catch(InertCitizenState& exception){
@@ -236,15 +240,15 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 	}
 	beginReturn:	for(unsigned int i(0); i<m_citizens.size();i++){
 		for(unsigned int j(0); j < m_citizens.size() - 1;j++){
-			if((int) m_citizens[j].m_state > (int) m_citizens[j+1].m_state){
-				CitizenState temp = m_citizens[j].m_state;
-				m_citizens[j].m_state = m_citizens[j+1].m_state;
-				m_citizens[j+1].m_state = temp;
+			if((int) m_citizens[j]->m_state > (int) m_citizens[j+1]->m_state){
+				CitizenState temp = m_citizens[j]->m_state;
+				m_citizens[j]->m_state = m_citizens[j+1]->m_state;
+				m_citizens[j+1]->m_state = temp;
 			}
 		}
 	}
-	for(Citizen& citizen: m_citizens){
-		whatToReturn.push_back(citizen.m_state);
+	for(std::shared_ptr<Citizen>& citizen: m_citizens){
+		whatToReturn.push_back(citizen->m_state);
 	}
 	return whatToReturn;
 }
@@ -359,9 +363,9 @@ std::vector<UnitCostingResources> City::m_unitCostVector(){
 
 int City::m_foodProduction(){
 	int count = m_whereItStands->m_food(*m_owningNation);
-	for(Citizen& citizen: m_citizens){
-		if(citizen.m_whereItWorks){
-			count+=citizen.m_whereItWorks->m_food(*m_owningNation);
+	for(std::shared_ptr<Citizen>& citizen: m_citizens){
+		if(citizen->m_whereItWorks){
+			count+=citizen->m_whereItWorks->m_food(*m_owningNation);
 		}
 	}
 	return count;
@@ -369,9 +373,9 @@ int City::m_foodProduction(){
 
 int City::m_shieldProduction(){
 	int count = m_whereItStands->m_shields(*m_owningNation);
-	for(Citizen& citizen: m_citizens){
-		if(citizen.m_whereItWorks){
-			count+=citizen.m_whereItWorks->m_shields(*m_owningNation);
+	for(std::shared_ptr<Citizen>& citizen: m_citizens){
+		if(citizen->m_whereItWorks){
+			count+=citizen->m_whereItWorks->m_shields(*m_owningNation);
 		}
 	}
 	return count;
@@ -415,14 +419,14 @@ void City::m_startNewTurn(){
 }
 
 void City::m_grow(){
-	m_citizens.push_back(Citizen(*this));
+	m_citizens.push_back(std::make_shared<Citizen>(*this));
 }
 
 int City::m_tradeProduction(){
 	int count = m_whereItStands->m_trade(*m_owningNation);
-	for(Citizen& citizen: m_citizens){
-		if(citizen.m_whereItWorks){
-			count+=citizen.m_whereItWorks->m_trade(*m_owningNation);
+	for(std::shared_ptr<Citizen>& citizen: m_citizens){
+		if(citizen->m_whereItWorks){
+			count+=citizen->m_whereItWorks->m_trade(*m_owningNation);
 		}
 	}
 	return count;
@@ -431,39 +435,52 @@ int City::m_tradeProduction(){
 int City::m_luxuriesRevenue(){
 	int production = m_revenueProduction().luxuries;
 	int marketBankCoefficient = 2;
+	if(m_contains(MARKETPLACE))
+		marketBankCoefficient++;
+	if(m_contains(BANK))
+		marketBankCoefficient++;
 	return (production*marketBankCoefficient)/2;
 }
 
 int City::m_goldRevenue(){
 	int production = m_revenueProduction().gold;
 	int marketBankCoefficient = 2;
+	if(m_contains(MARKETPLACE))
+		marketBankCoefficient++;
+	if(m_contains(BANK))
+		marketBankCoefficient++;
 	return (production*marketBankCoefficient)/2;
 }
 
 int City::m_scienceRevenue(){
 	int production = m_revenueProduction().science;
 	int libraryUniversityCoefficient = 2;
+	if(m_contains(LIBRARY))
+		libraryUniversityCoefficient++;
+	if(m_contains(UNIVERSITY))
+		libraryUniversityCoefficient++;
 	return (production*libraryUniversityCoefficient)/2;
 }
 
 bool City::m_placeCitizen(std::shared_ptr<Field> fieldClickedOn){
-	if(fieldClickedOn->m_CityContained() != nullptr || !fieldClickedOn->m_isVisible(m_owningNation->m_Nation()))
+	if(fieldClickedOn->m_CityContained() != nullptr || !fieldClickedOn->m_isVisible(m_owningNation->m_Nation())
+			|| (!fieldClickedOn->m_figuresOnField.empty() && fieldClickedOn->m_figuresOnField.front()->m_Nationality()!=m_owningNation->m_Nation()))
 	{
 		return false;
 	}
 	for(int i(m_citizens.size()-1); i>=0;i--){
-		if(m_citizens[i].m_whereItWorks!=nullptr){
-			if(m_citizens[i].m_whereItWorks == fieldClickedOn){
-				m_citizens[i].m_whereItWorks->m_setCitizenWorking(nullptr);
-				m_citizens[i].m_whereItWorks = nullptr;
+		if(m_citizens[i]->m_whereItWorks!=nullptr){
+			if(m_citizens[i]->m_whereItWorks == fieldClickedOn){
+				m_citizens[i]->m_whereItWorks->m_setCitizenWorking(nullptr);
+				m_citizens[i]->m_whereItWorks = nullptr;
 				std::cout<<"make entertainer"<<std::endl;
-				m_citizens[i].m_state = ENTERTAINER;
+				m_citizens[i]->m_state = ENTERTAINER;
 				return true;
 			}
 				continue;
 		}
-		m_citizens[i].m_whereItWorks = fieldClickedOn;
-		m_citizens[i].m_state = CONTENT;
+		m_citizens[i]->m_whereItWorks = fieldClickedOn;
+		m_citizens[i]->m_state = CONTENT;
 		std::cout<<"make fieldClickedOn"<<std::endl;
 		return true;
 	}
@@ -515,17 +532,7 @@ std::shared_ptr<CityImprovement> City::m_maybeBuild(ImprovementType imptype){
 	}return nullptr;
 }
 
-int City::m_distanceTo(std::shared_ptr<City> comparedCity){
-	if(!comparedCity){
-		std::cout<<"compared City not found"<<std::endl;
-		throw NullPointerException("City");
-	}
-	int horizontalDistance = std::abs(comparedCity->m_whereItStands->m_x - m_whereItStands->m_x)/STANDARD_FIELD_SIZE;
-	horizontalDistance = std::min(horizontalDistance, WORLD_LENGTH - 1 - horizontalDistance);
-	int verticalDistance = std::abs(comparedCity->m_whereItStands->m_y - m_whereItStands->m_y)/STANDARD_FIELD_SIZE;
-	std::cout<<"horizontal distance: "<<horizontalDistance<<"verticaldistance: "<<verticalDistance<<std::endl;
-	return std::max(horizontalDistance, verticalDistance);
-}
+
 
 int City::m_corruptionProduction(){
 	int governmentCoefficient;
@@ -562,7 +569,7 @@ int City::m_corruptionProduction(){
 	}
 	int distance;
 	try{
-	distance = m_distanceTo(m_owningNation->m_CapitalCity());
+	distance = m_whereItStands->m_distanceTo(m_owningNation->m_CapitalCity());
 	}
 	catch(NullPointerException& npe){
 		if(npe.what() == "City"){
@@ -601,8 +608,8 @@ CityProduction City::m_revenueProduction(){
 	}
 	CityProduction whatToReturn{preluxury/TAX_RATE_STEP_COUNT, pregold/TAX_RATE_STEP_COUNT, prescience/TAX_RATE_STEP_COUNT};
 	std::cout<<"gold: "<<whatToReturn.gold<<", luxury: "<<whatToReturn.luxuries<<", science: "<<whatToReturn.science<<std::endl;
-	for(Citizen& currentCitizen: m_citizens){
-		switch(currentCitizen.m_state){
+	for(std::shared_ptr<Citizen>& currentCitizen: m_citizens){
+		switch(currentCitizen->m_state){
 		case ENTERTAINER:
 		{
 			whatToReturn.luxuries+=2;
@@ -691,7 +698,6 @@ void City::m_cityEconomy(){
 			m_owningNation->m_receiveMoney(-City::maintenanceNeeded(currentImptype));
 			}
 			catch(NegativeTreasury& nt){
-				std::cout<<"Kevin"<<std::endl;
 				m_sell(maintenanceIndex);
 				try{
 					m_announceCannotMaintain(currentImptype);
@@ -705,5 +711,38 @@ void City::m_cityEconomy(){
 }
 
 void City::m_shrink(){
-	m_citizens.back().m_whereItWorks->m_setCitizenWorking(nullptr);
+	m_citizens.back()->m_whereItWorks->m_setCitizenWorking(nullptr);
+	m_citizens.pop_back();
+	if(m_citizens.size()==0){
+		m_owningNation->m_destroyCity(shared_from_this());
+	}
+}
+
+
+int City::m_capturingValue(){
+	int populationTotal = 0;
+	for(std::shared_ptr<City> currentCity: m_owningNation->m_Cities()){
+		populationTotal+= currentCity->m_size();
+	}
+	if(m_owningNation->m_CapitalCity()){
+		populationTotal+=m_owningNation->m_CapitalCity()->m_size();
+	}
+	return m_owningNation->m_Treasury()*m_size()*(m_contains(PALACE) ? 2 : 1)/populationTotal;
+}
+
+bool City::m_isCivilDisorder(){
+	int count = 0;
+	for(CitizenState currentCitizenState: m_applyCitizenStateVector()){
+		if(currentCitizenState == UNHAPPY){
+			count--;
+		}
+		if(currentCitizenState == HAPPY){
+			count++;
+		}
+	}
+	return count < 0;
+}
+
+int City::m_revoltingCost(){
+	return ((m_owningNation->m_Treasury()+1000)*m_size()/(m_isCivilDisorder() ? 2 : 1))/(3+m_whereItStands->m_distanceTo(m_owningNation->m_CapitalCity()));
 }

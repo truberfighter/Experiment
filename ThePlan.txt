@@ -3,3 +3,10 @@ city shrinking
 special resources
 improvements -> wonders
 technology
+
+Improvements that are integrated:
+marketplace
+bank
+library
+university
+palace

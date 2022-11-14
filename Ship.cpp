@@ -87,6 +87,7 @@ Ship::~Ship(){
 }
 
 void Ship::m_finishMove(){
+	m_makeFiguresVisibleAround();
 	std::cout<<"m_finishMove(), x = "<<m_image->getPosition().x<<", y = "<<m_image->getPosition().y<<std::endl;
 	m_figureState = m_figureState == SENTRYING ? SENTRIED : (m_figureState == FORTIFIED ? COMPLETELY_FORTIFIED : DONE_WITH_TURN);
 	m_nationality->m_removeFromQueue(shared_from_this());

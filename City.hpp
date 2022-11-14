@@ -17,13 +17,20 @@
 #include "movableThing.hpp"
 #include <memory>
 #include "CitySurface.hpp"
+#include "Nation.hpp"
 //#include "Nation.hpp"
 //#include "Field.hpp"
 
 class Field;
 class Nation;
 class Improvement;
-class TradeRoute;
+class TradeRoute{
+public:
+	std::shared_ptr<City> m_city1, m_city2;
+	TradeRoute(std::shared_ptr<City> city1, std::shared_ptr<City> city2):m_city1(city1),m_city2(city2){}
+	int m_calculateProduction();
+	void m_destroyItself();
+};
 class City;
 class Subsurface;
 class CitySurface;
@@ -64,6 +71,7 @@ struct UnitCostingResources{
 
 class Citizen{
 public:
+	~Citizen();
 	Citizen(City& home, std::shared_ptr<Field> whereToWork = nullptr);
 	std::shared_ptr<Field> m_whereItWorks;
 	CitizenState m_state;
@@ -93,7 +101,7 @@ private:
 	std::shared_ptr<Nation> m_owningNation;
 	std::shared_ptr<Field> m_whereItStands;
 	std::string m_name;
-	std::vector<Citizen> m_citizens;
+	std::vector<std::shared_ptr<Citizen>> m_citizens;
 	std::list<std::shared_ptr<Figure>> m_figuresOwned;
 	int m_shields = 0;
 	int m_food = 0;
@@ -125,6 +133,7 @@ public:
 	int m_foodStorageSize();
 	std::vector<CitizenState> m_applyCitizenStateVector(HappyVectorType flag = HAPPY_ALL);
 	int m_foodCost();
+	bool m_isCivilDisorder();
 	int m_shieldCost();
 	int m_Shields(){return m_shields;}
 	std::vector<UnitCostingResources> m_unitCostVector();
@@ -144,13 +153,17 @@ public:
 	void m_grow();
 	std::shared_ptr<CityImprovement> m_maybeBuild(ImprovementType imptype);
 	bool m_placeCitizen(std::shared_ptr<Field> fieldClickedOn);
-	int m_distanceTo(std::shared_ptr<City> comparedCity);
 	bool m_sell(int index);
 	void m_buy(int price);
 	void m_announceCannotMaintain(ImprovementType imptype);
 	const std::vector<CityImprovement>& m_Improvements(){return m_improvements;}
 	void m_shrink();
+	int m_revoltingCost();
+	int m_capturingValue();
 	friend class Settlers;
+	friend void Nation::m_destroyCity(std::shared_ptr<City> cityToDestroy);
+	friend void TradeRoute::m_destroyItself();
+	friend void Nation::m_captureCity(std::shared_ptr<City>);
 };
 
 template<typename T>

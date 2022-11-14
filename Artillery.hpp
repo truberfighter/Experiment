@@ -10,7 +10,6 @@
 
 #include "sdltypes.hpp"
 #include "NormalUnit.hpp"
-
 #define GROUND_UNIT(CLASS) class CLASS: public NormalUnit{\
 private:\
 public:\
@@ -30,6 +29,29 @@ class City;
 
 GROUND_UNIT(Artillery)
 GROUND_UNIT(Cavalry)
+GROUND_UNIT(Chariot)
+GROUND_UNIT(Phalanx)
+GROUND_UNIT(Musketeers)
+GROUND_UNIT(Riflemen)
+GROUND_UNIT(Legion)
+GROUND_UNIT(Armor)
+GROUND_UNIT(MechInf)
+GROUND_UNIT(Cannon)
+GROUND_UNIT(Catapult)
+GROUND_UNIT(Knights)
+GROUND_UNIT(Militia)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
