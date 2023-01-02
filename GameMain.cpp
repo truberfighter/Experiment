@@ -16,8 +16,10 @@
 #include "Figure.hpp"
 #include "Figurebutton.hpp"
 #include <sstream>
+#include "ctype.h"
 #include "City.hpp"
 #include "SelectorSurface.hpp"
+#include<algorithm>
 
 #define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ \
 	  Uint32 currentTime = SDL_GetTicks();\
@@ -39,7 +41,6 @@ SDL_Renderer* theRenderer = nullptr;
 
 SDL_Texture *theTexture;
 SDL_Texture *theTexture2;
-SDL_Event currentEvent;
 //GameMain* theEventHandler = new GameMain;
 shared_ptr<Drawing> someDrawing;
 
@@ -61,7 +62,6 @@ void GameMain::m_initGame(){
 	TTF_Init();
 	theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 22);
 	citySizeFont = TTF_OpenFont("Fonts/FT88-Regular.ttf",35);
-	fieldTextures = new shared_ptr<Texture>[30];
 	Window* theWindow = new Window ("Game Main, Window 0", SCREEN_WIDTH, SCREEN_HEIGHT);
 	m_currentRenderer = theRenderer = theWindow->m_Renderer();
 	m_initLetterTextures();
@@ -85,17 +85,42 @@ void GameMain::m_initGame(){
 
 void GameMain::m_createFieldTexture(Landscape ls, string filename){
 	theTexture = IMG_LoadTexture(m_currentRenderer, filename.c_str());
-	fieldTextures[ls]=make_shared<Texture>(theTexture, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE);
+	fieldTextures.push_back(make_shared<Texture>(theTexture, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE));
+}
+
+void GameMain::m_createResourceTexture(Landscape ls, string filename){
+	theTexture = IMG_LoadTexture(m_currentRenderer, filename.c_str());
+	resourceTextures.push_back(make_shared<Texture>(theTexture, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE));
+}
+
+void GameMain::m_createShieldTexture(Landscape ls, string filename){
+	theTexture = IMG_LoadTexture(m_currentRenderer, filename.c_str());
+	shieldTextures.push_back(make_shared<Texture>(theTexture, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE));
 }
 
 void GameMain::m_initFieldTextures(){
-	m_createFieldTexture(GRASSLAND, "bilder/Landscapes/Grassland.png");
-	m_createFieldTexture(PLAINS, "bilder/Landscapes/Plains.png");
-	m_createFieldTexture(OCEAN, "bilder/Landscapes/Ocean.png");
+	for(Landscape ls = (Landscape)0; ls<=OCEAN;ls=(Landscape)(ls+1)){
+		std::stringstream stream;
+		stream<<ls;stream.flush();
+		std::string landscapeString = stream.str();
+		int howFar = 0;
+		std::transform(landscapeString.begin(), landscapeString.end(), landscapeString.begin(),[&howFar](unsigned char c){return 0 < howFar++ ? tolower(c) : c; });
+		stream.clear();
+		std::stringstream normalStream;
+		normalStream<<"bilder/Landscapes/Default/"<<landscapeString<<".png";
+		m_createFieldTexture(ls, normalStream.str().c_str());
+		/*
+		std::stringstream resourceStream;
+		normalStream<<"bilder/Landscapes/Resource/"<<landscapeString<<".png";
+		m_createResourceTexture(ls, resourceStream.str().c_str());
+		std::stringstream shieldStream;
+		normalStream<<"bilder/Landscapes/Shield/"<<landscapeString<<".png";
+		m_createShieldTexture(ls, shieldStream.str().c_str());
+		 */
+	}
 }
 
 GameMain::~GameMain(){
-	delete fieldTextures;
 	TTF_CloseFont(theFont);
 	delete theLetterTextureContainer;
 }
@@ -168,18 +193,11 @@ void GameMain::gameMainDebug(list<SDL_Event>& eventList){
 	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
 	  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
 	 }else{
-	/*	 if( TTF_Init() == -1 )
-		                 {
-		                     printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
-		                 }*/
 
 	 doSomething();
 	 for(SDL_Event& event: eventList){
 		 m_handleKeyboardEvent(event);
-		 std::cout<<"GameMain-Loop-Ende"<<std::endl;
 	 }
-	 std::cout<<"Ende"<<std::endl;
-
 	 }
 }
 

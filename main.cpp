@@ -30,9 +30,10 @@ using namespace std;
 //SDL_Event currentEvent;
 //EventHandler* theEventHandler = new EventHandler;
 //shared_ptr<Drawing> someDrawing;
+SDL_Event currentEvent;
 
 int main( int argc, char* args[] ){
-
+/*
 	SDL_Event e;
 		e.key.keysym.sym = SDLK_3_DOWN_RIGHT;
 		list<SDL_Event> liste;
@@ -45,15 +46,19 @@ int main( int argc, char* args[] ){
 		liste.push_back(f);
 		}
 
-
+*/
 	GameMain gameMain;
-	SDL_Event event;
+/*	SDL_Event event;
 	event.type = SDL_KEYDOWN;
-	event.key.keysym.sym = SDLK_8_UP;
+	event.key.keysym.sym = SDLK_b;
 	std::list<SDL_Event> eventList;
 	eventList.push_back(event);
-	gameMain();
-	TTF_Quit();
+	eventList.push_back(event);
+	event.type = SDL_KEYDOWN;
+		event.key.keysym.sym = SDLK_ENTER_KEY;
+		eventList.push_back(event);*/
+		gameMain();
+		TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();  //Quit SDL subsystems	}3_
 	return 500;

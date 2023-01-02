@@ -42,12 +42,11 @@ enum{FIGURE_BUTTON_HEIGHT = STANDARD_FIELD_SIZE, FIGURE_BUTTON_WIDTH = STANDARD_
 enum{MODULO_FAIL = -1000};
 enum Landscape{GRASSLAND, PLAINS, OCEAN, RIVER, MOUNTAIN, HILLS, TUNDRA, ARCTIC, SWAMP, JUNGLE, FOREST, DESERT};
 class MovableDrawingElement;
-enum SettlersWork{NONE, IRRIGATE, MAKE_MINING, CHANGE_TO_FOREST, CHANGE_TO_PLAINS
-, CHANGE_TO_GRASSLAND, BUILD_ROAD, BUILD_RAILROAD, BUILD_FORTRESS, BUILD_BRIDGE};
+enum SettlersWork{NONE, IRRIGATE, MAKE_MINING , BUILD_ROAD, BUILD_RAILROAD, BUILD_FORTRESS};
 enum RoadStatus{NOTHING, ROAD, RAILROAD};
 enum GovernmentType{ANARCHY, DESPOTISM, MONARCHY, COMMUNISM, REPUBLIC, DEMOCRACY};
 enum SettlersWorkingTime{SETTLERSWORK_UNAVAILABLE = -1, STANDARD_ROAD_BUILDING_TIME = 2, STANDARD_RAILROAD_BUILDING_TIME = 4, STANDARD_FORTRESS_BUILDING_TIME = 6
-, STANDARD_IRRIGATION_TIME = 6, STANDARD_FORESTING_TIME = 12};
+, STANDARD_IRRIGATION_TIME = 6, STANDARD_FORESTING_TIME = 12, STANDARD_GRASSLANDING_TIME = 12};
 enum{FIELD_TEXTURE_AMOUNT = 30};
 enum Nationality {ROMAN, RUSSIAN, ZULU, GREEK, BABYLONIAN, ENGLISH, CHINESE, AMERICAN, GERMAN, FRENCH, AZTEC, EGYPTIAN, BARBARIAN, INDIAN, MONGOL,NO_NATIONALITY};
 enum FigureState{MOVING, SENTRIED, SENTRYING, FORTIFYING, FORTIFIED,COMPLETELY_FORTIFIED, FIGHT_IN_PROGRESS, PILLAGE_IN_PROGRESS, DONE_WITH_TURN, SETTLERS_AT_WORK};
@@ -93,7 +92,7 @@ LIGHTHOUSE,MANHATTAN_PROJECT,ORACLE,PYRAMIDS,SETI_PROGRAM,
 SHAKESPEARES_THEATRE,UNITED_NATIONS,
 BUILDING_MIN = TEMPLE,BUILDING_MAX = HYDRO_PLANT,FIGURE_MIN = IMPROVEMENT_SETTLERS,WONDER_MIN=APOLLO_PROGRAM,WONDER_MAX = UNITED_NATIONS
 };
-typedef bool BlinkingState;
+typedef bool BlinkingState;typedef std::function<int(int,int,SDL_Renderer*)> drawingFunction;
 constexpr BlinkingState VISIBLE(){return true;}
 constexpr BlinkingState INVISIBLE(){return false;}
 #define IMPROVEMENT_UNIT_LAYER 0
@@ -151,7 +150,7 @@ public:
 	SDL_Texture* theTexture();
 };
 
-extern std::shared_ptr<Texture>* fieldTextures;
+extern std::vector<std::shared_ptr<Texture>> fieldTextures, resourceTextures,shieldTextures;
 extern SDL_Renderer* theRenderer;
 
 class PoleHitException: public std::exception{
@@ -221,6 +220,7 @@ class SDLQuitException{
 int SDL_SetRenderDrawColor(SDL_Renderer* renderer, SDL_Color color);
 
 namespace Graphics{
+bool ratherShieldThanResource(Landscape ls);
 int drawSquareLines(SDL_Renderer*, int, int, SDL_Color);
 int drawSquareStarLines(SDL_Renderer*, int, int, SDL_Color);
 int drawThickerDiagonalLineDown(SDL_Renderer* renderer, int x, int y,  int thickness = STANDARD_LINE_THICKNESS);

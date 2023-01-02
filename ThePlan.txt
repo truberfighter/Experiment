@@ -10,3 +10,8 @@ bank
 library
 university
 palace
+
+Refactoring-Maﬂnahmen:
+
+irrigate- und mining-Methoden umschreiben, bzw in FieldType.hpp auslagern, so gut es geht
+

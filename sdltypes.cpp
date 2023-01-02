@@ -198,11 +198,7 @@ char getSettlersOrder(SettlersWork work){
 	case IRRIGATE: return 'i';
 	case BUILD_ROAD: return 'r';
 	case BUILD_RAILROAD: return 'm';
-	case CHANGE_TO_FOREST: return 'm';
-	case CHANGE_TO_GRASSLAND: return 'i';
-	case CHANGE_TO_PLAINS: return 'i';
 	case BUILD_FORTRESS: return 'f';
-	case BUILD_BRIDGE: return 'r';
 	case NONE: return ' ';
 	}
 	return 'F';
@@ -617,6 +613,7 @@ std::ostream& operator<<(std::ostream& os, ImprovementType imptype){
 	case LIBRARY: os<<"Library"; break;
 	case MFG_PLANT: os<<"Mfg Plant"; break;
 	case CATHEDRAL: os<<"Cathedral"; break;
+	case FACTORY: os<<"Factory"; break;
 	case BARRACKS: os<<"Barracks"; break;
 	case NUCLEAR_PLANT: os<<"Nuclear Plant"; break;
 	case COLOSSEUM: os<<"Colosseum"; break;
@@ -656,7 +653,7 @@ std::ostream& operator<<(std::ostream& os, ImprovementType imptype){
 	}
 	return os;
 }
-
+#undef STREAM
 bool lolllll = false;
 
 int Graphics::Civ::drawIrrigation(SDL_Renderer* renderer, int x, int y){
@@ -749,4 +746,8 @@ void Miscellaneous::displayText(std::stringstream& str, int x, int y, SDL_Color 
 			throw sdlqe;
 		}
 	}
+}
+
+bool Graphics::ratherShieldThanResource(Landscape ls){
+	return ls == GRASSLAND;
 }

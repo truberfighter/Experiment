@@ -4,13 +4,11 @@
 #include "Field.hpp"
 #include <vector>
 #include "FieldContainer.hpp"
-#include "Grassland.hpp"
-#include "Plains.hpp"
-#include "Ocean.hpp"
+#include "FieldType.hpp"
 using namespace std;
 
 FieldContainer* theContainer = nullptr;
-shared_ptr<Texture>* fieldTextures = nullptr;
+std::vector<shared_ptr<Texture>> fieldTextures, resourceTextures; std::vector<std::shared_ptr<Texture>>shieldTextures;
 
 FieldContainer* FieldContainer::getTheContainer(){
 	return theContainer;
@@ -31,14 +29,15 @@ FieldContainer::FieldContainer(int howHigh, int howWide)
 		Meridian newMeridian;
 		for(int j(0); j<howHigh; j++){
 			if((i+j)%2==0)
-				newMeridian.push_back(make_unique<Plains>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
+				newMeridian.push_back(make_unique<Field>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j, PLAINS));
 			else
-				newMeridian.push_back(make_unique<Ocean>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j));
+				newMeridian.push_back(make_unique<Field>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j, OCEAN));
 
 		}
 m_fieldsOfTheWorld->push_back(newMeridian);
 }
 	theContainer = this;
+	m_initFieldTypes();
 }
 
 std::vector<Meridian>* FieldContainer::m_getFieldsOfTheWorld(){
@@ -91,3 +90,6 @@ void FieldContainer::initContinentIDs(){
 	}
 }
 
+std::vector<FieldType>& FieldContainer::m_FieldTypes(){
+	return m_fieldTypes;
+}

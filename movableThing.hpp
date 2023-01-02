@@ -54,7 +54,7 @@ public:
 	Coordinate getPosition();
 	unsigned int WhenMoved();
 	void m_setTexture(std::shared_ptr<Texture>);
-	void m_setDrawingInstructions(int (*foo) (int, int, SDL_Renderer*));
+	void m_setDrawingInstructions(drawingFunction foo);
 	//void setWhenMoved(unsigned int whenMoved);
 };
 

@@ -18,6 +18,7 @@
 
 class FieldContainer{
 	std::vector<Meridian>* m_fieldsOfTheWorld;
+	std::vector<FieldType> m_fieldTypes;
 	//static  FieldContainer* theContainer;
 public:
 	FieldContainer(int howHigh, int howWide);
@@ -27,6 +28,8 @@ public:
 	static FieldContainer* getTheContainer();
 	friend void initFieldContainer();
 	void initContinentIDs();
+	std::vector<FieldType>& m_FieldTypes();
+	void m_initFieldTypes();
 };
 
 void initFieldContainer();

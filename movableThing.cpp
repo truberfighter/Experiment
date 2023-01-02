@@ -90,6 +90,7 @@ bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, std::shared_p
 MovableThing::~MovableThing(){
 	std::cout<<"MovableThing-Destruktor1, this = "<<this<<std::endl;
 	while(!m_howDrawn.empty()){
+
 		for(Drawing* currentDrawing: m_howDrawn.front()->m_whereToDraw){
 		//std::cout<<"MovableThing-Destruktor2, this = "<<this<<std::endl;
 		currentDrawing->m_delete(m_howDrawn.front());
@@ -231,7 +232,7 @@ unsigned int MovableThing::WhenMoved(){
 		m_whenMoved = whenMoved;}
 		*/
 
-void MovableThing::m_setDrawingInstructions(int (*foo) (int, int, SDL_Renderer*)){
+void MovableThing::m_setDrawingInstructions(drawingFunction foo){
 	for(MovableDrawingElement* currentElement: m_howDrawn){
 		currentElement->m_setAdditionalInstructions(foo);
 	}

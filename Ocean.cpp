@@ -12,6 +12,7 @@
  *      Author: uwe-w
  */
 
+/*
 #include "Ocean.hpp"
 #include <memory>
 #include "Drawing.hpp"
@@ -61,39 +62,8 @@ std::string Ocean::m_resourceOverview(){return "Until very much later, forget ab
 Landscape Ocean::m_Landscape() const{
 	return OCEAN;
 }
-short int Ocean::m_howLongToTake(SettlersWork work){
-	return SETTLERSWORK_UNAVAILABLE;
-
-	switch(work){
-	case BUILD_ROAD:{ //soll mal ein Makro werden
-		if(m_roadStatus == NOTHING){
-			return STANDARD_ROAD_BUILDING_TIME;
-		}
-		else{ //m_roadStatus != NOTHING
-			return SETTLERSWORK_UNAVAILABLE;
-		}
-	}
-	case BUILD_RAILROAD:{
-		if(m_roadStatus == NOTHING){
-				return STANDARD_RAILROAD_BUILDING_TIME;
-			}
-		else{ //m_roadStatus != ROAD
-			return SETTLERSWORK_UNAVAILABLE;
-		}
-	}
-	case BUILD_FORTRESS:{
-		return STANDARD_FORTRESS_BUILDING_TIME;
-	}
-	case IRRIGATE:{
-		return STANDARD_IRRIGATION_TIME;
-	}
-	case CHANGE_TO_FOREST:{
-		return STANDARD_FORESTING_TIME;
-	}
-	default:
-		return SETTLERSWORK_UNAVAILABLE;
-	}
-}
 
 
 
+
+*/

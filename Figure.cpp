@@ -17,6 +17,7 @@
 #include "Ship.hpp"
 #include "City.hpp"
 #include "Diplomat.hpp"
+#include "FieldType.hpp"
 
 using namespace std;
 
@@ -140,8 +141,7 @@ MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 		}
 		std::cout<<"standardMovement"s<<std::endl;
 		return m_movementPoints.m_movementPoints >= ONE_MOVEMENT_POINT
-				&& m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()
-				==OCEAN ?
+	&& m_whereItStands->m_getNeighbouringField(whereToGo)->m_Landscape()==OCEAN ?
 						ONE_MOVEMENT_POINT : MOVE_PROHIBITED;
 	case FLIGHT:
 		if(aim->m_CityContained()!=nullptr){
@@ -301,6 +301,7 @@ int Figure::m_desertationCost(){
 
 MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
 	Field& fieldToVisit = *(m_whereItStands->m_getNeighbouringField(whereToGo));
+	std::cout<<"Kevin"<<std::endl;
 	if(m_whereItStands->m_Landscape()==OCEAN && !fieldToVisit.m_FiguresOnField().empty() && fieldToVisit.m_FiguresOnField().front()->m_Nationality()!=m_Nationality()){
 		SDL_Surface* textSurface = TTF_RenderText_Solid(theFont, "You can't launch a land based attack from a sea vessel", whiteColor);
 		SDL_Rect rectToFill{INFO_TEXT_X & 0, INFO_TEXT_Y,textSurface->w,textSurface->h};
@@ -315,11 +316,12 @@ MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
 	}
 	switch(m_whereItStands->m_RoadStatus()){
 		case NOTHING:{
+			fieldToVisit.m_getFieldType().m_texture;
+				std::cout<<"tandardmovecostground kommt"<<std::endl;
 			return m_calculateStandardMoveCostGround(fieldToVisit);
 		}
 		case ROAD:{
 			if(fieldToVisit.m_RoadStatus()!=NOTHING){
-				//Kampfhandlungen...
 				return ONE_MOVEMENT_POINT/3;
 			}
 			else{

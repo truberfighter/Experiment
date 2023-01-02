@@ -30,8 +30,11 @@ public:
 	virtual int m_draw(int rowShift = 0, int columnShift = 0, SDL_Renderer* renderer = nullptr) override;
 };
 
+class FieldType;
+
 class Field: public std::enable_shared_from_this<Field>{
 protected:
+	Landscape m_landscape;
 	void m_makeVisibleAround(int visibilityRange = 1);
 	std::vector<NationKnows> m_nationFogInfo;
 	Citizen* m_citizenWorking = nullptr;
@@ -40,22 +43,23 @@ protected:
 	ContinentID m_continentID = NO_CONTINENT_ID_GIVEN;
 	int m_roadTradeResult();
 	bool m_hasFortress = false;
-	bool m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
 	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
 	Layer m_layer;
 	bool m_hasSpecialResource = false;
+	bool m_hasShield = false;
 	std::shared_ptr<FieldElement> m_drawingElement;
 	int m_x;
 	int m_y;
-	bool m_isIrrigated = false;
 	std::shared_ptr<City> m_cityContained;
+	bool m_isIrrigated = false;
 	bool m_isMined = false;
 	bool m_maybeFinishWork(Settlers& settlers, SettlersWork work);
-	virtual short int m_howLongToTake(SettlersWork work) = 0;
+	short int m_howLongToTake(SettlersWork work);
 	RoadStatus m_roadStatus = NOTHING;
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
 public:
+	FieldType& m_getFieldType();
 	int m_distanceTo(std::shared_ptr<City>);
 	bool m_isVisible(Nationality nationality);
 	void m_makeVisible(Nationality nationality);
@@ -68,38 +72,43 @@ public:
 	bool m_HasFortress(){return m_hasFortress;}
 	const std::list<std::shared_ptr<Figure>>& m_FiguresOnField(){return m_figuresOnField;}
 	virtual ~Field();
-	Field(int x, int y, Layer layer, bool hasSpecialResource = false);
+	Field(int x, int y,  Landscape ls, bool hasSpecialResource = false, bool hasShield = false);
 	int m_X() const;
 	int m_Y() const;
 	std::shared_ptr<FieldElement> m_DrawingElement();
 	void m_takeFigure(std::shared_ptr<Figure> movingFigure);
 	void m_releaseFigure(std::shared_ptr<Figure> movingFigure);
-	virtual MovementPoints m_movementPoints() =0;
-	virtual float m_defenseBonus()=0;
+	MovementPoints m_movementPoints();
+	double m_defenseBonus();
 	bool m_IsMined() const;
 	bool m_IsIrrigated() const;
 	bool m_Road(Settlers& settlers);
-	virtual bool m_Mining(Settlers& settlers)=0;
-	virtual bool m_Irrigate(Settlers& settlers)=0;
+	bool m_Mining(Settlers& settlers);
+	bool m_Irrigate(Settlers& settlers);
 	int m_shields(Nation& nation);
-	virtual int m_shields() = 0;
+	virtual int m_shields();
 	int m_food(Nation& nation);
-	virtual int m_food()=0;
+	virtual int m_food();
 	int m_trade(Nation& nation);
-	virtual int m_trade()=0;
+	virtual int m_trade();
 	bool m_militaryProblem(std::shared_ptr<Figure> movingFigure);
-	virtual std::string m_resourceOverview()=0;
-	virtual Landscape m_Landscape() const = 0;
+	std::string m_resourceOverview();
+	Landscape m_Landscape(){return m_landscape;}
 	RoadStatus m_RoadStatus();
 	bool m_HasSpecialResource();
 	bool m_Pillage();
+	void m_setIsIrrigated(bool a){m_isIrrigated = a;}
+	void m_setIsMined(bool a){m_isMined = a;}
 	std::shared_ptr<City> m_CityContained();
+	void m_setCityContained(std::shared_ptr<City> newCity);
 	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
 	std::shared_ptr<Field> m_getNeighbouringField(Coordinate differenceCoordinate);
 	void m_drawField();
 	bool m_closeToLandscape(Landscape ls);
 	std::vector<std::shared_ptr<Field>> m_cityFieldsAround();
 	friend std::ostream& operator<<(std::ostream&, Field&);
+	void m_changeLandscapeTo(Landscape landscape);
+	bool m_HasShield(){return m_hasShield;}
 	friend class FieldContainer;
 	friend class City;
 	friend class Game;

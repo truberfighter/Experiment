@@ -10,6 +10,7 @@
 #include "Figure.hpp"
 #include "Field.hpp"
 
+class FinishMove{};
 class DiplomatDead{
 
 };

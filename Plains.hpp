@@ -3,7 +3,6 @@
  *
  *  Created on: 12.03.2022
  *      Author: uwe-w
- */
 
 #ifndef PLAINS_HPP_
 #define PLAINS_HPP_
@@ -25,9 +24,9 @@ public:
 	int m_trade() override;
 	std::string m_resourceOverview()override;
 	Landscape m_Landscape() const override;
-	short int m_howLongToTake(SettlersWork work) override;
 };
 
 
 
 #endif /* PLAINS_HPP_ */
+

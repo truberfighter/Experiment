@@ -45,6 +45,8 @@ public:
 	void m_initGame();
 	void m_showFigureInformation(std::shared_ptr<Figure> whatFigure);
 	void m_createFieldTexture(Landscape ls, std::string filename);
+	void m_createResourceTexture(Landscape ls, std::string filename);
+	void m_createShieldTexture(Landscape ls, std::string filename);
 	void m_initFieldTextures();
 	void gameMainDebug(std::list<SDL_Event>& eventList);
 	std::unique_ptr<Window>& m_currentWindow(){return m_theWindows[m_currentWindowIndex];}

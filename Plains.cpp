@@ -3,7 +3,6 @@
  *
  *  Created on: 12.03.2022
  *      Author: uwe-w
- */
 
 #include "Plains.hpp"
 #include <memory>
@@ -53,37 +52,7 @@ std::string Plains::m_resourceOverview(){return "Until very much later, forget a
 Landscape Plains::m_Landscape() const{
 	return PLAINS;
 }
-short int Plains::m_howLongToTake(SettlersWork work){
-	switch(work){
-	case BUILD_ROAD:{ //soll mal ein Makro werden
-		if(m_roadStatus == NOTHING){
-			return STANDARD_ROAD_BUILDING_TIME;
-		}
-		else{ //m_roadStatus != NOTHING
-			return SETTLERSWORK_UNAVAILABLE;
-		}
-	}
-	case BUILD_RAILROAD:{
-		if(m_roadStatus == NOTHING){
-				return STANDARD_RAILROAD_BUILDING_TIME;
-			}
-		else{ //m_roadStatus != ROAD
-			return SETTLERSWORK_UNAVAILABLE;
-		}
-	}
-	case BUILD_FORTRESS:{
-		return STANDARD_FORTRESS_BUILDING_TIME;
-	}
-	case IRRIGATE:{
-		return STANDARD_IRRIGATION_TIME;
-	}
-	case CHANGE_TO_FOREST:{
-		return STANDARD_FORESTING_TIME;
-	}
-	default:
-		return SETTLERSWORK_UNAVAILABLE;
-	}
-}
 
+*/
 
 

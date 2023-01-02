@@ -14,7 +14,6 @@ SelectorSurface::SelectorSurface(int x, int y, std::vector<std::shared_ptr<Selec
 :m_x(x), m_y(y), m_inCenter(inCenter), m_whatToAskFor(whatToAskFor), m_standardColor(standardColor), m_fontColor(fontColor), m_markedColor(markedColor), m_backgroundOrders(backgroundOrders)
 {
 std::cout<<"SelectorSurface-Konstruktor, m_whatToAskFor-size: "<<m_whatToAskFor.size()<<std::endl;
-HowMuchToDraw = m_whatToAskFor.size();
 }
 
 struct TextureWithIndex{
@@ -50,6 +49,9 @@ if(elementTexture.surfaceIndex == m_effectiveIndex()){\
 /*if necessary, offer stepping to the next unit (modulo)*/\
 if(HowMuchToDraw>elementsPerUnit-1){\
 if(currentRelativeIndex == (NEXT_INDEX(endIndexesIndex,HowMuchToDraw - 1,endIndexes)) - endIndexes[endIndexesIndex] + 1){\
+	SDL_SetRenderDrawColor(theRenderer, m_markedColor);\
+}\
+if(currentRelativeIndex==elementsPerUnit){\
 	SDL_SetRenderDrawColor(theRenderer, m_markedColor);\
 }\
 SDL_Surface* moreSurface = TTF_RenderText_Solid(theFont, "MORE", blackColor);\
@@ -126,8 +128,9 @@ SelectionReturn SelectorSurface::m_fetchSelection(){
 					SDL_RenderClear(theRenderer);
 					endIndexesIndex++;
 //never set value to the very last endIndex (which is just the size of m_whatToAsk)
-					endIndexesIndex = modulo(endIndexesIndex, endIndexes.size());
 					std::cout<<"more has been pressed and it is up to be drawn been drawn: endIndexesIndex = "<<endIndexesIndex<<std::endl;
+					endIndexesIndex = modulo(endIndexesIndex, endIndexes.size());
+					currentRelativeIndex = 0;
 					DRAW_SELECTION
 					for(int iii: endIndexes){
 						std::cout<<"endIndex "<<iii<<std::endl;
@@ -200,10 +203,10 @@ bool SelectorSurface::m_handleKeyboardEvent(const SDL_Event& event){
 		return false;
 	}
 	KeyCode keyCode = event.key.keysym.sym;
-	std::cout<<"Man hat den KeyCode "<<keyCode<<std::endl;
+	std::cout<<"Man hat den KeyCode "<<keyCode<<", effective index: "<<m_effectiveIndex()<<std::endl;
 	switch(keyCode){
 	case SDLK_ENTER_KEY:{
-		enterkey: if(m_effectiveIndex()<0||m_effectiveIndex()>=HowMuchToDraw){
+		enterkey: if(m_effectiveIndex()<0||(m_effectiveIndex()>HowMuchToDraw + 1 || (m_effectiveIndex()==HowMuchToDraw && HowMuchToDraw<=elementsPerUnit))){
 			throw QuitSelection(NO_ACTION);
 		}
 		throw m_finalSelection();
@@ -256,7 +259,11 @@ void SelectorSurface::m_goDown(){
 #undef MODULO_REFERENCE
 
 QuitSelection SelectorSurface::m_finalSelection(){
-	if(m_effectiveIndex() == NEXT_INDEX(endIndexesIndex,HowMuchToDraw,endIndexes)){
+	if(m_effectiveIndex()==HowMuchToDraw){
+		return QuitSelection(NEXT_PAGE);
+	}
+	if(m_effectiveIndex() == NEXT_INDEX(endIndexesIndex,HowMuchToDraw + 1,endIndexes)){
+	std::cout<<"quitselection"<<m_effectiveIndex()<<std::endl;
 		return QuitSelection(NEXT_PAGE);
 	}
 	else return QuitSelection(SELECTION);

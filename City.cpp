@@ -434,32 +434,17 @@ int City::m_tradeProduction(){
 
 int City::m_luxuriesRevenue(){
 	int production = m_revenueProduction().luxuries;
-	int marketBankCoefficient = 2;
-	if(m_contains(MARKETPLACE))
-		marketBankCoefficient++;
-	if(m_contains(BANK))
-		marketBankCoefficient++;
-	return (production*marketBankCoefficient)/2;
+	return (production*m_luxuryCoefficient());
 }
 
 int City::m_goldRevenue(){
 	int production = m_revenueProduction().gold;
-	int marketBankCoefficient = 2;
-	if(m_contains(MARKETPLACE))
-		marketBankCoefficient++;
-	if(m_contains(BANK))
-		marketBankCoefficient++;
-	return (production*marketBankCoefficient)/2;
+	return (production*m_goldCoefficient());
 }
 
 int City::m_scienceRevenue(){
 	int production = m_revenueProduction().science;
-	int libraryUniversityCoefficient = 2;
-	if(m_contains(LIBRARY))
-		libraryUniversityCoefficient++;
-	if(m_contains(UNIVERSITY))
-		libraryUniversityCoefficient++;
-	return (production*libraryUniversityCoefficient)/2;
+	return (production*m_scienceCoefficient());
 }
 
 bool City::m_placeCitizen(std::shared_ptr<Field> fieldClickedOn){
@@ -514,7 +499,7 @@ std::shared_ptr<CityImprovement> City::m_maybeBuild(ImprovementType imptype){
 	}
 	if(City::isWonderType(imptype)){
 		WonderData& wd = theGame->m_HasWonderBeenBuilt()[imptype - WONDER_MIN];
-		if(!wd.who == NO_NATIONALITY){
+		if(wd.who != NO_NATIONALITY){
 			return nullptr;
 		}
 		wd.who = m_owningNation->m_Nation();
@@ -690,6 +675,7 @@ void City::m_announceCannotMaintain(ImprovementType imptype){
 }
 
 void City::m_cityEconomy(){
+	std::cout<<"goldRevenue; "<<m_goldRevenue()<<", luxury revenue: "<<m_luxuriesRevenue()<<", scienceRevenue "<<m_scienceRevenue()<<std::endl;
 	m_owningNation->m_receiveMoney(m_goldRevenue());
 	for(int maintenanceIndex(0);maintenanceIndex<m_improvements.size();maintenanceIndex++){
 		ImprovementType currentImptype = m_improvements[maintenanceIndex].m_what;
@@ -745,4 +731,41 @@ bool City::m_isCivilDisorder(){
 
 int City::m_revoltingCost(){
 	return ((m_owningNation->m_Treasury()+1000)*m_size()/(m_isCivilDisorder() ? 2 : 1))/(3+m_whereItStands->m_distanceTo(m_owningNation->m_CapitalCity()));
+}
+
+float City::m_scienceCoefficient(){
+	float whatToReturn = 1;
+	if(m_contains(LIBRARY)){
+		whatToReturn +=m_owningNation->m_libraryCoefficient();
+	}
+	if(m_contains(UNIVERSITY)){
+		whatToReturn +=m_owningNation->m_libraryCoefficient();
+	}
+	whatToReturn+=m_owningNation->m_scienceCoefficient();
+	if(m_contains(COPERNICUS_OBSERVATORY)){
+		whatToReturn+=whatToReturn;
+	}
+	return whatToReturn;
+}
+
+float City::m_goldCoefficient(){
+	float whatToReturn = 1;
+	if(m_contains(BANK)){
+		whatToReturn +=m_owningNation->m_libraryCoefficient();
+	}
+	if(m_contains(MARKETPLACE)){
+		whatToReturn +=m_owningNation->m_libraryCoefficient();
+	}
+	return whatToReturn;
+}
+
+float City::m_luxuryCoefficient(){
+	float whatToReturn = 1;
+	if(m_contains(BANK)){
+		whatToReturn +=m_owningNation->m_libraryCoefficient();
+	}
+	if(m_contains(MARKETPLACE)){
+		whatToReturn +=m_owningNation->m_libraryCoefficient();
+	}
+	return whatToReturn;
 }

@@ -49,6 +49,8 @@ public:
 	CityImprovement(ImprovementType whart, City* home);
 	ImprovementType m_what;
 	City* m_home;
+	std::function<void(City* city)> whenBuilt = [](City*){};
+	std::function<void(City* city)> whenDestroyed = [](City*){};
 };
 
 class NoGivenData{
@@ -109,6 +111,20 @@ private:
 	void m_cityEconomy();
 
 public:
+	float m_goldCoefficient();
+	float m_scienceCoefficient();
+	float m_luxuryCoefficient();
+	int m_contentByImprovement();
+	int m_templeValue();
+	bool m_makeVeteran();
+	float m_productionCoefficient();
+	int m_wonderHappy = 0;
+	int m_wonderContent = 0;
+	int m_unhappyPerUnit();
+	float m_industrialPollutionCoefficient;
+	float m_populationPollutionCoefficient();
+	static std::function<void(City*)> m_whenDestroyed(ImprovementType imptype);
+	static std::function<void(City*)> m_whenBuilt(ImprovementType imptype);
 	static int shieldsNeeded(ImprovementType imptype);
 	static int figureWidth(FigureType figtype);
 	static int figureHeight(FigureType figtype);

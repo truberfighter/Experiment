@@ -175,7 +175,7 @@ void CitySurface::m_drawShieldProduction(){
 	const int shieldWidth = RESOURCES_SCALEFACTOR*7;
 	int x = 0;
 	const int yToStart = CITIZENS_OVERVIEW_HEIGHT + RESOURCES_TEXT_HEIGHT + RESOURCE_TEXT_SHIELD_DIFFERENCE;
-	const int distance = std::max(1*RESOURCES_SCALEFACTOR, std::min(shieldWidth,(int)PRODUCTION_OVERVIEW_WIDTH/std::max(m_associatedCity->m_shieldCost(), m_associatedCity->m_shieldProduction())));
+	const int distance = std::max(1*RESOURCES_SCALEFACTOR, std::min(shieldWidth,(int)PRODUCTION_OVERVIEW_WIDTH/std::max(m_associatedCity->m_shieldCost(), std::max(m_associatedCity->m_shieldProduction(),1))));
 	for(int i(0); i<m_associatedCity->m_shieldCost(); i++){
 		isThereAnyCost = true;
 		if(i>=m_associatedCity->m_shieldProduction()){
@@ -438,7 +438,8 @@ void CitySurface::m_drawTradeProduction(){
 	const int tradeWidth = RESOURCES_SCALEFACTOR*7;
 	int x = 0;
 	const int yToStart = CITIZENS_OVERVIEW_HEIGHT + RESOURCES_TEXT_HEIGHT + 2*RESOURCE_TEXT_SHIELD_DIFFERENCE;
-	const int distance = std::max(1*RESOURCES_SCALEFACTOR, std::min(tradeWidth,(int)PRODUCTION_OVERVIEW_WIDTH/std::max(m_associatedCity->m_shieldCost(), m_associatedCity->m_shieldProduction())));
+	int temp = std::max(m_associatedCity->m_corruptionProduction(), m_associatedCity->m_tradeProduction()-m_associatedCity->m_corruptionProduction());
+	const int distance = std::max(1*RESOURCES_SCALEFACTOR, std::min(tradeWidth,(int)PRODUCTION_OVERVIEW_WIDTH/temp));
 	std::cout<<"before corruption production"<<std::endl;
 	for(int i(0); i<amount-m_associatedCity->m_corruptionProduction(); i++){
 		isThereAnyCorruption = true;

@@ -37,14 +37,13 @@ public:
 
 
 
-
 class DrawingElement: public std::enable_shared_from_this<DrawingElement>{
 protected:
 	int m_row;
 	int m_column;
 	SDL_Renderer* m_renderer;
 	Layer m_layer;
-	int (*m_Draw)(int, int, SDL_Renderer*)=0;
+	drawingFunction m_Draw;
 	std::list<Drawing*> m_whereToDraw;
 	int m_rowWhereLastDrawn;
 	int m_columnWhereLastDrawn;
@@ -60,7 +59,7 @@ public:
 	void m_setLayer(int layer);
 	virtual bool m_equals(DrawingElement& comparedDrEl) = 0;
 	bool m_addDrawing(Drawing* newDrawing);
-	void m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Renderer*)=NO_INSTRUCTIONS);
+	void m_setAdditionalInstructions(drawingFunction Draw =[](int,int,SDL_Renderer*){return 0;});
 	virtual void m_drawAsRemembered(SDL_Renderer* renderer = nullptr);
 	void m_climbToTop(Layer layer);
 	void m_climbToTop();

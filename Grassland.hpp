@@ -3,7 +3,7 @@
  *
  *  Created on: 08.03.2022
  *      Author: uwe-w
- */
+
 
 #ifndef GRASSLAND_HPP_
 #define GRASSLAND_HPP_
@@ -26,7 +26,6 @@ public:
 	int m_trade() override;
 	std::string m_resourceOverview()override;
 	Landscape m_Landscape() const override;
-	short int m_howLongToTake(SettlersWork work) override;
 };
 
 

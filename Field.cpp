@@ -13,11 +13,13 @@
 #include "sdltypes.hpp"
 #include <list>
 #include "Ship.hpp"
+#include "FieldType.hpp"
 
-Field::Field(int x, int y, Layer layer, bool hasSpecialResource)
-: enable_shared_from_this(),m_x(x), m_y(y), m_layer(layer), m_hasSpecialResource(hasSpecialResource)
+Field::Field(int x, int y, Landscape ls, bool hasSpecialResource, bool hasShield)
+: enable_shared_from_this(),m_x(x), m_y(y), m_landscape(ls),m_layer(STANDARD_FIELD_LAYER), m_hasSpecialResource(hasSpecialResource), m_hasShield(hasShield)
 {
-
+	m_drawingElement = std::make_shared<FieldElement>(theRenderer, fieldTextures[ls], x, y, STANDARD_FIELD_LAYER);
+	m_drawingElement->m_setField(this);
 }
 
 std::shared_ptr<City> Field::m_CityContained(){
@@ -60,22 +62,22 @@ void Field::m_railRoadProductionEffect(int& count){
 
 int Field::m_food(Nation& nation){
 	int count = m_food();
-	ACKNOWLEDGE_DESPOTISM
 	ACKNOWLEDGE_RAILROAD
+	ACKNOWLEDGE_DESPOTISM
 	return count;
 }
 
 int Field::m_shields(Nation& nation){
 	int count = m_shields();
-	ACKNOWLEDGE_DESPOTISM
 	ACKNOWLEDGE_RAILROAD
+	ACKNOWLEDGE_DESPOTISM
 	return count;
 }
 
 int Field::m_trade(Nation& nation){
 	int count = m_trade();
-	ACKNOWLEDGE_DESPOTISM
 	ACKNOWLEDGE_RAILROAD
+	ACKNOWLEDGE_DESPOTISM
 	ACKNOWLEDGE_DEMOCRACY
 	return count;
 }
@@ -107,34 +109,11 @@ bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
 	}
 }
 
-bool Field::m_IrrigateTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
-	if(m_howLongToTake(whatWorkWillCome)==SETTLERSWORK_UNAVAILABLE){
-		throw(SettlersworkUnavailable());
-	}
-	switch(whatWorkWillCome){
-	case IRRIGATE:{
-		if(m_isIrrigated){
-				return false;//do not mine again
-			}
-		else{ //if(!m_isIrrigated)
-			settlers.m_work(IRRIGATE);
-			//Irrigation complete
-			if(m_maybeFinishWork(settlers, IRRIGATE)){
-				//set to irrigated
-				m_isIrrigated = true;
-			}
-			return true;
-		}
-	}
-	default:{
-		return false;
-	}
-	}
-}
+
 
 int Field::m_roadTradeResult(){
 	if(m_roadStatus == ROAD || m_roadStatus == RAILROAD)
-			return 1;
+			return 40;
 		else //m_roadStatus == NOTHING
 			return 0;
 }
@@ -491,3 +470,69 @@ for(Coordinate& currentCoordinate: coordinates){
 }
 return false;
 }
+
+short int Field::m_howLongToTake(SettlersWork work){
+	return m_getFieldType().m_howLongToTake(work,this);
+}
+
+bool Field::m_Irrigate(Settlers& settlers){
+	if(m_howLongToTake(IRRIGATE)==SETTLERSWORK_UNAVAILABLE){
+		return false;
+	}
+	//if(!m_isIrrigated)
+	settlers.m_work(IRRIGATE);
+//Irrigation complete
+	if(m_maybeFinishWork(settlers, IRRIGATE)){
+		//set to irrigated
+		m_getFieldType().m_irrigator.m_whatToDo(this);
+	}
+	return true;
+}
+
+bool Field::m_Mining(Settlers& settlers){
+	if(m_howLongToTake(MAKE_MINING)==SETTLERSWORK_UNAVAILABLE){
+		return false;
+	}
+	//if(!m_isIrrigated)
+	settlers.m_work(MAKE_MINING);
+//Irrigation complete
+	if(m_maybeFinishWork(settlers, MAKE_MINING)){
+		//set to irrigated
+		 m_getFieldType().m_miningMaker.m_whatToDo(this);
+	}
+	return true;
+}
+
+void Field::m_setCityContained(std::shared_ptr<City> newCity){
+	m_cityContained = nullptr; //BE CCCAREFUL USING THIS
+}
+
+int Field::m_shields(){
+	return m_getFieldType().m_shields(this);
+}
+int Field::m_food(){
+	return m_getFieldType().m_food(this);
+}
+int Field::m_trade(){
+	return m_getFieldType().m_trade(this);
+}
+
+MovementPoints Field::m_movementPoints(){
+
+	MovementData m =  m_getFieldType().m_movementData;
+
+	return m.m_movementCost;
+}
+
+double Field::m_defenseBonus(){
+	return m_getFieldType().m_movementData.defenseBonus;
+}
+
+void Field::m_changeLandscapeTo(Landscape landscape){
+	m_landscape = landscape;
+	m_isIrrigated = false;
+	m_isMined = false;
+	m_drawingElement->setTexture(m_getFieldType().m_texture);
+}
+
+std::string Field::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}

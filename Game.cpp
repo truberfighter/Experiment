@@ -16,7 +16,7 @@
 #include <functional>
 #include "City.hpp"
 
-Nationality Graphics::Civ::currentNationality = ROMAN;
+Nationality Graphics::Civ::currentNationality = ROMAN; bool gameReady = false;
 
 std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 	std::cout<<"nation = "<<(nation ? nation : m_NationAtCurrentTurn().get())<<", settlersCount = "<<settlersCount<<std::endl;
@@ -62,6 +62,7 @@ Game::Game(std::vector<Nationality>& nationsToPlay){
 		nationPointer->m_setMakingActive(false);
 	}
 	Graphics::Civ::currentNationality = nationsToPlay[0];
+	gameReady = true;
 }
 
 Game::Year::Year(unsigned int yearNumberRaw):m_yearNumberRaw(yearNumberRaw)
@@ -178,4 +179,102 @@ std::string Game::Year::m_yearString(){
 	s<<1850+(m_yearNumberRaw-400)<<" AD";
 	Return: s.flush();
 	return s.str();
+}
+
+const WonderData& Game::m_wonderData(ImprovementType imptype){
+	return m_hasWonderBeenBuilt[imptype-WONDER_MIN];
+}
+
+bool Game::m_isObsolete(ImprovementType imptype){
+	TechnologyDependency info = Science::techInfo(imptype);
+	for(std::shared_ptr<Nation> nation: m_nationsPlaying){
+		for(Technology currentTech: nation->m_ExploredTechnologies()){
+			if(currentTech == info.techMakingObsolete1 || currentTech == info.techMakingObsolete2){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+std::shared_ptr<Nation> Game::m_getNation(Nationality nationality){
+	std::shared_ptr<Nation> whatToReturn = nullptr;
+	for(std::shared_ptr<Nation> nation: m_nationsPlaying){
+		if(nation->m_Nation()==nationality){
+			whatToReturn = nation;
+			break;
+		}
+	}
+	return whatToReturn;
+}
+
+void Game::m_acknowledgeExploration(Technology tech, Nationality nationality){
+
+	std::vector<ImprovementType> imptypesMadeObsolete;
+	for(ImprovementType comparedImptype = BUILDING_MIN;(int)comparedImptype<=BUILDING_MAX; comparedImptype = (ImprovementType) ((int) comparedImptype + 1)){
+		if(tech == Science::techInfo(comparedImptype).techMakingObsolete1 || tech == Science::techInfo(comparedImptype).techMakingObsolete2){
+			imptypesMadeObsolete.push_back(comparedImptype);
+		}
+	}
+	std::vector<ImprovementType> wonderTypesMadeObsolete;
+	for(ImprovementType comparedImptype = WONDER_MIN;(int)comparedImptype<=WONDER_MAX; comparedImptype = (ImprovementType) ((int) comparedImptype + 1)){
+		if(tech == Science::techInfo(comparedImptype).techMakingObsolete1 || tech == Science::techInfo(comparedImptype).techMakingObsolete2){
+			wonderTypesMadeObsolete.push_back(comparedImptype);
+		}
+	}
+	m_handleObsoletion(imptypesMadeObsolete, wonderTypesMadeObsolete);
+
+	if(m_isObsolete(GREAT_LIBRARY)){
+		return;
+	}
+	Nationality greatLibraryOwner = NO_NATIONALITY;
+	if(m_wonderData(GREAT_LIBRARY).who != NO_NATIONALITY && m_wonderData(GREAT_LIBRARY).isDestroyed == false){
+		greatLibraryOwner = m_wonderData(GREAT_LIBRARY).who;
+		Nation& currentNation = *m_getNation(greatLibraryOwner);
+		if(currentNation.m_hasExplored(tech)){
+			return;
+		}
+		for(std::shared_ptr<Nation> comparedNation: m_nationsPlaying){
+			if(comparedNation->m_Nation()!=greatLibraryOwner && comparedNation->m_Nation()!=nationality){
+				if(comparedNation->m_hasExplored(tech)){
+					currentNation.m_addTechnology(tech);
+				}
+			}
+		}
+	}
+}
+
+void Game::m_handleObsoletion(std::vector<ImprovementType>& imptypes, std::vector<ImprovementType>& wonderTypes){
+	for(ImprovementType currentImptype: imptypes){
+		for(std::shared_ptr<Nation> currentNation: m_nationsPlaying){
+			for(std::shared_ptr<City> currentCity: currentNation->m_Cities()){
+				for(const CityImprovement& currentImprovement: currentCity->m_Improvements()){
+					if(currentImprovement.m_what == currentImptype){
+						currentImprovement.whenDestroyed(currentCity.get());
+					}
+				}
+		}
+	}
+	}
+	for(ImprovementType currentImptype: wonderTypes){
+		for(std::shared_ptr<Nation> currentNation: m_nationsPlaying){
+			for(std::shared_ptr<City> currentCity: currentNation->m_Cities()){
+				for(const CityImprovement& currentImprovement: currentCity->m_Improvements()){
+					if(currentImprovement.m_what == currentImptype){
+						currentImprovement.whenDestroyed(currentCity.get());
+					}
+				}
+			}
+		}
+	}
+}
+
+bool Game::m_hasActiveWonder(Nationality nationality, ImprovementType imptype){
+	if(!City::isWonderType(imptype))
+		throw imptype;
+	const WonderData& data = m_wonderData(imptype);
+	if(data.who == nationality && !data.isDestroyed && m_isObsolete(imptype)){
+		return true;
+	}
+	return false;
 }

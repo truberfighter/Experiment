@@ -40,13 +40,17 @@ private:
 	Difficulty m_difficulty;
 	std::vector<Embassy> m_embassies;
 public:
+	bool m_hasActiveWonder(ImprovementType imptype);
+	float m_libraryCoefficient();
+	float m_scienceCoefficient();
+	const std::vector<Technology>& m_ExploredTechnologies(){return m_exploredTechnologies;}
 	std::vector<std::shared_ptr<City>> m_FoundedCities(){return m_foundedCities;}
 	void m_giveCity(std::shared_ptr<City> cityToGive,std::shared_ptr<Nation> whoToGiveTo);
 	void m_destroyCity(std::shared_ptr<City> cityToDestroy);
 	void m_addProgress(int progress);
 	void m_setWhatToExplore(Technology tech){m_whatToExplore = tech;}
 	bool m_hasExplored(Technology tech);
-	void m_maybeFinishExploration();
+	bool m_maybeFinishExploration();
 	int m_howMuchNeededForExploration();
 	Technology m_askForNewExploration();
 	std::vector<Technology> m_technologiesAvailable();
@@ -103,11 +107,11 @@ inline std::vector<std::shared_ptr<Figure>>& Nation::m_Figures(){
 	return m_figures;
 }
 
-class TechnologyOvershot{
+class TechnologyOvershoot{
 public:
 	int whatNeeded;
 	int whatsThere;
-	TechnologyOvershot(int wn, int wt):whatNeeded(wn), whatsThere(wt){}
+	TechnologyOvershoot(int wn, int wt):whatNeeded(wn), whatsThere(wt){}
 };
 
 class MoveStartFail{

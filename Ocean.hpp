@@ -3,7 +3,7 @@
  *
  *  Created on: 10.04.2022
  *      Author: uwe-w
- */
+
 
 #include "Field.hpp"
 #ifndef OCEAN_HPP_
@@ -27,7 +27,6 @@ public:
 	int m_trade() override;
 	std::string m_resourceOverview()override;
 	Landscape m_Landscape() const override;
-	short int m_howLongToTake(SettlersWork work) override;
 };
 
 

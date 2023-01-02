@@ -303,9 +303,9 @@ LambdaDrawingElement::LambdaDrawingElement(SDL_Renderer* renderer, int draw(int,
 LambdaDrawingElement::~LambdaDrawingElement(){
 }
 
-void DrawingElement::m_setAdditionalInstructions(int (*Draw)(int, int, SDL_Renderer*)){
+void DrawingElement::m_setAdditionalInstructions(drawingFunction Draw){
 	//cout<<"m_setAdditionalInstructions"<<m_Draw<<" for this = "<<this<<endl;
-this->m_Draw = *Draw;
+this->m_Draw = Draw;
 }
 
 void DrawingElement::m_drawAsRemembered(SDL_Renderer* renderer){

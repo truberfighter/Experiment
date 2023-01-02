@@ -404,16 +404,18 @@ Technology Nation::m_askForNewExploration(){
 	}
 }
 
-void Nation::m_maybeFinishExploration(){
+bool Nation::m_maybeFinishExploration(){
 	if(m_explorationProgress>m_howMuchNeededForExploration()){
-		throw TechnologyOvershot(m_howMuchNeededForExploration(),m_explorationProgress);
+		std::cout<<"techovershot thrown"<<std::endl;
+		throw TechnologyOvershoot(m_howMuchNeededForExploration(),m_explorationProgress);
 	}
 	if(m_explorationProgress==m_howMuchNeededForExploration()){
 		m_addTechnology(m_whatToExplore);
 		m_whatToExplore = NO_TECHNOLOGY;
 		std::cout<<"Kevin"<<std::endl;
-		m_explorationProgress = 0;
+		return true;
 	}
+	return false;
 }
 
 int Nation::m_howMuchNeededForExploration(){
@@ -421,7 +423,12 @@ int Nation::m_howMuchNeededForExploration(){
 }
 
 void Nation::m_addTechnology(Technology tech){
-	m_exploredTechnologies.push_back(m_whatToExplore);
+	if(gameReady)
+	theGame->m_acknowledgeExploration(tech,m_nation);
+	m_exploredTechnologies.push_back(tech);
+	if(tech==m_whatToExplore){
+		m_explorationProgress = 0;
+	}
 }
 
 void Nation::m_addProgress(int progress){
@@ -429,18 +436,29 @@ void Nation::m_addProgress(int progress){
 		//Not clear what I wanna do here.
 		m_explorationProgress+=progress;
 	}
+	bool finishInstantly = false;
+	bool notTheFirst = false;
 	while(progress>0){
 		if(m_whatToExplore==NO_TECHNOLOGY){
+			if(notTheFirst){
+				SDL_RenderClear(theRenderer);
+			}
 			m_whatToExplore = m_askForNewExploration();
 		}
 		try{
-			m_explorationProgress += progress;
-			progress = 0;
-			m_maybeFinishExploration();
+			if(!finishInstantly){
+				m_explorationProgress += progress;
+				progress = 0;
+			}
+			if(m_maybeFinishExploration()){
+				notTheFirst = true;
+			}
+			finishInstantly = false;
 		}
-		catch(TechnologyOvershot& ts){
+		catch(TechnologyOvershoot& ts){
 			progress = ts.whatsThere - ts.whatNeeded;
 			m_explorationProgress = ts.whatNeeded;
+			finishInstantly = true;
 		}
 	}
 }
@@ -473,7 +491,19 @@ void Nation::m_destroyCity(std::shared_ptr<City> cityToDestroy){
 		cityToDestroy->m_figuresOwned.front()->m_WhereItStands().m_releaseFigure(cityToDestroy->m_figuresOwned.front());
 		m_destroyFigure(cityToDestroy->m_figuresOwned.front());
 	}
-	cityToDestroy->m_WhereItStands()->m_CityContained()=nullptr;
+	for(const CityImprovement& currentImprovement: cityToDestroy->m_Improvements()){
+		currentImprovement.whenDestroyed(cityToDestroy.get());
+		if(City::isWonderType(currentImprovement.m_what)){
+			theGame->m_HasWonderBeenBuilt()[currentImprovement.m_what - WONDER_MIN].isDestroyed = true;
+		}
+	}
+	for(std::vector<std::shared_ptr<City>>::iterator it = m_cities.begin();it!=m_cities.end();it++){
+		if(cityToDestroy.get()==it->get()){
+			theGame->m_CitiesAlive().erase(it);
+			break;
+		}
+	}
+	cityToDestroy->m_WhereItStands()->m_setCityContained(nullptr);
 	cityToDestroy->m_WhereItStands()->m_DrawingElement()->m_setAdditionalInstructions([](int x,int y,SDL_Renderer* renderer)->int{return 0;});
 }
 
@@ -507,7 +537,7 @@ void Nation::m_captureCity(std::shared_ptr<City> cityToCapture){
 		}
 	}
 	cityToCapture->m_shrink();
-	std::cout<<"shrinked!"<<std::endl;
+	std::cout<<"shrunk!"<<std::endl;
 	bool destroy = false;
 	std::vector<ImprovementType> eraseData;
 	for(int index(0); index<cityToCapture->m_improvements.size();index++){
@@ -537,8 +567,10 @@ void Nation::m_captureCity(std::shared_ptr<City> cityToCapture){
 		figureToRelease->m_WhereItStands().m_releaseFigure(figureToRelease);
 		cityToCapture->m_OwningNation()->m_destroyFigure(figureToRelease);
 	}
+	std::cout<<"size: "<<cityToCapture->m_size()<<std::endl;
 	if(cityToCapture->m_size()!=0){
 		m_cities.push_back(cityToCapture);
+		cityToCapture->m_owningNation = shared_from_this();
 	}
 	for(std::vector<std::shared_ptr<City>>::iterator it = cityToCapture->m_OwningNation()->m_cities.begin(); it!= cityToCapture->m_OwningNation()->m_cities.end();it++){
 		if(it->get()==cityToCapture.get()){
@@ -546,12 +578,15 @@ void Nation::m_captureCity(std::shared_ptr<City> cityToCapture){
 			break;
 		}
 	}
-	cityToCapture->m_owningNation = shared_from_this();
 	std::cout<<"captured!"<<std::endl;
 }
 
 void Nation::m_establishEmbassy(std::shared_ptr<Nation> nationToTrack){
 	m_embassies.push_back(Embassy(nationToTrack));
+}
+
+bool Nation::m_hasActiveWonder(ImprovementType imptype){
+	return theGame->m_hasActiveWonder(m_nation, imptype);
 }
 
 void Nation::m_removeFigure(std::shared_ptr<Figure> figureToRemove){
@@ -567,4 +602,20 @@ void Nation::m_removeFigure(std::shared_ptr<Figure> figureToRemove){
 	}
 	m_figures.pop_back();
 	std::cout<<"previousListSize (destroyFigure): "<<previousListSize<<", listSize: "<<m_figures.size()<<std::endl;
+}
+
+float Nation::m_scienceCoefficient(){
+	float whatToReturn = 1;
+	if(m_hasActiveWonder(SETI_PROGRAM)){
+		whatToReturn+=0.5;
+	}
+	return whatToReturn;
+}
+
+float Nation::m_libraryCoefficient(){
+	float whatToReturn = 0.5;
+	if(m_hasActiveWonder(ISAAC_NEWTONS_COLLEGE)){
+		whatToReturn+=(1/3);
+	}
+	return whatToReturn;
 }

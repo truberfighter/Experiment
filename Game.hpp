@@ -20,7 +20,8 @@ class NationTurn;
 struct WonderData{
 	ImprovementType what;
 	Nationality who;
-	bool isDestroyed;
+	bool isDestroyed = false;
+	bool isObsolete = false;
 };
 
 class Game{
@@ -42,6 +43,9 @@ private:
 	std::vector<std::shared_ptr<Nation>> m_nationsPlaying;
 	void m_startNewTurn();
 public:
+	std::shared_ptr<Nation> m_getNation(Nationality nationality);
+	const WonderData& m_wonderData(ImprovementType imptype);
+	bool m_isObsolete(ImprovementType imptype);
 	std::vector<WonderData>& m_HasWonderBeenBuilt(){return m_hasWonderBeenBuilt;}
 	Year& m_CurrentYear(){return m_currentYear;}
 	std::vector<std::shared_ptr<City>>& m_CitiesAlive(){return m_citiesAlive;}
@@ -56,9 +60,13 @@ public:
 	std::shared_ptr<Nation> m_NationAtCurrentTurn();
 	unsigned int m_Year(){return m_currentYear.m_yearNumberRaw;}
 	std::shared_ptr<Figure> m_getCurrentFigure(Nation* nation = nullptr);
-	friend class Player;
+	void m_handleObsoletion(std::vector<ImprovementType>& imptypes, std::vector<ImprovementType>& wonderTypes);
+	void m_acknowledgeExploration(Technology tech, Nationality nationality = NO_NATIONALITY);
 	int m_getRandomNumberBetween(int lowerBound, int upperBound);
+	bool m_hasActiveWonder(Nationality nationality, ImprovementType imptype);
+	friend class Player;
 };
 
+extern bool gameReady;
 
 #endif /* GAME_HPP_ */

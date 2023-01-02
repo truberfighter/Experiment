@@ -238,6 +238,8 @@ bool City::m_maybeFinishProduction(){
 	CASE_FOR_BUILDING(IMPROVEMENT_CAVALRY,Cavalry)
 	CASE_FOR_BUILDING(IMPROVEMENT_LEGION, Legion)
 	CASE_FOR_BUILDING(IMPROVEMENT_DIPLOMAT, Diplomat)
+	CASE_FOR_BUILDING(IMPROVEMENT_MUSKETEERS, Musketeers)
+
 	default: return false;
 	}
 }
@@ -285,7 +287,8 @@ int City::m_buyingPrice(ImprovementType imptype){
 	}
 }
 
-#define IF_UNBUILT(A,B) if(!m_contains(A)&&B && m_owningNation->m_hasExplored(Science::techInfo(A).neededTech1) && m_owningNation->m_hasExplored(Science::techInfo(A).neededTech2))whatToReturn.push_back(A);
+#define IF_UNBUILT(A,B) if(!m_contains(A)&&B /*&& m_owningNation->m_hasExplored(Science::techInfo(A).neededTech1) && m_owningNation->m_hasExplored(Science::techInfo(A).neededTech2)*/)whatToReturn.push_back(A);
+#define IF_YOU_CAN(A,B)
 std::vector<ImprovementType> City::m_whatCanBeBuilt(){
 	std::vector<ImprovementType> whatToReturn;
 	whatToReturn.push_back(IMPROVEMENT_SETTLERS);
@@ -296,15 +299,37 @@ std::vector<ImprovementType> City::m_whatCanBeBuilt(){
 	if(m_whereItStands->m_closeToLandscape(OCEAN)){
 		whatToReturn.push_back(IMPROVEMENT_CARRIER);
 	}
-	/*for(int imptypeInt = BUILDING_MIN; imptypeInt <= BUILDING_MAX; imptypeInt++){
+	for(int imptypeInt = BUILDING_MIN; imptypeInt <= BUILDING_MAX; imptypeInt++){
 		switch(imptypeInt){
 		case HYDRO_PLANT:
 			IF_UNBUILT(HYDRO_PLANT,(m_whereItStands->m_closeToLandscape(MOUNTAIN)||m_whereItStands->m_closeToLandscape(RIVER)))
+			break;
+		default:
+		{
+			IF_UNBUILT((ImprovementType) imptypeInt, true)
 		}
-	}*/
+		}
+	}
+	for(int imptypeInt = WONDER_MIN; imptypeInt <= WONDER_MAX; imptypeInt++){
+		IF_UNBUILT((ImprovementType) imptypeInt, theGame->m_wonderData((ImprovementType) imptypeInt).who == NO_NATIONALITY)
+	}
 	/*IF_UNBUILT(PALACE,true)
 	IF_UNBUILT(TEMPLE,true)
 	IF_UNBUILT(GRANARY,true)
 	IF_UNBUILT(COURTHOUSE,true)*/
 	return whatToReturn;
 }
+
+std::function<void(City*)> City::m_whenBuilt(ImprovementType imptype){
+	switch(imptype){
+	default: return [](City*){};
+	}
+}
+
+std::function<void(City*)> City::m_whenDestroyed(ImprovementType imptype){
+	switch(imptype){
+	default: return [](City*){};
+	}
+}
+
+
