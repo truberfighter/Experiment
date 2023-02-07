@@ -18,14 +18,6 @@
 using namespace std;
 
 DrawingElement::~DrawingElement(){
-for(auto current: m_whereToDraw){
-		//std::cout<<"DrawingElement-Destruktor3, this = "<<this<<std::endl;
-		current->m_delete(this);
-		//std::cout<<"DrawingElement-Destruktor4, this = "<<this<<",listSize = "<<m_whereToDraw.size()<<std::endl;
-		if(m_whereToDraw.size() == 0){
-			goto endeDestruktor;
-		}
-	}
 	endeDestruktor: std::cout<<"DrawingElement-Destruktor5, this = "<<this<<std::endl;
 }
 Drawing::Drawing(SDL_Renderer* renderer, int row, int column, Layer layer)
@@ -48,8 +40,10 @@ SDL_Renderer* DrawingElement::m_Renderer(){
 bool DrawingElement::m_addDrawing(Drawing* newDrawing){
 	//Noch keine Fehlermeldungen, doch zur Sicherheit mal bool!
 	//list<Drawing*> newList = m_whereToDraw;
+	for(auto& check: m_whereToDraw)
+		if(check==newDrawing)
+			return true;
 	m_whereToDraw.push_back(newDrawing);
-	m_whereToDraw.unique();
 	return true;
 }
 
@@ -274,7 +268,6 @@ int ImmovableDrawingElement::m_draw(int rowShift, int columnShift, SDL_Renderer*
 		m_renderer = renderer;
 		m_rowWhereLastDrawn = rect.x;
 		m_columnWhereLastDrawn = rect.y;
-		//SDL_Delay(STANDARD_DRAWING_TIME);
 		if(m_Draw){
 			if(m_Draw(m_rowWhereLastDrawn, m_columnWhereLastDrawn, renderer)==0)
 				return 1;

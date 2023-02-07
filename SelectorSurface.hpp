@@ -14,6 +14,7 @@
 struct SelectionReturn{
 	std::string content;
 	unsigned int index;
+	Layer layer;
 };
 
 extern int selectionElementGlobalIndex;
@@ -23,14 +24,16 @@ public:
 	std::string content;
 	int layer;
 	std::function<void()> rightClickOrders;
-	SelectionElement(std::string c, int l, std::function<void()>& f): content(c), layer(l), rightClickOrders(f){ layer = selectionElementGlobalIndex++;}
+	SelectionElement(std::string c, int l, std::function<void()>& f): content(c), layer(l), rightClickOrders(f){ /*layer = selectionElementGlobalIndex++;*/	}
 	~SelectionElement(){std::cout<<"SelectionElementDestruktor: this = "<<this<<", content: "<<content<<", layer: "<<layer<<std::endl;}
 };
 
 #ifndef QUITSELECTION_
 #define QUITSELECTION_
 enum SelectionQuit{NO_ACTION, SELECTION, NEXT_PAGE};
-
+struct InvalidSelectionElement{
+	std::shared_ptr<SelectionElement> what;
+};
 class QuitSelection: public QuitSurface{
 public:
 	SelectionQuit m_returnSomething;
@@ -63,7 +66,7 @@ public:
 	void m_goDown();
 	bool m_select(int x, int y);
 	SelectionReturn m_return();
-	virtual ~SelectorSurface(){std::cout<<"SelectorSurface-Destruktor"<<std::endl;}
+	virtual ~SelectorSurface(){std::cout<<"SelectorSurface-Destruktor"<<std::endl;selectionElementGlobalIndex=0;}
 	 bool m_handleLeftClick(const SDL_MouseButtonEvent& event);
 	virtual bool m_handleKeyboardEvent(const SDL_Event& event);
 	virtual bool m_handleEvent(const SDL_Event& event);

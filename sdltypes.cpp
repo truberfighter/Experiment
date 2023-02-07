@@ -8,10 +8,13 @@
 #include "SDL2/SDL.h"
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <SDL2\SDL_image.h>
 #include <algorithm>
+#include "SelectorSurface.hpp"
 
-
+int POSSIBLE_SAVE_FILES = 40, slotNumber = 0;
+unsigned int figureCountGlobal = 0, cityCountGlobal = 0;
 unsigned int settlersCount = 0;
 int Texture::m_Width(){return m_width;}
 int Texture::m_Height(){ return m_height;}
@@ -30,9 +33,12 @@ SDL_Color Graphics::Civ::cityNameColor(){return SDL_Color{30,200,200};}
 SDL_Color Graphics::Civ::cityOccupiedColor(){return blackColor;}
 SDL_Color Graphics::Civ::cityBackgroundColor(){return SDL_Color{50,50,255};}
 int CONTENT_BASE(2);
+int GlobalWarming::DESERTIFICATION_BOUND = WORLD_HEIGHT/6, GlobalWarming::DESERTS_TO_MAKE = 1, GlobalWarming::SWAMPS_TO_MAKE = 1, GlobalWarming::WARMING_EXACERBATION = 1,
+GlobalWarming::HORIZONTAL_HOPPING_DISTANCE = 17, GlobalWarming::DESERTIFICATION_SPREADER = 1, GlobalWarming::TURNS_UNTIL_SWAMPED = 10;
 
 Layer STANDARD_FIELD_MODIFICATOR_LAYER = 0, STANDARD_FIELD_LAYER = -1000, STANDARD_LAYER = 1000, SIDETEXT_LAYER = 2000, CITY_LAYER = 1500;
 DrawState Graphics::m_whatsUpDrawingwise = NOT_IN_ANY_DRAWING;
+std::shared_ptr<Texture> Graphics::Civ::miningTexture;
 int modulo (int i, int j){
 	if(j <= 0)
 		return MODULO_FAIL;
@@ -190,6 +196,19 @@ std::ostream& operator<<(std::ostream& os, Nationality nationality){
 	}
 	return os;
 }
+
+std::ostream& operator<<(std::ostream& os, DiplomatChoice dc){
+	switch(dc){
+	case INCITE_REVOLT: os<<"Incite revolt"; break;
+	case STEAL_TECHNOLOGY: os<<"Steal technology"; break;
+	case INDUSTRIAL_SABOTAGE: os<<"Industrial sabotage"; break;
+	case ESTABLISH_EMBASSY: os<<"Establish embassy"; break;
+	case INVESTIGATE_CITY: os<<"Investigate city"; break;
+	case MEET_WITH_KING: os<<"Meet with king"; break;
+	os<<"diplomatchoice "<<(int)dc;
+	}
+	return os;
+}
 #undef PRINT
 
 char getSettlersOrder(SettlersWork work){
@@ -200,6 +219,7 @@ char getSettlersOrder(SettlersWork work){
 	case BUILD_RAILROAD: return 'm';
 	case BUILD_FORTRESS: return 'f';
 	case NONE: return ' ';
+	case CLEAN_UP_POLLUTION: return 'c';
 	}
 	return 'F';
 }
@@ -676,14 +696,35 @@ int Graphics::Civ::drawIrrigation(SDL_Renderer* renderer, int x, int y){
 	return whatToReturn;
 }
 
+int Graphics::Civ::drawPollution(SDL_Renderer* renderer, int x, int y){
+	int whatToReturn = 0;
+	std::vector<int> xCoordinateBlue={3,11,3,4,5,6,7,8,9,10,11,11,12,13,14,11,11,0,1,2,3,4,5,6,7,8,9,10,11,9,14,3,9,14,3,9,14,3,9,14,10,11,12,13,14,3,11};
+	int yToStart = 0;
+
+	whatToReturn+=SDL_SetRenderDrawColor(theRenderer, blackColor);
+	for(int i(0);i<xCoordinateBlue.size();i++){
+		if(i>0 && xCoordinateBlue[i-1]>=xCoordinateBlue[i]){
+			yToStart++;
+		}
+		SDL_Rect rect{x + 4*xCoordinateBlue[i]-1, y+4*yToStart-1,4,4};
+		if(!lolllll)
+			std::cout<<"drawing x"<<xCoordinateBlue[i]<<", y "<<yToStart<<std::endl;
+		whatToReturn += SDL_RenderFillRect(theRenderer, &rect);
+
+	}
+	lolllll = true;
+	return whatToReturn;
+}
+
 SDL_Color Graphics::Civ::irrigationBlueColor(){return SDL_Color{85,89,162,128};}
 
-SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y, SDL_Color color, bool shaded, SDL_Color backgroundColor){
+SDL_Rect Miscellaneous::printMultipleLines(const std::string& str, int x, int y, SDL_Color color, bool shaded, SDL_Color backgroundColor){
 	int maxWidth = 0,
 	height = 0;
-	std::string stringOfInterest = "";
-	stringOfInterest = str.str();
-	std::cout<<str.str()<<SDL_GetError()<<std::endl;
+	std::string stringOfInterest = str;
+	if(stringOfInterest.back()!='\n')
+		stringOfInterest+="\n";
+	std::cout<<str<<SDL_GetError()<<std::endl;
 	std::string temporaryString = "";
 	int length = stringOfInterest.length();
 	int reachedHeight = 0;
@@ -718,12 +759,13 @@ SDL_Rect Miscellaneous::printMultipleLines(std::stringstream& str, int x, int y,
 		SDL_FreeSurface(currentSurface);
 		SDL_DestroyTexture(texture);
 	}
+	SDL_RenderPresent(theRenderer);
 	return rectToFill;
 }
 
 SDL_Color Graphics::redColor(){return SDL_Color{255,0,0};}
 
-void Miscellaneous::displayText(std::stringstream& str, int x, int y, SDL_Color color, bool shaded, SDL_Color backgroundColor){
+void Miscellaneous::displayText(const std::string& str, int x, int y, SDL_Color color, bool shaded, SDL_Color backgroundColor){
 	printMultipleLines(str,x,y,color,shaded,backgroundColor);
 	SDL_RenderPresent(theRenderer);
 	SDL_Event e;
@@ -734,7 +776,7 @@ void Miscellaneous::displayText(std::stringstream& str, int x, int y, SDL_Color 
 			if(e.type == SDL_QUIT){
 				throw SDLQuitException();
 			}
-			if(e.type==SDL_KEYDOWN){
+			if(e.type==SDL_KEYDOWN /*|| e.type==SDL_MOUSEBUTTONDOWN*/){
 				quitSurface = true;
 			}
 		}
@@ -750,4 +792,72 @@ void Miscellaneous::displayText(std::stringstream& str, int x, int y, SDL_Color 
 
 bool Graphics::ratherShieldThanResource(Landscape ls){
 	return ls == GRASSLAND;
+}
+
+bool Miscellaneous::yesOrNo(int x, int y, std::string yes, std::string no){
+	std::function<void()> dn = [](){};
+	std::vector<std::shared_ptr<SelectionElement>> selectionElements = {std::make_shared<SelectionElement>(yes,0,dn), std::make_shared<SelectionElement>(no, 1, dn)};
+	SelectorSurface ssurface(x,y,selectionElements);
+	if(ssurface.m_fetchSelection().index==0){
+		return true;
+	}
+	return false;
+}
+
+void Miscellaneous::holdImage(){
+SDL_Event e;
+bool quitSurface = false;
+while(!quitSurface){
+	try{
+	while(SDL_PollEvent(&e)){
+		if(e.type == SDL_QUIT){
+			throw SDLQuitException();
+		}
+		if(e.type==SDL_KEYDOWN || (e.type == SDL_MOUSEBUTTONDOWN && e.button.button==SDL_BUTTON_LEFT)){
+			quitSurface = true;
+		}
+	}
+	}
+	catch(QuitSurface &qs){
+		quitSurface = true;
+	}
+	catch(SDLQuitException& sdlqe){
+		throw sdlqe;
+	}
+}
+}
+
+SDL_Color Graphics::Civ::alarmColor(ClimateState cs){
+switch(cs){
+case RED_CLIMATE_ALARM: return SDL_Color{255,0,0};
+case ORANGE_CLIMATE_ALARM: return SDL_Color{175,100,0};
+case YELLOW_CLIMATE_ALARM: return SDL_Color{120,120,20};
+case GREEN_CLIMATE_ALARM: return SDL_Color{0,240,0};
+default: return infoTextBackgroundColor;
+}
+}
+
+SelectionReturn Miscellaneous::selectSavingSlot(){
+	try{
+	std::vector<std::shared_ptr<SelectionElement>> alternatives;
+	std::function<void()> dn = [](){};
+	for(int fileCount(0); fileCount<POSSIBLE_SAVE_FILES;fileCount++){
+		std::stringstream nameStream;
+		nameStream<<"data\\gameData"<<fileCount<<".txt";
+		nameStream.flush();
+		std::ifstream currentStream(nameStream.str());
+		std::string buff;
+		if(static_cast<bool>(currentStream)){
+			std::getline(currentStream, buff,'\n');
+		}
+		else{
+			buff = "EMPTY";
+		}
+		alternatives.push_back(std::make_shared<SelectionElement>(buff,fileCount,dn));
+	}
+	SelectorSurface ssurface(0,0,alternatives);
+	SelectionReturn theReturn = ssurface.m_fetchSelection();
+	return theReturn;
+	}
+	catch(InvalidSelectionElement& ise){ throw ise;}
 }

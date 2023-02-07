@@ -57,6 +57,8 @@ Window(std::string name, unsigned int width, unsigned int height);
 	void m_InitWindowSurface();
 };
 
+extern Window* theWindow;
+
 bool InitFieldTextures();
 
 #endif /* WINDOW_HPP_ */

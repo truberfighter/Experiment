@@ -20,6 +20,7 @@ private:\
 public:\
 	FigureType m_FigureType() override;\
 	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
+	CLASS(){}\
 	~CLASS();\
 	float m_attackingStrength();\
 	float m_defensiveStrength();\

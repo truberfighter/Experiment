@@ -4,7 +4,7 @@
  *  Created on: 16.03.2022
  *      Author: uwe-w
  */
-
+bool debug = false;
 #include <algorithm>
 #include "Figure.hpp"
 #include <memory>
@@ -17,6 +17,7 @@
 #include "Ship.hpp"
 #include "City.hpp"
 #include "Diplomat.hpp"
+#include "Caravan.hpp"
 #include "FieldType.hpp"
 
 using namespace std;
@@ -25,15 +26,21 @@ using namespace std;
 Figure::Figure(std::shared_ptr<Field> whereToStart, std::shared_ptr<Nation> nationality,  std::shared_ptr<City> home, bool isVeteran)
 : enable_shared_from_this<Figure>(), m_nationality(nationality), m_whereItStands(whereToStart), m_home(home), m_isVeteran(isVeteran)
 {
+	m_figureID = figureCountGlobal;
+	figureCountGlobal++;
 	figureToDraw = this;
-	cout<<"figurekonstruktor"<<this<<endl;
+	cout<<"figurekonstruktor, figureID "<<m_figureID<<", pointer: "<<this<<endl;
 }
 
 Figure::~Figure(){
 	std::cout<<"Figure-Destruktor"<<this<<std::endl;
 }
 
-Nationality Figure::m_Nationality(){return m_nationality->m_Nation();}
+Nationality Figure::m_Nationality(){
+	if(!this->m_nationality)
+		return NO_NATIONALITY;
+	return m_nationality->m_Nation();
+}
 
 void Figure::m_resetMovementPoints(){
 	m_movementPoints.m_movementPoints = m_defaultMovementPoints();
@@ -179,7 +186,12 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	std::shared_ptr<Figure> thisFigure = shared_from_this();
 	Field& fieldWhereToGo = *(m_whereItStands->m_getNeighbouringField(whereToGo));
 	if(m_FigureType()==DIPLOMAT){
-		if(!reinterpret_cast<Diplomat*>(this)->m_doDiplomatThings(fieldWhereToGo)){
+		if((reinterpret_cast<Diplomat*>(this)->m_doDiplomatThings(fieldWhereToGo))==false){
+			return false;
+		}
+	}
+	if(m_FigureType()==CARAVAN){
+		if((reinterpret_cast<Caravan*>(this)->m_doCaravanThings(fieldWhereToGo))==false){
 			return false;
 		}
 	}
@@ -255,6 +267,14 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 		}
 		throw(fight);
 	}
+	catch(CaravanDead& cd){
+		m_nationality->m_destroyFigure(shared_from_this());
+		return true;
+	}
+	catch(DiplomatDead& dd){
+		m_nationality->m_destroyFigure(shared_from_this());
+		return true;
+	}
 }
 
 void Figure::m_move(Direction whereToGo){
@@ -278,9 +298,7 @@ void Figure::m_move(Direction whereToGo){
 		if(m_whereItStands->m_getCargoCapability(*this) > 0 || m_whereItStands->m_CityContained()!= nullptr){
 			if(m_whereItStands->m_getCargoCapability(*this)>0){
 				std::cout<<"m_whereItStands->cargo: "<<m_whereItStands->m_getCargoCapability(*this)<<std::endl;
-				std::cout<<"sentrying plane"<<std::endl;
 				m_figureState = SENTRIED;
-			std::cout<<"alphakevin"<<std::endl;
 		}
 		}
 		break;
@@ -301,7 +319,6 @@ int Figure::m_desertationCost(){
 
 MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
 	Field& fieldToVisit = *(m_whereItStands->m_getNeighbouringField(whereToGo));
-	std::cout<<"Kevin"<<std::endl;
 	if(m_whereItStands->m_Landscape()==OCEAN && !fieldToVisit.m_FiguresOnField().empty() && fieldToVisit.m_FiguresOnField().front()->m_Nationality()!=m_Nationality()){
 		SDL_Surface* textSurface = TTF_RenderText_Solid(theFont, "You can't launch a land based attack from a sea vessel", whiteColor);
 		SDL_Rect rectToFill{INFO_TEXT_X & 0, INFO_TEXT_Y,textSurface->w,textSurface->h};
@@ -341,12 +358,12 @@ MovementPoints Figure::m_calculateMoveCostGround(Direction whereToGo){
 
 MovementPoints Figure::m_calculateStandardMoveCostGround(Field& fieldToVisit){
 	if(m_movementPoints< ONE_MOVEMENT_POINT
-&& fieldToVisit.m_movementPoints() < m_movementPoints.m_movementPoints){
+&& fieldToVisit.m_movementPoints().m_movementPoints < m_movementPoints.m_movementPoints){
 		return MOVE_PROHIBITED;
 	}
 	else {
+			return m_movementPoints.m_movementPoints<fieldToVisit.m_movementPoints().m_movementPoints ? m_movementPoints : fieldToVisit.m_movementPoints();
 		//es soll hier dann  um Kampfhandlungen gehen
-		return fieldToVisit.m_movementPoints();
 	}
 }
 
@@ -366,6 +383,15 @@ ostream& operator<<(ostream& os, Landscape ls){
 		os<<"GRASSLAND"; break;
 	case OCEAN:
 		os<<"OCEAN"; break;
+	case DESERT: os<<"DESERT";break;
+	case TUNDRA: os<<"TUNDRA";break;
+	case ARCTIC: os<<"ARCTIC";break;
+	case RIVER: os<<"RIVER";break;
+	case SWAMP: os<<"SWAMP";break;
+	case FOREST: os<<"FOREST";break;
+	case MOUNTAIN: os<<"MOUNTAIN";break;
+	case HILLS: os<<"HILLS";break;
+	case JUNGLE: os<<"JUNGLE"; break;
 	default:
 		os<<(int)ls;
 	}
@@ -440,7 +466,6 @@ void Figure::m_integrateInto(Drawing& drawing){
 	std::cout<<"image: "<<m_image.get()<<std::endl;
 	shared_ptr<DrawingElement> temp = make_shared<FigureElement>(theRenderer, m_image.get());
 	drawing.m_add(temp);
-	std::cout<<"lolh"<<std::endl;
 	for(MovableDrawingElement* currentElement: m_image->m_HowDrawn()){
 		currentElement->m_setFigure(this);
 	}
@@ -458,7 +483,9 @@ void Figure::m_wait(){
 }
 
 void Figure::m_drawFigure(BlinkingState blinkingState){
-	try{
+if(debug)
+	return;
+try{
 	if(blinkingState == VISIBLE()){
 	for(MovableDrawingElement* currentDrawingElement: m_image->m_HowDrawn()){
 		currentDrawingElement->m_drawAsRemembered(theRenderer);
@@ -514,7 +541,7 @@ bool Figure::m_homeCity(){
 bool Figure::m_isVisible(Nationality nationality){
 	if(nationality == m_Nationality())
 		return true;
-	return isInVector<Nationality>(m_visibilityInfo, nationality, [](Nationality& n1, Nationality& n2){return n1==n2;});
+	return isInVector<Nationality>(m_visibilityInfo, nationality, [](const Nationality& n1, const Nationality& n2){return n1==n2;});
 }
 
 void Figure::m_makeFiguresVisibleAround(std::shared_ptr<Field> fieldBase){
@@ -543,6 +570,8 @@ void Figure::m_makeVisible(Nationality nationality){
 FigureElement::FigureElement(SDL_Renderer* renderer, MovableThing* movableEntity):MovableDrawingElement(renderer, movableEntity){}
 
 int FigureElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
+	if(!m_figure)
+		return 0;
 	if(m_figure->m_isVisible(theGame->m_NationAtCurrentTurn()->m_Nation())){
 		return MovableDrawingElement::m_draw(rowShift, columnShift, renderer);
 	}
@@ -569,7 +598,6 @@ void Figure::m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr
 	if(m_home){
 	m_home->m_releaseFigure(shared_from_this());
 	}
-	std::cout<<3445454<<std::endl;
 	newCity->m_takeFigure(shared_from_this());
 	std::cout<<1<<std::endl;
 	m_home = newCity;
@@ -585,5 +613,4 @@ void Figure::m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr
 	m_image->m_setTexture(
 			std::make_shared<Texture>(newTexture,
 City::figureWidth(m_FigureType()), City::figureHeight(m_FigureType())));
-
 }

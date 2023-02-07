@@ -78,7 +78,7 @@ bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
 			std::vector<Coordinate> coordinateVector = Field::coordinatesAroundCity();
 			Coordinate differenceCoordinate((event.x - xToStart -1)/STANDARD_FIELD_SIZE - 2,(event.y - yToStart - 1)/STANDARD_FIELD_SIZE -2) ;
 			std::cout<<"differenceCoordinate: "<<differenceCoordinate<<std::endl;
-			if(isInVector<Coordinate>(coordinateVector, differenceCoordinate, [](Coordinate& x, Coordinate& y){return x==y;})){
+			if(isInVector<Coordinate>(coordinateVector, differenceCoordinate, [](const Coordinate& x, const Coordinate& y){return x.x==y.x&&x.y==y.y;})){
 				std::cout<<"ruft gleich m_placeCitizen auf"<<std::endl;
 				std::shared_ptr<Field> fieldClickedOn = m_associatedCity->m_whereItStands->m_getNeighbouringField(differenceCoordinate);
 				std::cout<<"*fieldClickedOn: "<<*fieldClickedOn<<std::endl;
@@ -248,7 +248,7 @@ bool CitySurface::m_buy(){
 	std::stringstream infoStream;
 	infoStream<<"Cost to complete"<<std::endl<<imptype<<": "<<price<<"$,\n"<<"Treasury: "<<m_associatedCity->m_owningNation->m_Treasury()<<std::endl;
 	SDL_Rect rect;
-	rect= Miscellaneous::printMultipleLines(infoStream, BUY_INFO_X, BUY_INFO_Y, whiteColor, true, Graphics::Civ::shieldGreyColor());
+	rect= Miscellaneous::printMultipleLines(infoStream.str(), BUY_INFO_X, BUY_INFO_Y, whiteColor, true, Graphics::Civ::shieldGreyColor());
 	SDL_RenderPresent(theRenderer);
 	if(m_associatedCity->m_owningNation->m_Treasury()>=price){
 		std::string yes = "Yes", no = "No";

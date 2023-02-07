@@ -13,6 +13,7 @@
 #include <algorithm>
 #include "GameMain.hpp"
 #include "Artillery.hpp"
+#include "Diplomat.hpp"
 
 Citizen::	~Citizen(){std::cout<<"Citizen-Destruktor: City: "<<m_home.m_Name()<<std::endl;}
 
@@ -34,29 +35,14 @@ City::City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNa
 : m_owningNation(owningNation), m_whereItStands(whereToPlace), m_name(name)
 {
 	//Imprecise. But I do not care that much about limiting the cities right now.
+	m_globalIndex = cityCountGlobal++;
 	m_whereItStands->m_DrawingElement()->m_climbToTop(CITY_LAYER);
 	if(m_owningNation->m_Cities().size()>=CITIES_PER_NATION){
 		throw(TooManyCities());
 	}
+	m_improvements.push_back(CityImprovement{TEMPLE,this});
+	m_improvements.push_back(CityImprovement{GRANARY,this});
 	m_citizens.push_back(std::make_shared<Citizen>(*this,m_whereItStands->m_getNeighbouringField(UP)));
-	/*SDL_Surface* surface = SDL_CreateRGBSurface(0, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE, 8,0,0,0,0);
-	std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
-int i = m_citizens.size();
-	std::stringstream stream;
-	stream<<i; stream.flush();
-	SDL_Surface* textSurface = TTF_RenderText_Solid(theFont, stream.str().c_str(), brownColor);
-	std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
-SDL_Rect r{0,0,surface->w, surface->h};
-	SDL_BlitSurface(textSurface, nullptr, surface, nullptr);
-std::cout<<"SDL_Errorstr: "<<stream.str()<<std::endl;
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(theRenderer, surface);
-	std::shared_ptr<Texture> s = std::make_shared<Texture>(texture, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE);
-	whereToPlace->m_DrawingElement()->setTexture(s);
-	SDL_RenderCopy(theRenderer, s.get()->theTexture(), NULL, NULL);
-    SDL_RenderPresent(theRenderer);
-	SDL_FreeSurface(surface);
-	SDL_FreeSurface(textSurface);
-	*/
 	std::cout<<"City-Konstruktor"<<m_citizens.front()->m_state<<std::endl;
 	m_whereItStands->m_DrawingElement()->m_setAdditionalInstructions(drawCity);
 }
@@ -70,6 +56,9 @@ Citizen::Citizen(City& home, std::shared_ptr<Field> whereToWork):m_home(home)
 	for(std::shared_ptr<Field> currentField: m_home.m_WhereItStands()->m_cityFieldsAround()){
 		temp = currentField->m_shields(myNation) + currentField->m_trade(myNation) + currentField->m_food(myNation);
 		if(production < temp && currentField->m_isVisible(m_home.m_OwningNation()->m_Nation())&&!currentField->m_CityContained() && currentField!=m_home.m_WhereItStands()&& !currentField->m_CitizenWorking()){
+			if(!currentField->m_FiguresOnField().empty())
+				if(currentField->m_FiguresOnField().front()->m_Nationality()!=home.m_OwningNation()->m_Nation())
+					continue;
 			currentField->m_setCitizenWorking(this);
 			production = temp;
 			if(m_whereItWorks){
@@ -165,7 +154,7 @@ std::vector<CitizenState> City::m_applyCitizenStateVector(HappyVectorType flag){
 	}
 	for(std::shared_ptr<Citizen>& citizen: m_citizens){
 		if(citizen->m_state != ENTERTAINER && citizen->m_state != TAX_COLLECTOR && citizen->m_state != SCIENTIST){
-			if(contentBaseApplied<CONTENT_BASE){
+			if(contentBaseApplied<m_owningNation->m_firstUnhappyCitizen()){
 				citizen->m_state = CONTENT;
 				contentBaseApplied++;
 			}
@@ -331,7 +320,7 @@ std::vector<UnitCostingResources> City::m_unitCostVector(){
 			break;
 		}
 		FigureType currentFigureType = currentFigure->m_FigureType();
-		if(!isInVector<FigureType>(irrelevantTypes, currentFigureType, [](FigureType& f1, FigureType& f2){return f1==f2;})){
+		if(!isInVector<FigureType>(irrelevantTypes, currentFigureType, [](const FigureType& f1,const FigureType& f2){return f1==f2;})){
 		whatToReturn.push_back(UnitCostingResources{currentFigure.get(), 0, 0, 0});
 			whatToReturn.back().unhappyFaces = -1;
 			militaryLawAppliedCount++;
@@ -345,7 +334,7 @@ std::vector<UnitCostingResources> City::m_unitCostVector(){
 			whatToReturn.back().foodCost = foodPerSettlers;
 			goto gonnaCostOneShield;
 		}
-		if(!isInVector<FigureType>(freeFigureTypes, currentFigureType, [](FigureType& f1, FigureType& f2){return f1==f2;})){
+		if(!isInVector<FigureType>(freeFigureTypes, currentFigureType, [](const FigureType& f1, const FigureType& f2){return f1==f2;})){
 			gonnaCostOneShield: if(freeUnitsCount < freeUnits){
 				whatToReturn.back().shieldCost = 0;
 				freeUnitsCount++;
@@ -361,8 +350,8 @@ std::vector<UnitCostingResources> City::m_unitCostVector(){
 	return whatToReturn;
 }
 
-int City::m_foodProduction(){
-	int count = m_whereItStands->m_food(*m_owningNation);
+int City::m_foodProduction(){//modified for testing
+	int count = 8*m_whereItStands->m_food(*m_owningNation);
 	for(std::shared_ptr<Citizen>& citizen: m_citizens){
 		if(citizen->m_whereItWorks){
 			count+=citizen->m_whereItWorks->m_food(*m_owningNation);
@@ -390,7 +379,7 @@ void City::m_sortFiguresByValue(){
 		freeFigureTypes.push_back(DIPLOMAT);
 		freeFigureTypes.push_back(CARAVAN);
 		FigureType f = f2->m_FigureType();
-		if(isInVector<FigureType>(freeFigureTypes, f, [](FigureType& f1, FigureType& f2){return f1==f2;})){
+		if(isInVector<FigureType>(freeFigureTypes, f, [](const FigureType& f1, const FigureType& f2){return f1==f2;})){
 			return false;
 		}
 		return f1->m_shieldCost()<=f2->m_shieldCost();
@@ -409,6 +398,12 @@ void City::m_startNewTurn(){
 		std::cout<<"shieldCost: "<<m_shieldCost()<<std::endl;
 		m_announceCannotMaintain((ImprovementType)m_figuresOwned.back()->m_FigureType());
 		m_owningNation->m_destroyFigure(m_figuresOwned.back());
+	}
+	if(m_handlePollution()){
+		std::stringstream stream;
+		stream<<"Environmental report:\nPollution happened in "<<m_name<<std::endl;
+		Miscellaneous::displayText(stream.str(),FIGURE_INFO_WIDTH,SCREEN_HEIGHT/3, Graphics::Civ::darkgreyColor());
+		theGame->m_pollute();
 	}
 	m_sortFiguresByValue();
 	m_maybeFinishProduction();
@@ -503,6 +498,7 @@ std::shared_ptr<CityImprovement> City::m_maybeBuild(ImprovementType imptype){
 			return nullptr;
 		}
 		wd.who = m_owningNation->m_Nation();
+		wd.city = this;
 	}
 	switch(imptype){
 	case PALACE:
@@ -552,7 +548,7 @@ int City::m_corruptionProduction(){
 		break;
 	}
 	}
-	int distance;
+	double distance;
 	try{
 	distance = m_whereItStands->m_distanceTo(m_owningNation->m_CapitalCity());
 	}
@@ -562,7 +558,7 @@ int City::m_corruptionProduction(){
 		}
 	}
 	int courthouseDivisor = m_contains(COURTHOUSE) ? 2 : 1;
-	return (3*distance*this->m_tradeProduction())/(courthouseDivisor * governmentCoefficient*10);
+	return (int)(distance*(double)(3*this->m_tradeProduction()))/(double)(courthouseDivisor * governmentCoefficient*10);
 }
 
 CityProduction City::m_revenueProduction(){
@@ -570,6 +566,9 @@ CityProduction City::m_revenueProduction(){
 	taxRate = m_owningNation->m_TaxRate(),
 	luxuriesRate = m_owningNation->m_LuxuriesRate(),
 	scienceRate = TAX_RATE_STEP_COUNT - taxRate - luxuriesRate;
+	for(std::shared_ptr<TradeRoute>& route: m_tradeRoutes){
+		amount+=route->m_calculateProduction();
+	}
 	std::cout<<"tradeProsuction: "<<amount<<std::endl;
 	int preluxury = ((amount*luxuriesRate)/TAX_RATE_STEP_COUNT)*TAX_RATE_STEP_COUNT;
 	int pregold = ((amount*taxRate)/TAX_RATE_STEP_COUNT)*TAX_RATE_STEP_COUNT;
@@ -591,7 +590,7 @@ CityProduction City::m_revenueProduction(){
 			}
 		}
 	}
-	CityProduction whatToReturn{preluxury/TAX_RATE_STEP_COUNT, pregold/TAX_RATE_STEP_COUNT, prescience/TAX_RATE_STEP_COUNT};
+	CityProduction whatToReturn{preluxury/TAX_RATE_STEP_COUNT, pregold/TAX_RATE_STEP_COUNT, prescience/TAX_RATE_STEP_COUNT, amount};
 	std::cout<<"gold: "<<whatToReturn.gold<<", luxury: "<<whatToReturn.luxuries<<", science: "<<whatToReturn.science<<std::endl;
 	for(std::shared_ptr<Citizen>& currentCitizen: m_citizens){
 		switch(currentCitizen->m_state){
@@ -649,7 +648,7 @@ void City::m_announceCannotMaintain(ImprovementType imptype){
 	SDL_Delay(100);
 	std::stringstream s;
 	s<<"Domestic report:\n"<<m_name<<" cannot maintain\n"<<imptype<<"\n";s.flush();
-	Miscellaneous::printMultipleLines(s, ANNOUNCEMENT_X, ANNOUNCEMENT_Y, Graphics::Civ::resourcesWhiteColor(), true, Graphics::redColor());
+	Miscellaneous::printMultipleLines(s.str(), ANNOUNCEMENT_X, ANNOUNCEMENT_Y, Graphics::Civ::resourcesWhiteColor(), true, Graphics::redColor());
 	SDL_RenderPresent(theRenderer);
 	SDL_Event e;
 	bool quitSurface = false;
@@ -730,18 +729,18 @@ bool City::m_isCivilDisorder(){
 }
 
 int City::m_revoltingCost(){
-	return ((m_owningNation->m_Treasury()+1000)*m_size()/(m_isCivilDisorder() ? 2 : 1))/(3+m_whereItStands->m_distanceTo(m_owningNation->m_CapitalCity()));
+	return (int)(((double)(m_owningNation->m_Treasury()+1000)*m_size())/(m_isCivilDisorder() ? 2 : 1))/(3+m_whereItStands->m_distanceTo(m_owningNation->m_CapitalCity()));
 }
 
 float City::m_scienceCoefficient(){
-	float whatToReturn = 1;
+	float whatToReturn = 10;
 	if(m_contains(LIBRARY)){
 		whatToReturn +=m_owningNation->m_libraryCoefficient();
 	}
 	if(m_contains(UNIVERSITY)){
 		whatToReturn +=m_owningNation->m_libraryCoefficient();
 	}
-	whatToReturn+=m_owningNation->m_scienceCoefficient();
+	whatToReturn*=m_owningNation->m_scienceCoefficient();
 	if(m_contains(COPERNICUS_OBSERVATORY)){
 		whatToReturn+=whatToReturn;
 	}
@@ -769,3 +768,93 @@ float City::m_luxuryCoefficient(){
 	}
 	return whatToReturn;
 }
+
+bool City::m_offerRevolt(Diplomat& diplomat){
+	int whatToPay = m_revoltingCost();
+	std::stringstream revoltStream;
+	someDrawing->m_draw();
+	revoltStream<<"The city of "<<m_name<<" would revolt for "<<whatToPay; revoltStream.flush();
+	SDL_Rect infoRect = Miscellaneous::printMultipleLines(revoltStream.str(), FIGURE_INFO_WIDTH, SCREEN_HEIGHT/3, Graphics::Civ::darkgreyColor());
+	if(diplomat.m_Nation()->m_Treasury()<whatToPay){
+		std::stringstream tooExpensive;
+		tooExpensive<<"You just cannot afford it.";tooExpensive.flush();
+		Miscellaneous::displayText(tooExpensive.str(), FIGURE_INFO_WIDTH, SCREEN_HEIGHT/3+infoRect.h, Graphics::Civ::darkgreyColor());
+		return false;
+	}
+	if(!Miscellaneous::yesOrNo(FIGURE_INFO_WIDTH,SCREEN_HEIGHT/3+infoRect.h)){
+		return false;
+	}
+	if(m_size()!=1){
+		m_shrink();
+	}
+	this->m_owningNation = diplomat.m_Nation();
+	for(std::shared_ptr<Figure> unsureFigure: m_figuresOwned){
+		if(!unsureFigure->m_WhereItStands().m_isVisible(diplomat.m_Nationality()))
+		{
+			m_owningNation->m_destroyFigure(unsureFigure);
+		}
+		else{
+			unsureFigure->m_changeNationTo(diplomat.m_Nation(),shared_from_this());
+		}
+	}
+	int loot = this->m_capturingValue();
+	std::stringstream captureStream;
+	captureStream<<this->m_Name()<<" captured by "<<diplomat.m_Nationality()<<"!\n "<<loot<<" gold pieces plundered!"<<std::endl;
+	Miscellaneous::displayText(captureStream.str(), 200, 200, Nation::standardNationColor(diplomat.m_Nationality()), true, diplomat.m_Nationality() == ROMAN || diplomat.m_Nationality() == RUSSIAN ? blackColor : Graphics::Civ::resourcesWhiteColor());
+	//now remove some buildings
+	for(std::vector<std::shared_ptr<City>>::iterator it = this->m_OwningNation()->m_Cities().begin(); it!= this->m_OwningNation()->m_Cities().end();it++){
+		if(it->get() == this){
+			m_OwningNation()->m_Cities().erase(it);
+			break;
+		}
+	}
+	std::cout<<"size: "<<this->m_size()<<std::endl;
+	diplomat.m_Nation()->m_Cities().push_back(shared_from_this());
+	std::cout<<"captured!"<<std::endl;
+	return true;
+}
+
+int City::m_everydaysPollution(){
+	if(m_contains(MASS_TRANSIT))
+		return 0;
+	int coefficient = m_owningNation->m_pollutionCoefficient();
+	if(coefficient==0)
+		return 0;
+	return (m_size()*coefficient)/4;
+}
+
+int City::m_pollutionProduction(){
+	return std::max(m_everydaysPollution()+m_shieldProduction()/m_shieldsPerPollution()-20,0);
+}
+
+int City::m_shieldsPerPollution(){
+	if(m_contains(RECYCLING_CENTER))return 3;
+	if(m_contains(HYDRO_PLANT)) return 2;
+	if(m_contains(NUCLEAR_PLANT)) return 2;
+	if(theGame->m_isWonderOnContinent(*this, HOOVER_DAM))
+		return 2;
+	return 1;
+}
+
+bool City::m_handlePollution(){
+	int probabilityPercent = std::min(100,m_pollutionProduction());
+	if(probabilityPercent==0)
+		return false;
+	int randomNumber1 = theGame->m_getRandomNumberBetween(1, 100);
+	if(randomNumber1>probabilityPercent){
+		return false;
+	}
+	int fieldIndex;
+	std::vector<std::shared_ptr<Field>> fields = m_whereItStands->m_cityFieldsAround();
+	for(int i(20); i>=0;i--){
+		Field* currentField = (fields)[i].get();
+		if(currentField->m_CityContained()||!currentField->m_isVisible(m_owningNation->m_Nation())|| currentField->m_IsPolluted()){
+			fields.erase(fields.begin()+i);
+		}
+	}
+	int randomNumber2 = theGame->m_getRandomNumberBetween(0, fields.size());
+	if(!fields.empty())
+	return fields[randomNumber2]->m_pollute();
+	return false;
+}
+

@@ -31,7 +31,7 @@ void Plane::m_finishMove(){
 		m_nationality->m_destroyFigure(shared_from_this());
 		std::stringstream s;
 		s<<"Plane of "<<m_FigureType()<<" has crashed!"<<std::endl;
-		Miscellaneous::displayText(s, 400, 400, whiteColor, true, Graphics::redColor());
+		Miscellaneous::displayText(s.str(), 400, 400, whiteColor, true, Graphics::redColor());
 		SDL_RenderPresent(theRenderer);
 		SDL_Delay(250);
 	}
@@ -49,6 +49,8 @@ bool Plane::m_takeOrder(char order){
 	default: return false;
 	}
 }
+
+
 
 DECONSTRUCTOR_PLANE(Bomber)
 FIGURE_TYPE(Bomber,BOMBER)

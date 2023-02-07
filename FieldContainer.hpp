@@ -30,6 +30,7 @@ public:
 	void initContinentIDs();
 	std::vector<FieldType>& m_FieldTypes();
 	void m_initFieldTypes();
+
 };
 
 void initFieldContainer();

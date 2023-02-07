@@ -12,8 +12,9 @@
 #include "Technologytypes.hpp"
 #include <queue>
 
-class City;
+class City; class json;
 class Embassy;
+struct NationJson;
 class NegativeTreasury{
 public:
 	int previousTreasury, treasuryNow;
@@ -40,6 +41,7 @@ private:
 	Difficulty m_difficulty;
 	std::vector<Embassy> m_embassies;
 public:
+	int m_pollutionCoefficient(); // imagine it being divided by 4
 	bool m_hasActiveWonder(ImprovementType imptype);
 	float m_libraryCoefficient();
 	float m_scienceCoefficient();
@@ -92,20 +94,12 @@ public:
 	void m_captureCity(std::shared_ptr<City> cityToCapture);
 	void m_establishEmbassy(std::shared_ptr<Nation> nationToTrack);
 	void m_removeFigure(std::shared_ptr<Figure> figureToRemove);
+	NationJson m_createJson();
+	int m_firstUnhappyCitizen(){return 7-m_difficulty;}
 	friend class Embassy;
 };
 
-inline GovernmentType Nation::m_Government(){
-	return m_government;
-}
 
-inline 	Nationality Nation::m_Nation() const{
-	return m_nation;
-}
-
-inline std::vector<std::shared_ptr<Figure>>& Nation::m_Figures(){
-	return m_figures;
-}
 
 class TechnologyOvershoot{
 public:

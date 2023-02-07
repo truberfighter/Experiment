@@ -15,7 +15,6 @@
 #include <iomanip>
 #include <functional>
 #include "City.hpp"
-
 Nationality Graphics::Civ::currentNationality = ROMAN; bool gameReady = false;
 
 std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
@@ -92,6 +91,7 @@ void Game::m_startNewTurn(){
 	(++m_nationAtCurrentTurnIndex)%= (m_nationsPlaying.size());
 	m_NationAtCurrentTurn()->m_startNewTurn();
 	if(m_nationAtCurrentTurnIndex==0){
+	m_handleGlobalWarming();
 		std::cout<<"wieder bei null im Nationenindex angekommen"<<std::endl;
 	m_currentYear = Year(m_currentYear.m_yearNumberRaw+1);
 	}
@@ -277,4 +277,91 @@ bool Game::m_hasActiveWonder(Nationality nationality, ImprovementType imptype){
 		return true;
 	}
 	return false;
+}
+
+bool Game::m_isWonderOnContinent(City& city, ImprovementType imptype){
+	if(!m_hasActiveWonder(city.m_OwningNation()->m_Nation(),imptype)){
+		return false;
+	}
+	return m_wonderData(imptype).city->m_WhereItStands()->m_ContinentID()==city.m_WhereItStands()->m_ContinentID();
+}
+
+void Game::m_handleGlobalWarming(){
+	if(m_pollutionCount==0)
+		return;
+	m_climateState = (ClimateState) (m_climateState + 1);
+	if(m_climateState<=RED_CLIMATE_ALARM){
+		return;
+	}
+	m_climateState = NO_CLIMATE_ALARM;
+	int notDesertificated = GlobalWarming::DESERTS_TO_MAKE;
+	GlobalWarming::DESERTS_TO_MAKE+=GlobalWarming::WARMING_EXACERBATION;
+	int notSwamped = GlobalWarming::SWAMPS_TO_MAKE;
+	GlobalWarming::SWAMPS_TO_MAKE+=GlobalWarming::WARMING_EXACERBATION;
+	auto& fields = *theContainer->m_getFieldsOfTheWorld();
+	int triesLeftForDesertification = 50;
+while1:	while(notSwamped>0||notDesertificated>0){
+		int randomNumberY = m_getRandomNumberBetween(-GlobalWarming::DESERTIFICATION_BOUND,GlobalWarming::DESERTIFICATION_BOUND);
+		int randomNumberX = m_getRandomNumberBetween(0,WORLD_LENGTH-1);
+		while(triesLeftForDesertification>0){
+			Field* field = ((fields[randomNumberX])[randomNumberY+WORLD_HEIGHT/2]).get();
+			switch(field->m_Landscape()){
+			case PLAINS: {
+				if(notDesertificated<=0)
+				goto normalcase;
+				field->m_changeLandscapeTo(DESERT);
+				notDesertificated--;
+				field->m_TurnsUntilSwamped()=10;
+				/*std::stringstream s;
+				SDL_RenderClear(theRenderer);
+				s<<"Now it happened on field "<<randomNumberX<<", "<<randomNumberY<<std::endl;
+				Miscellaneous::printMultipleLines(s.str(), 0, 0, Graphics::redColor());
+				SDL_RenderPresent(theRenderer);
+				SDL_Delay(900);*/
+				goto while1;
+			}
+			//universelle Hashfunktion auf Basis der Rundenzahl wäre eine bessere Idee
+			//generell, um die problematischen Zufallszahlen zu lösen
+			case GRASSLAND:
+			{
+				if(notDesertificated<=0)
+					goto normalcase;
+				field->m_changeLandscapeTo(PLAINS);
+				notDesertificated--;
+				field->m_TurnsUntilSwamped()=10;
+				/*std::stringstream s;
+				SDL_RenderClear(theRenderer);
+				s<<"Now it happened on field "<<randomNumberX<<", "<<randomNumberY<<std::endl;
+				Miscellaneous::printMultipleLines(s.str(), 0, 0, Graphics::redColor());
+				SDL_RenderPresent(theRenderer);
+				SDL_Delay(900);*/
+				goto while1;
+			}
+			case MOUNTAIN: break;
+			case HILLS: break;
+			case OCEAN: break;
+			case ARCTIC: break;
+			case TUNDRA: break;
+			case SWAMP: break;
+			default:
+			{normalcase:
+				if(field->m_closeToLandscape(OCEAN)&&field->m_TurnsUntilSwamped()==0){
+					field->m_changeLandscapeTo(SWAMP);
+					notSwamped--;
+					/*std::stringstream s;
+									SDL_RenderClear(theRenderer);
+									s<<"Now it happened on field "<<randomNumberX<<", "<<randomNumberY<<std::endl;
+									Miscellaneous::printMultipleLines(s.str(), 0, 0, Graphics::redColor());
+									SDL_RenderPresent(theRenderer);
+									SDL_Delay(9000);*/
+					goto while1;
+				}
+				break;
+			}
+			}
+		triesLeftForDesertification--;
+			randomNumberX = (randomNumberX+GlobalWarming::HORIZONTAL_HOPPING_DISTANCE)%WORLD_LENGTH;
+		}
+	}
+	GlobalWarming::DESERTIFICATION_BOUND = std::min(GlobalWarming::DESERTIFICATION_BOUND + GlobalWarming::DESERTIFICATION_SPREADER, WORLD_HEIGHT/2 - 5);
 }

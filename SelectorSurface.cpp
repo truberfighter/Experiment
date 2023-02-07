@@ -13,6 +13,11 @@
 SelectorSurface::SelectorSurface(int x, int y, std::vector<std::shared_ptr<SelectionElement>>& whatToAskFor, bool inCenter, SDL_Color standardColor, SDL_Color fontColor, SDL_Color markedColor, std::function<void()> backgroundOrders)
 :m_x(x), m_y(y), m_inCenter(inCenter), m_whatToAskFor(whatToAskFor), m_standardColor(standardColor), m_fontColor(fontColor), m_markedColor(markedColor), m_backgroundOrders(backgroundOrders)
 {
+	selectionElementGlobalIndex=0;
+	auto maliciousIterator = std::find_if(m_whatToAskFor.begin(),m_whatToAskFor.end(),[](std::shared_ptr<SelectionElement>& se){return se->content.empty();});
+	if(maliciousIterator!=m_whatToAskFor.end()){
+		throw InvalidSelectionElement{*maliciousIterator};
+	}
 std::cout<<"SelectorSurface-Konstruktor, m_whatToAskFor-size: "<<m_whatToAskFor.size()<<std::endl;
 }
 
@@ -31,7 +36,7 @@ SDL_Surface* elementSurface = TTF_RenderText_Solid(theFont, currentElement.conte
 SDL_Texture* elementTexture = SDL_CreateTextureFromSurface(theRenderer, elementSurface);\
 textSurfaces.push_back(TextureWithIndex{elementTexture, indexForSurfaceCreation, elementSurface->w, elementSurface->h});\
 maxWidth = std::max(maxWidth, elementSurface->w);\
-SDL_FreeSurface(elementSurface);\
+if(elementSurface)SDL_FreeSurface(elementSurface);\
 }\
 for(TextureWithIndex& elementTexture: textSurfaces){\
 if(elementTexture.surfaceIndex == m_effectiveIndex()){\
@@ -122,9 +127,10 @@ SelectionReturn SelectorSurface::m_fetchSelection(){
 					throw qs;
 				}
 				else if(qs.m_returnSomething == SELECTION){
-					return SelectionReturn{m_whatToAskFor[m_effectiveIndex()]->content,(unsigned int) m_effectiveIndex()};
+					return SelectionReturn{m_whatToAskFor[m_effectiveIndex()]->content,(unsigned int) m_effectiveIndex(),m_whatToAskFor[m_effectiveIndex()]->layer};
 				}
 				else if(qs.m_returnSomething == NEXT_PAGE){
+					SDL_SetRenderDrawColor(theRenderer,m_standardColor.r,m_standardColor.g,m_standardColor.b,m_standardColor.a);
 					SDL_RenderClear(theRenderer);
 					endIndexesIndex++;
 //never set value to the very last endIndex (which is just the size of m_whatToAsk)

@@ -234,7 +234,7 @@ void technologyRightClick (Technology technology){
 	infoStream<<"Press any key to continue.";
 	infoStream.flush();
 	std::cout<<infoStream.str();
-	Miscellaneous::printMultipleLines(infoStream, 0, 0, Graphics::Civ::irrigationBlueColor(), true, Graphics::Civ::resourcesWhiteColor());
+	Miscellaneous::printMultipleLines(infoStream.str(), 0, 0, Graphics::Civ::irrigationBlueColor(), true, Graphics::Civ::resourcesWhiteColor());
 	SDL_RenderPresent(theRenderer);
 	SDL_Event e;
 	bool quitSurface = false;

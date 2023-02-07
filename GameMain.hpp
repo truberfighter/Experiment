@@ -15,6 +15,9 @@
 #include <string>
 #include "Game.hpp"
 
+enum MenuReturn{ALTER_TAX_RATE,ALTER_LUXURIES_RATE,SAVE_GAME};
+struct GameMainJson;
+
 class GameMain: public EventHandler{
 protected:
 	bool m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent);
@@ -25,7 +28,6 @@ private:
 	void doSomething();
 	std::unique_ptr<Game> m_theGame;
 	std::vector<std::unique_ptr<Window>> m_theWindows;
-	//std::vector<std::unique_ptr<Window>>::iterator m_currentWindow;
 	unsigned int m_currentWindowIndex = 0;
 	std::shared_ptr<Drawing> m_currentFigureInfo;
 	BlinkingState m_currentBlinkingState = VISIBLE();
@@ -55,7 +57,13 @@ public:
 	bool m_deleteDrawing(Drawing* drawingToDelete);
 	bool m_addDrawing(Drawing* drawingToAdd);
 	void m_draw();
+	void m_offerSavingGame();
+	bool m_menu();
+	GameMainJson m_createJson();
+	friend class GameSaver;
 };
+
+std::ostream& operator<<(std::ostream& os, MenuReturn& Return);
 
 extern SDL_Texture *theTexture;
 extern SDL_Event currentEvent;

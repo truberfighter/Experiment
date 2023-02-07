@@ -316,7 +316,26 @@ void CitySurface::m_drawSubsurfaceButtons(){
 void Subsurface::m_draw(){
 	switch(m_state){
 	case SUBSURFACE_INFO:{
-		m_drawFigures();
+		int y = m_drawFigures() + STANDARD_FIELD_SIZE*5/4;
+		const int pollutionWidth = 24, pollution = 20+m_surface->m_associatedCity->m_pollutionProduction();//modified for testing
+		const int distance = std::max(2*RESOURCES_SCALEFACTOR,std::min(pollutionWidth,SUBSURFACE_WIDTH/pollution));
+		for(int i(0);i<pollution;i++){
+			SDL_Texture* texture = IMG_LoadTexture(theRenderer, "bilder/Citizens/Pollution.png");
+			SDL_Rect rect{FOOD_STORAGE_WIDTH+distance*i,y,48,60};
+			SDL_RenderCopy(theRenderer, texture, nullptr,&rect);
+			SDL_DestroyTexture(texture);
+		}
+		y+=60;
+
+		for(std::shared_ptr<TradeRoute> currentRoute: m_surface->m_associatedCity->m_TradeRoutes()){
+			std::stringstream s;
+			s<<(currentRoute->m_city1.get()==m_surface->m_associatedCity ? currentRoute->m_city2->m_Name() : currentRoute->m_city1->m_Name())
+				<<": "<<currentRoute->m_calculateProduction()<<std::endl;
+			SDL_Rect theRect = Miscellaneous::printMultipleLines(s.str(), FOOD_STORAGE_WIDTH, y, Graphics::Civ::resourcesWhiteColor());
+			Graphics::Civ::drawTrade(theRenderer, theRect.x+theRect.w+5, theRect.y, RESOURCES_SCALEFACTOR);
+			y+=theRect.h;
+		}
+		SDL_RenderPresent(theRenderer);
 		break;
 	}
 	case SUBSURFACE_HAPPY:{
@@ -325,18 +344,20 @@ void Subsurface::m_draw(){
 	}
 }
 
-void Subsurface::m_drawFigures(){
-	int figuresDrawn = 0;;
+int Subsurface::m_drawFigures(){
+	int figuresDrawn = 0;
 	int xToStart = FOOD_STORAGE_WIDTH;
 	int figuresPerRow = SUBSURFACE_WIDTH/STANDARD_FIELD_SIZE;
 	int yToStart = SCREEN_HEIGHT - SUBSURFACE_HEIGHT + SUBSURFACE_BUTTON_HEIGHT + 2;
+	int x; int y = yToStart;
 	for(std::shared_ptr<Figure> currentFigure: m_surface->m_associatedCity->m_WhereItStands()->m_FiguresOnField()){
-		int x = xToStart + STANDARD_FIELD_SIZE*(figuresDrawn%figuresPerRow);
-		int y = yToStart + figuresDrawn*STANDARD_FIELD_SIZE*(figuresDrawn/figuresPerRow);
+		x = xToStart + STANDARD_FIELD_SIZE*(figuresDrawn%figuresPerRow);
+		y = yToStart + figuresDrawn*STANDARD_FIELD_SIZE*(figuresDrawn/figuresPerRow);
 		currentFigure->m_drawFigureSomewhere(x,y);
 		figuresDrawn++;
 		//std::cout<<"x = "<<x<<", y = "<<y<<", figuresDrawn = "<<figuresDrawn<<std::endl;
 	}
+	return y;
 }
 
 void Subsurface::m_drawHappy(){
@@ -406,6 +427,7 @@ void CitySurface::m_drawShields(){
 }
 
 bool CitySurface::m_changeWhatIsBuilt(){
+	try{
 	if(m_associatedCity->m_buyInTurn == true){
 		return false;
 	}
@@ -429,10 +451,18 @@ bool CitySurface::m_changeWhatIsBuilt(){
 	m_associatedCity->m_whatIsBuilt = whatIsPossible[result.index];
 	std::cout<<result.content<<", index: "<<result.index<<", building: "<<m_associatedCity->m_whatIsBuilt<<std::endl;
 	return true;
+	}
+	catch(SDLQuitException& se){
+		throw se;
+	}
+	catch(QuitSelection& qs){
+		if(qs.m_returnSomething==NO_ACTION)
+			return true;
+	}
 }
 
 void CitySurface::m_drawTradeProduction(){
-	int amount = m_associatedCity->m_tradeProduction();
+	int amount = m_associatedCity->m_revenueProduction().trade;
 	int checkInt = 0;
 	bool isThereAnyCorruption = false;
 	const int tradeWidth = RESOURCES_SCALEFACTOR*7;

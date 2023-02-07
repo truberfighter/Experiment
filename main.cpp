@@ -16,9 +16,11 @@
 #include "Window.hpp"
 #include "Field.hpp"
 #include "GameMain.hpp"
+#include "SelectorSurface.hpp"
 #include "FieldContainer.hpp"
-#include "Settlers.hpp"
-#include "Grassland.hpp"
+#include "GameLoader.hpp"
+#include "AppInitter.hpp"
+#include <functional>
 
 
 //Screen dimension constants
@@ -32,35 +34,23 @@ using namespace std;
 //shared_ptr<Drawing> someDrawing;
 SDL_Event currentEvent;
 
-int main( int argc, char* args[] ){
-/*
-	SDL_Event e;
-		e.key.keysym.sym = SDLK_3_DOWN_RIGHT;
-		list<SDL_Event> liste;
-		SDL_Event f;
-		f.key.keysym.sym = SDLK_ENTER_KEY;
-		for(int i(0);i<4; i++){
-			liste.push_back(e);
-		liste.push_back(e);
-		liste.push_back(e);
-		liste.push_back(f);
-		}
-
-*/
-	GameMain gameMain;
-/*	SDL_Event event;
-	event.type = SDL_KEYDOWN;
-	event.key.keysym.sym = SDLK_b;
-	std::list<SDL_Event> eventList;
-	eventList.push_back(event);
-	eventList.push_back(event);
-	event.type = SDL_KEYDOWN;
-		event.key.keysym.sym = SDLK_ENTER_KEY;
-		eventList.push_back(event);*/
+int main(int argc, char* args[] ){
+	AppInitter initter;
+	initter.m_init();
+	switch(initter.m_requestStartingMode()){
+	case LOAD_GAME:{ //load
+		//GameLoader theGameLoader;
+		break;
+	}
+	case START_A_NEW_GAME: //new
+	{
+		GameMain gameMain;
 		gameMain();
-		TTF_Quit();
+	}
+	}
+	TTF_Quit();
 	IMG_Quit();
-	SDL_Quit();  //Quit SDL subsystems	}3_
+	SDL_Quit();
 	return 500;
 }
 

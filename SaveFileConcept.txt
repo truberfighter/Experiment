@@ -1,0 +1,4 @@
+Graphics::Civ::currentNationality
+GlobalWarmingvariablen
+Nationenanzahl
+slotNumber

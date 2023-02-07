@@ -11,7 +11,23 @@ library
 university
 palace
 
-Refactoring-Maßnahmen:
+City+Field mit bessere Foginfos ausstatten
+...und diese speichern
+...und ihnen entsprechend zeichnen lassen
 
-irrigate- und mining-Methoden umschreiben, bzw in FieldType.hpp auslagern, so gut es geht
-
+Was muss eine SaveGame-Datei enthalten?
+0) globale Variablen (diese werden auch zuerst erstellt?)
+1) Game-Grunddaten, Game-Attribute, Year... wie viele nationen
+2) Nation-Grunddaten/Spielerdaten, Technologiebäume, progress-Daten, Embassy-Daten...
+danach Beziehungen mittels Nationalität
+Field-Grunddaten, NationKnowsField (visibility)
+Figure-Daten: zuerst FigureType, um Konstruktor aufrufen zu können; dann whereitstands,
+field-Koordinaten, Stadtkoordinaten, ggf settlerswork... Aktivität, oder ist diese im Status versteckt?
+-> GameMain::whatToMove initialisieren?
+zuletzt Cities 
+-> Citizens
+->rundattribute
+-> Improvements (dabei dann ggf Manipulation der WonderData)
+ 
+ 
+ Traderoutes mit Koordinaten

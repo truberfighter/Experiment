@@ -20,6 +20,8 @@
 
 using namespace std;
 
+Window* theWindow = nullptr;
+
 Window::Window(std::string name, unsigned int width, unsigned int height)
 :m_name(name), m_width(width), m_height(height)
 {
@@ -37,9 +39,6 @@ bool Window::m_Init()
 			  , SDL_WINDOWPOS_UNDEFINED
 			  , m_width, m_height, SDL_WINDOW_SHOWN );
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
-	SDL_Texture* t  = IMG_LoadTexture(m_renderer, "bilder/2022-01-03.png");
-	cout<<"Window-Konstruktor: "<<SDL_GetError()<<endl;
-
 	if(m_window == nullptr){
 		throw(WindowInitFail());
 	}

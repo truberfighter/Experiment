@@ -22,7 +22,7 @@ struct FieldType{
 	Landscape m_landscape;
 	FieldTypeDecorator m_irrigator;
 	FieldTypeDecorator m_miningMaker;
-	std::function<int (SettlersWork work, Field*)> m_howLongToTake;
+	std::function<short int (SettlersWork work, Field*)> m_howLongToTake;
 	std::function<int(Field*)> m_food, m_shields, m_trade;
 	MovementData m_movementData;
 	std::shared_ptr<Texture> m_texture;

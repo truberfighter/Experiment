@@ -22,8 +22,18 @@ class City;
 class FieldContainer;
 class Drawing;
 
+struct FigureJson{
+	int figureID;
+	std::vector<int> visibilityInfo;
+	int movementPoints;
+	bool isVeteran;
+	int figureState;
+	int figureType;
+};
+
 class Figure: public std::enable_shared_from_this<Figure> {
 protected:
+	int m_figureID;
 	std::vector<Nationality> m_visibilityInfo;
 	std::shared_ptr<Field> m_whereItStands;
 	std::shared_ptr<City> m_home;
@@ -37,6 +47,7 @@ protected:
 	MovementPoints m_calculateStandardMoveCostGround(Field& fieldToVisit);
 	int m_drawFigureState(int, int, SDL_Renderer*);
 public:
+	int m_FigureID(){return m_figureID;}
 	void m_hideFrom(Nationality nationality);
 	bool m_isVisible(Nationality nationality);
 	void m_makeVisible(Nationality nationality);
@@ -44,10 +55,11 @@ public:
 	void m_setFigureState (FigureState newState){m_figureState = newState;}
 	Nationality m_Nationality();
 	Figure(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	Figure(){}
 	virtual ~Figure();
 	virtual FigureType m_FigureType() = 0;
 	void m_move(Direction whereToGo);
-	std::shared_ptr<City> m_Home(){return m_home;}
+	std::shared_ptr<City>& m_Home(){return m_home;}
 	virtual bool m_takeOrder(char order)=0;
 	virtual std::string m_orderOverview()=0;
 	std::string m_figureOverview();
@@ -83,6 +95,8 @@ public:
 	int m_desertationCost();
 	void m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr<City> newHome = nullptr);
 	friend class Figurebutton;
+	friend class FigureFactory;
+	virtual void m_printData(std::ostream& os);
 };
 
 inline bool Figure::m_IsVeteran(){return m_isVeteran;}
@@ -93,6 +107,7 @@ class TurnEndsTooEarly{
 
 class FigureElement: public MovableDrawingElement{
 public:
+	virtual ~FigureElement(){std::cout<<"Figueelement-Destruktor"<<std::endl;}
 	FigureElement(SDL_Renderer* renderer, MovableThing* movableEntity);
 	virtual int m_draw(int rowShift, int columnShift, SDL_Renderer* renderer = nullptr) override;
 };

@@ -14,6 +14,7 @@ protected:
 	int m_turnsFlying = 0;
 public:
 	virtual FigureType m_FigureType() override = 0;
+	Plane(){}
 	Plane(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~Plane();
 	bool m_takeOrder(char order);
@@ -27,11 +28,14 @@ public:
 	std::shared_ptr<MovableThing> m_createImage() override = 0;
 	virtual int m_maximumTurnsFlying() = 0;
 	virtual int m_shieldCost() override = 0;
+	virtual void m_printData(std::ostream& os) override;
+	friend class FigureFactory;
 };
 
 #define PLANE(CLASS) class CLASS: public Plane{\
 public:\
 	virtual FigureType m_FigureType() override;\
+	CLASS(){}\
 	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
 	virtual ~CLASS();\
 	virtual float m_attackingStrength();\

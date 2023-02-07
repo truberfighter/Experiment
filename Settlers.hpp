@@ -29,6 +29,7 @@ public:
 	void m_loseOneWorkPoint();
 	FigureType m_FigureType() override;
 	Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	Settlers(){}
 	~Settlers();
 	bool m_takeOrder(char order) ;
 	virtual std::string m_orderOverview();
@@ -44,7 +45,8 @@ public:
 	bool m_addToCity();
 	bool m_canBuildRailroad();
 	bool m_canBuildBridges();
-	friend class Figurebutton;
+	virtual void m_printData(std::ostream& os) override;
+	friend class Figurebutton; friend class FigureFactory;
 	friend void Figure::m_changeNationTo(std::shared_ptr<Nation>, std::shared_ptr<City>);
 };
 

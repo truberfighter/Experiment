@@ -24,20 +24,29 @@
 class Field;
 class Nation;
 class Improvement;
+class Diplomat;
+struct NationKnowsCity{
+	int size;
+	int occupied;
+	bool hasCityWalls;
+	int yearNumberRaw;
+	Nationality home;
+};
 class TradeRoute{
 public:
 	std::shared_ptr<City> m_city1, m_city2;
 	TradeRoute(std::shared_ptr<City> city1, std::shared_ptr<City> city2):m_city1(city1),m_city2(city2){}
 	int m_calculateProduction();
 	void m_destroyItself();
+	int m_calculateInstantRevenue();
 };
 class City;
 class Subsurface;
 class CitySurface;
 
 struct CityProduction{
-	int luxuries, gold, science;
-};
+	int luxuries, gold, science,trade;
+}; struct CityJson; struct CitizenJson;
 
 class SellException{
 public:
@@ -59,10 +68,6 @@ public:
 	NoGivenData(std::string s):m_what(s){}
 };
 
-struct LayerString{
-	int layer;
-	std::string content;
-};
 
 struct UnitCostingResources{
 	Figure* figure;
@@ -79,7 +84,7 @@ public:
 	CitizenState m_state;
 	City& m_home;
 	CitizenState m_changeState();
-
+	CitizenJson m_createJson();
 };
 
 class Subsurface{
@@ -88,7 +93,7 @@ public:
 	Subsurface(CitySurface* surface);
 	SubSurfaceState m_state = SUBSURFACE_INFO;
 	void m_draw();
-	void m_drawFigures();
+	int m_drawFigures();
 	void m_drawHappy();
 	bool m_handleMouseClick(int x, int y);
 };
@@ -97,6 +102,8 @@ class City: public std::enable_shared_from_this<City> {
 public:
 
 private:
+	std::vector<NationKnowsCity> m_nationFogInfo;
+	int m_globalIndex;
 	bool m_buyInTurn = false;
 	std::vector<CityImprovement> m_improvements;
 	ImprovementType m_whatIsBuilt = IMPROVEMENT_SETTLERS;
@@ -109,8 +116,8 @@ private:
 	int m_food = 0;
 	std::vector<std::shared_ptr<TradeRoute>> m_tradeRoutes;
 	void m_cityEconomy();
-
 public:
+	int m_shieldsPerPollution();
 	float m_goldCoefficient();
 	float m_scienceCoefficient();
 	float m_luxuryCoefficient();
@@ -134,7 +141,10 @@ public:
 	static bool isWonderType(ImprovementType imptype);
 	bool m_contains(ImprovementType imptype);
 	std::vector<ImprovementType> m_whatCanBeBuilt();
+	std::vector<std::shared_ptr<TradeRoute>>& m_TradeRoutes(){return m_tradeRoutes;}
+	std::vector<std::shared_ptr<Citizen>>& m_Citizens(){return m_citizens;}
 	ImprovementType m_WhatIsBuilt(){return m_whatIsBuilt;}
+	int m_GlobalIndex(){return m_globalIndex;}
 	std::shared_ptr<Field> m_WhereItStands(){return m_whereItStands;}
 	std::shared_ptr<Nation> m_OwningNation(){return m_owningNation;}
 	bool m_takeFigure(std::shared_ptr<Figure> figureToTake);
@@ -167,6 +177,7 @@ public:
 	void m_sortFiguresByValue();
 	bool m_maybeFinishProduction();
 	void m_grow();
+	void m_clearProduction(){m_shields=0;}
 	std::shared_ptr<CityImprovement> m_maybeBuild(ImprovementType imptype);
 	bool m_placeCitizen(std::shared_ptr<Field> fieldClickedOn);
 	bool m_sell(int index);
@@ -176,6 +187,11 @@ public:
 	void m_shrink();
 	int m_revoltingCost();
 	int m_capturingValue();
+	bool m_offerRevolt(Diplomat& diplomat);
+	int m_pollutionProduction();
+	int m_everydaysPollution();
+	bool m_handlePollution();
+	CityJson m_createJson();
 	friend class Settlers;
 	friend void Nation::m_destroyCity(std::shared_ptr<City> cityToDestroy);
 	friend void TradeRoute::m_destroyItself();
@@ -183,6 +199,6 @@ public:
 };
 
 template<typename T>
-bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2));
+bool isInVector(std::vector<T>& theVector, const T& whatToFind, bool (*equals) (const T& t1, const T& t2));
 
 #endif /* CITY_HPP_ */

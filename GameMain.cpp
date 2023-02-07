@@ -19,6 +19,8 @@
 #include "ctype.h"
 #include "City.hpp"
 #include "SelectorSurface.hpp"
+#include "GameSaver.hpp"
+#include <fstream>
 #include<algorithm>
 
 #define MAIN_LOOP_BEGIN  bool quit = false; while(!quit){ \
@@ -51,22 +53,25 @@ GameMain::GameMain(): EventHandler(), m_whatToMove(nullptr)
 	m_initGame();
 }
 
+GameMain::~GameMain(){
+	TTF_CloseFont(theFont);
+	delete theLetterTextureContainer;
+	 if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
+	  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
+	 }
+}
+
 void GameMain::m_initLetterTextures(){
 	std::string whatToGenerate = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	theLetterTextureContainer = new LetterTextureContainer(whatToGenerate);
 }
 
 void GameMain::m_initGame(){
-	int imgflags = IMG_INIT_PNG;
-	IMG_Init(imgflags);
-	TTF_Init();
-	theFont = TTF_OpenFont("Fonts/FT88-Regular.ttf", 22);
-	citySizeFont = TTF_OpenFont("Fonts/FT88-Regular.ttf",35);
-	Window* theWindow = new Window ("Game Main, Window 0", SCREEN_WIDTH, SCREEN_HEIGHT);
-	m_currentRenderer = theRenderer = theWindow->m_Renderer();
+	m_currentRenderer = theRenderer;
 	m_initLetterTextures();
 	m_initFieldTextures();
 	initFieldContainer();
+	Graphics::Civ::miningTexture = std::make_shared<Texture>(IMG_LoadTexture(theRenderer, "bilder/Landscapes/Mining.png"),STANDARD_FIELD_SIZE/2+1,STANDARD_FIELD_SIZE/2+1);
 	vector<Nationality> nationsToPlay{ROMAN, MONGOL, ZULU, CHINESE};
 	m_theGame = make_unique<Game>(nationsToPlay);
 	theGame = m_theGame.get();
@@ -99,7 +104,7 @@ void GameMain::m_createShieldTexture(Landscape ls, string filename){
 }
 
 void GameMain::m_initFieldTextures(){
-	for(Landscape ls = (Landscape)0; ls<=OCEAN;ls=(Landscape)(ls+1)){
+	for(Landscape ls = (Landscape)0; ls<=DESERT;ls=(Landscape)(ls+1)){
 		std::stringstream stream;
 		stream<<ls;stream.flush();
 		std::string landscapeString = stream.str();
@@ -109,20 +114,16 @@ void GameMain::m_initFieldTextures(){
 		std::stringstream normalStream;
 		normalStream<<"bilder/Landscapes/Default/"<<landscapeString<<".png";
 		m_createFieldTexture(ls, normalStream.str().c_str());
-		/*
+		std::cout<<ls<<SDL_GetError()<<std::endl;
 		std::stringstream resourceStream;
-		normalStream<<"bilder/Landscapes/Resource/"<<landscapeString<<".png";
+		resourceStream<<"bilder/Landscapes/Resource/"<<landscapeString<<".png";
 		m_createResourceTexture(ls, resourceStream.str().c_str());
+		std::cout<<ls<<SDL_GetError()<<std::endl;
 		std::stringstream shieldStream;
-		normalStream<<"bilder/Landscapes/Shield/"<<landscapeString<<".png";
+		shieldStream<<"bilder/Landscapes/Shield/"<<landscapeString<<".png";
 		m_createShieldTexture(ls, shieldStream.str().c_str());
-		 */
+		std::cout<<ls<<SDL_GetError()<<std::endl;
 	}
-}
-
-GameMain::~GameMain(){
-	TTF_CloseFont(theFont);
-	delete theLetterTextureContainer;
 }
 
 void GameMain::m_initInfoDrawing(){
@@ -142,10 +143,7 @@ void GameMain::m_initInfoDrawing(){
 
 int GameMain::operator()(){
 	Uint32 millisecsAtLastBlinkingStep = SDL_GetTicks();
- if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
-  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
- }else{
- doSomething();
+	doSomething();
 
  MAIN_LOOP_BEGIN
 
@@ -153,11 +151,6 @@ int GameMain::operator()(){
 	if(m_handleEvent(currentEvent)){
 true;	}
   MAIN_LOOP_END
- }
-
- TTF_Quit();
- IMG_Quit();
- SDL_Quit();
  return 0;
 }
 
@@ -190,14 +183,9 @@ void GameMain::doSomething(){
 
 
 void GameMain::gameMainDebug(list<SDL_Event>& eventList){
-	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
-	  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
-	 }else{
-
 	 doSomething();
 	 for(SDL_Event& event: eventList){
 		 m_handleKeyboardEvent(event);
-	 }
 	 }
 }
 
@@ -251,4 +239,108 @@ bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 	}
 }
 
-
+void GameMain::m_offerSavingGame(){
+	try{
+	SelectionReturn theReturn = Miscellaneous::selectSavingSlot();
+	int fileIndex = theReturn.index;
+	std::stringstream nameStream;
+	nameStream<<"data\\gameData"<<fileIndex<<".txt";
+	nameStream.flush();
+	//clear the selected file
+	std::ofstream outputStream1(nameStream.str(),std::ofstream::out|std::ofstream::trunc);
+	if(static_cast<bool>(outputStream1)){
+	outputStream1.close();
+	}
+	else{
+		std::cerr<<"Problem: file "<<nameStream.str()<<" could not be opened."<<std::endl;
+		return;
+	}
+	SDL_RenderClear(theRenderer);
+	SDL_RenderPresent(theRenderer);
+	slotNumber = fileIndex;
+	bool displayStarted = true;
+	std::string slotNameSuggestion = theReturn.content.compare("EMPTY") == 0?
+			"Some saving slot":
+			theReturn.content;
+	SDL_StartTextInput();
+	SDL_SetRenderDrawColor(theRenderer, whiteColor.r, whiteColor.g, whiteColor.b, whiteColor.a);
+	bool ready = false;
+	SDL_Surface* mainTextSurface = TTF_RenderText_Shaded(theFont, "Enter slot name:", blackColor, whiteColor);
+	SDL_Texture* mainTextTexture = SDL_CreateTextureFromSurface(theRenderer, mainTextSurface);
+	SDL_Rect fillingRect{FIGURE_INFO_WIDTH, (SCREEN_HEIGHT -mainTextSurface->h)/2,mainTextSurface->w,mainTextSurface->h, };
+	SDL_RenderCopy(theRenderer, mainTextTexture,NULL,&fillingRect);
+	SDL_RenderPresent(theRenderer);
+	fillingRect.y+=fillingRect.h;
+	SDL_Event currentEvent;
+	bool clearFirstChar = false;
+	while(!ready){
+		bool renderText = false;
+		while(SDL_PollEvent(&currentEvent)!=0){
+			if(currentEvent.type == SDL_QUIT){
+				throw(SDLQuitException());
+			}
+			else if(currentEvent.type == SDL_KEYDOWN){
+				if(currentEvent.key.keysym.sym==SDLK_BACKSPACE && slotNameSuggestion.length()>0){
+					if(slotNameSuggestion.length()==1){
+						clearFirstChar = true;
+					}
+					else{
+					slotNameSuggestion.pop_back();
+					renderText = true;
+					}				}
+				if(currentEvent.key.keysym.sym==SDLK_ENTER_KEY){
+					ready = true;
+				}
+			}
+			else if(currentEvent.key.keysym.sym == SDLK_c && (SDL_GetModState() & KMOD_CTRL) )
+				{
+					SDL_SetClipboardText( slotNameSuggestion.c_str() );
+				}
+				//Handle paste
+				else if(currentEvent.key.keysym.sym == SDLK_v && (SDL_GetModState() & KMOD_CTRL) )
+				{
+				if(clearFirstChar){
+					clearFirstChar = false;
+					slotNameSuggestion.pop_back();
+				}
+					slotNameSuggestion = SDL_GetClipboardText();
+					renderText = true;
+				}
+				else if(currentEvent.type == SDL_TEXTINPUT && slotNameSuggestion.length()<MAX_SAVESLOT_LENGTH){
+					//Not copy or pasting, taken from lazyfoo
+					if(!(( SDL_GetModState() & KMOD_CTRL) && ( currentEvent.text.text[ 0 ] == 'c' || currentEvent.text.text[ 0 ] == 'C' || currentEvent.text.text[ 0 ] == 'v' || currentEvent.text.text[ 0 ] == 'V' ) ) ){
+						if(clearFirstChar){
+							clearFirstChar = false;
+							slotNameSuggestion.pop_back();
+						}
+						slotNameSuggestion += currentEvent.text.text;
+						clearFirstChar = false;
+						renderText = true;
+					}
+				}
+			if(renderText || displayStarted){
+				SDL_RenderFillRect(theRenderer, &fillingRect);
+				if(slotNameSuggestion != ""){
+					SDL_Surface* slotNameSuggestionSurface = TTF_RenderText_Solid(theFont, slotNameSuggestion.c_str(), blackColor);
+					SDL_Texture* slotNameSuggestionTexture = SDL_CreateTextureFromSurface(theRenderer, slotNameSuggestionSurface);
+					fillingRect.w = slotNameSuggestionSurface->w;
+					SDL_RenderFillRect(theRenderer, &fillingRect);
+					SDL_RenderCopy(theRenderer,slotNameSuggestionTexture,nullptr,&fillingRect );
+					SDL_RenderPresent(theRenderer);
+					SDL_DestroyTexture(slotNameSuggestionTexture);
+					displayStarted = false;
+					SDL_FreeSurface(slotNameSuggestionSurface);}
+			}
+		}
+	}
+	SDL_DestroyTexture(mainTextTexture);
+	SDL_FreeSurface(mainTextSurface);
+	SDL_StopTextInput();
+	std::fstream outputStream2(nameStream.str());
+	GameSaver theGameSaver(slotNameSuggestion,nameStream.str(),outputStream2,*this);
+	theGameSaver.m_saveGame(*this);
+	}
+	catch(InvalidSelectionElement& ise){
+		std::cerr<<"A file has been corrupted at slot with index (starting at 0): "<<ise.what->layer<<std::endl;
+	}
+}

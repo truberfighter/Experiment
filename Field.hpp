@@ -14,15 +14,21 @@
 #include "Drawing.hpp"
 #include <String>
 
-struct NationKnows{
+struct NationKnowsField{
+	bool isIrrigated = false;
+	bool isMined = false;
+	bool hasFortress = false;
+	RoadStatus roadStatus = NOTHING;
 	bool value = false;
 	Nationality nationality;
+	Landscape landscape;
 };
 class City;
 class Settlers;
 class Citizen;
 class Figure;
 class FieldContainer;
+struct FieldJson;
 
 class FieldElement: public ImmovableDrawingElement{
 public:
@@ -34,9 +40,8 @@ class FieldType;
 
 class Field: public std::enable_shared_from_this<Field>{
 protected:
-	Landscape m_landscape;
 	void m_makeVisibleAround(int visibilityRange = 1);
-	std::vector<NationKnows> m_nationFogInfo;
+	std::vector<NationKnowsField> m_nationFogInfo;
 	Citizen* m_citizenWorking = nullptr;
 	std::list<std::shared_ptr<Figure>> m_figuresOnField;
 	bool m_createRoadImage(SDL_Color& color);
@@ -44,23 +49,31 @@ protected:
 	int m_roadTradeResult();
 	bool m_hasFortress = false;
 	bool m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers);
-	Layer m_layer;
+	Landscape m_landscape;
 	bool m_hasSpecialResource = false;
 	bool m_hasShield = false;
+	Layer m_layer;
 	std::shared_ptr<FieldElement> m_drawingElement;
 	int m_x;
 	int m_y;
 	std::shared_ptr<City> m_cityContained;
 	bool m_isIrrigated = false;
 	bool m_isMined = false;
+	bool m_isPolluted = false;
 	bool m_maybeFinishWork(Settlers& settlers, SettlersWork work);
 	short int m_howLongToTake(SettlersWork work);
 	RoadStatus m_roadStatus = NOTHING;
 	bool m_road(Settlers& settlers);
 	void m_railRoadProductionEffect(int& count);
+	int m_turnsUntilSwamped = 0;
 public:
+	int& m_TurnsUntilSwamped(){return m_turnsUntilSwamped;}
+	bool m_IsPolluted(){return m_isPolluted;}
+	void m_setPollution(bool what){m_isPolluted = what;}
+	bool m_pollute(){if(m_isPolluted)return false; m_isPolluted = true; return true;}
+	const ContinentID m_ContinentID(){return m_continentID;}
 	FieldType& m_getFieldType();
-	int m_distanceTo(std::shared_ptr<City>);
+	double m_distanceTo(std::shared_ptr<City>);
 	bool m_isVisible(Nationality nationality);
 	void m_makeVisible(Nationality nationality);
 	void m_initNationFogInfo(std::vector<Nationality>& nationalities);
@@ -73,6 +86,7 @@ public:
 	const std::list<std::shared_ptr<Figure>>& m_FiguresOnField(){return m_figuresOnField;}
 	virtual ~Field();
 	Field(int x, int y,  Landscape ls, bool hasSpecialResource = false, bool hasShield = false);
+	Field(FieldJson& fj);
 	int m_X() const;
 	int m_Y() const;
 	std::shared_ptr<FieldElement> m_DrawingElement();
@@ -109,10 +123,13 @@ public:
 	friend std::ostream& operator<<(std::ostream&, Field&);
 	void m_changeLandscapeTo(Landscape landscape);
 	bool m_HasShield(){return m_hasShield;}
+	bool m_cleanUpPollution(Settlers& settlers);
+	FieldJson m_createJson();
 	friend class FieldContainer;
 	friend class City;
 	friend class Game;
 	friend class Settlers;
+	friend class FieldFactory;
 };
 std::ostream& operator<<(std::ostream& os, Landscape ls);
 std::ostream& operator<<(std::ostream&, Field&);

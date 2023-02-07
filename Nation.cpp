@@ -243,6 +243,18 @@ void Nation::m_startNewTurn(){
 	}
 }
 
+GovernmentType Nation::m_Government(){
+	return m_government;
+}
+
+Nationality Nation::m_Nation() const{
+	return this->m_nation;
+}
+
+std::vector<std::shared_ptr<Figure>>& Nation::m_Figures(){
+	return m_figures;
+}
+
 bool Nation::m_destroyFigure(std::shared_ptr<Figure> figureToRemove){
 	std::cout<<"m_destroyFigure: figure.this = "<<figureToRemove<<std::endl;
 	figureToRemove->m_WhereItStands().m_releaseFigure(figureToRemove);
@@ -336,12 +348,7 @@ bool Nation::m_hasExplored(Technology tech){
 	if(tech==NO_TECHNOLOGY){
 		return true;
 	}
-	for(Technology comparedTech: m_exploredTechnologies){
-		if(comparedTech==tech){
-			return true;
-		}
-	}
-	return false;
+	return std::find(m_exploredTechnologies.begin(),m_exploredTechnologies.end(),tech)!=m_exploredTechnologies.end();
 }
 
 std::vector<Technology> Nation::m_technologiesAvailable(){
@@ -372,7 +379,7 @@ Technology Nation::m_askForNewExploration(){
 	std::stringstream stream1;
 	stream1<<"What do you wanna explore, most trustworthy leader "<<m_leaderName<<" of the "<<m_nation<<" Civilization?"<<std::endl;
 	SDL_Rect theRect;
-	theRect = Miscellaneous::printMultipleLines(stream1, 0, 0., whiteColor, true, Graphics::Civ::irrigationBlueColor());
+	theRect = Miscellaneous::printMultipleLines(stream1.str(), 0, 0., whiteColor, true, Graphics::Civ::irrigationBlueColor());
 	std::vector<std::shared_ptr<SelectionElement>> selectionBase;
 	for(Technology techToAskFor: whatToChooseFrom){
 		std::cout<<"Technology available: "<<techToAskFor<<std::endl;
@@ -499,6 +506,12 @@ void Nation::m_destroyCity(std::shared_ptr<City> cityToDestroy){
 	}
 	for(std::vector<std::shared_ptr<City>>::iterator it = m_cities.begin();it!=m_cities.end();it++){
 		if(cityToDestroy.get()==it->get()){
+			m_cities.erase(it);
+			break;
+		}
+	}
+	for(std::vector<std::shared_ptr<City>>::iterator it = theGame->m_CitiesAlive().begin();it!=theGame->m_CitiesAlive().end();it++){
+		if(cityToDestroy.get()==it->get()){
 			theGame->m_CitiesAlive().erase(it);
 			break;
 		}
@@ -528,7 +541,7 @@ void Nation::m_captureCity(std::shared_ptr<City> cityToCapture){
 	int loot = cityToCapture->m_capturingValue();
 	std::stringstream captureStream;
 	captureStream<<cityToCapture->m_Name()<<" captured by "<<m_nation<<"!\n "<<loot<<" gold pieces plundered!"<<std::endl;
-	Miscellaneous::displayText(captureStream, 200, 200, standardNationColor(m_nation), true, m_nation == ROMAN || m_nation == RUSSIAN ? blackColor : Graphics::Civ::resourcesWhiteColor());
+	Miscellaneous::displayText(captureStream.str(), 200, 200, standardNationColor(m_nation), true, m_nation == ROMAN || m_nation == RUSSIAN ? blackColor : Graphics::Civ::resourcesWhiteColor());
 	//now remove some buildings
 	for(std::vector<std::shared_ptr<City>>::iterator it = cityToCapture->m_OwningNation()->m_cities.begin(); it!= cityToCapture->m_OwningNation()->m_cities.end();it++){
 		if(it->get() == cityToCapture.get()){
@@ -618,4 +631,16 @@ float Nation::m_libraryCoefficient(){
 		whatToReturn+=(1/3);
 	}
 	return whatToReturn;
+}
+
+int Nation::m_pollutionCoefficient(){
+	if(m_hasExplored(TECHNOLOGY_PLASTICS))
+		return 4;
+	if(m_hasExplored(TECHNOLOGY_MASS_PRODUCTION))
+		return 3;
+	if(m_hasExplored(TECHNOLOGY_AUTOMOBILE))
+		return 2;
+	if(m_hasExplored(Technology::TECHNOLOGY_INDUSTRIALIZATION))
+		return 1;
+	return 0;
 }

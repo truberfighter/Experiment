@@ -22,7 +22,7 @@ class Figure;
 
 class EventHandler{
 protected:
-	std::list<Drawing*> m_currentDrawings;//Oder so. Damit "Wait" funktioniert.
+	std::list<Drawing*> m_currentDrawings;
 	std::shared_ptr<Drawing> m_currentDrawing;
 	void m_showFigureInfo();
 public:

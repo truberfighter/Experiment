@@ -12,6 +12,7 @@
 #include <functional>
 #define KeyCode unsigned int
 class Field;
+class MovableThing;
 class Figure;
 #define Meridian std::vector<std::shared_ptr<Field>>
 enum PoleHit{NORTH_POLE_HIT, SOUTHERN_POLE_HIT};
@@ -42,10 +43,10 @@ enum{FIGURE_BUTTON_HEIGHT = STANDARD_FIELD_SIZE, FIGURE_BUTTON_WIDTH = STANDARD_
 enum{MODULO_FAIL = -1000};
 enum Landscape{GRASSLAND, PLAINS, OCEAN, RIVER, MOUNTAIN, HILLS, TUNDRA, ARCTIC, SWAMP, JUNGLE, FOREST, DESERT};
 class MovableDrawingElement;
-enum SettlersWork{NONE, IRRIGATE, MAKE_MINING , BUILD_ROAD, BUILD_RAILROAD, BUILD_FORTRESS};
+enum SettlersWork{NONE, IRRIGATE, MAKE_MINING , BUILD_ROAD, BUILD_RAILROAD, BUILD_FORTRESS,CLEAN_UP_POLLUTION};
 enum RoadStatus{NOTHING, ROAD, RAILROAD};
 enum GovernmentType{ANARCHY, DESPOTISM, MONARCHY, COMMUNISM, REPUBLIC, DEMOCRACY};
-enum SettlersWorkingTime{SETTLERSWORK_UNAVAILABLE = -1, STANDARD_ROAD_BUILDING_TIME = 2, STANDARD_RAILROAD_BUILDING_TIME = 4, STANDARD_FORTRESS_BUILDING_TIME = 6
+enum SettlersWorkingTime{SETTLERSWORK_UNAVAILABLE = -1, STANDARD_ROAD_BUILDING_TIME = 2, STANDARD_RAILROAD_BUILDING_TIME = 4, STANDARD_FORTRESS_BUILDING_TIME = 6, STANDARD_POLLUTION_CLEANING_TIME = 6
 , STANDARD_IRRIGATION_TIME = 6, STANDARD_FORESTING_TIME = 12, STANDARD_GRASSLANDING_TIME = 12};
 enum{FIELD_TEXTURE_AMOUNT = 30};
 enum Nationality {ROMAN, RUSSIAN, ZULU, GREEK, BABYLONIAN, ENGLISH, CHINESE, AMERICAN, GERMAN, FRENCH, AZTEC, EGYPTIAN, BARBARIAN, INDIAN, MONGOL,NO_NATIONALITY};
@@ -92,15 +93,24 @@ LIGHTHOUSE,MANHATTAN_PROJECT,ORACLE,PYRAMIDS,SETI_PROGRAM,
 SHAKESPEARES_THEATRE,UNITED_NATIONS,
 BUILDING_MIN = TEMPLE,BUILDING_MAX = HYDRO_PLANT,FIGURE_MIN = IMPROVEMENT_SETTLERS,WONDER_MIN=APOLLO_PROGRAM,WONDER_MAX = UNITED_NATIONS
 };
+enum{MAX_SAVESLOT_LENGTH = 70};
+enum ClimateState{NO_CLIMATE_ALARM,GREEN_CLIMATE_ALARM,YELLOW_CLIMATE_ALARM,ORANGE_CLIMATE_ALARM,RED_CLIMATE_ALARM};
+enum DiplomatChoice{MEET_WITH_KING,INVESTIGATE_CITY,STEAL_TECHNOLOGY,INCITE_REVOLT,ESTABLISH_EMBASSY,INDUSTRIAL_SABOTAGE};
+enum StartingMode{LOAD_GAME,START_A_NEW_GAME};
+extern int POSSIBLE_SAVE_FILES;
 typedef bool BlinkingState;typedef std::function<int(int,int,SDL_Renderer*)> drawingFunction;
 constexpr BlinkingState VISIBLE(){return true;}
 constexpr BlinkingState INVISIBLE(){return false;}
 #define IMPROVEMENT_UNIT_LAYER 0
 #define IMPROVEMENT_LAYER 1
 #define IMPROVEMENT_WONDER_LAYER 2
+#ifndef PUSH
+#define PUSH(a,b) theJson[a]=b;
+#define AT(a,c) a = j.at(c);
+#define GET(a,c) a = j[c].get<std::vector<int>>();
+#endif
 
-
-typedef short unsigned int ContinentID;
+typedef int ContinentID;
 const ContinentID NO_CONTINENT_ID_GIVEN = WORLD_LENGTH*WORLD_HEIGHT;
 class MovementPoints{
 public:
@@ -229,6 +239,7 @@ int drawThickerVerticalLine(SDL_Renderer* renderer, int x, int y, int thickness 
 int drawThickerDiagonalLineUp(SDL_Renderer* renderer, int x, int y, int thickness = STANDARD_LINE_THICKNESS);
 SDL_Color redColor();
 namespace Civ{
+extern std::shared_ptr<Texture> miningTexture;
 SDL_Color yellowColor();
 SDL_Color shieldGreyColor();
 SDL_Color resourcesWhiteColor();
@@ -239,6 +250,7 @@ SDL_Color brightCityBackgroundColor();
 SDL_Color turquoiseColor();
 SDL_Color darkgreyColor();
 SDL_Color irrigationBlueColor();
+int drawPollution(SDL_Renderer* renderer, int x, int y);
 int drawIrrigation(SDL_Renderer* renderer, int x, int y);
 int drawFood(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus = false);
 int drawShield(SDL_Renderer* renderer, int x, int y, int scaleFactor, bool minus = false);
@@ -247,6 +259,7 @@ int drawUnhappyFace(SDL_Renderer* renderer, int x, int y, int scaleFactor);
 int drawLuxury(SDL_Renderer* renderer, int x, int y, int scaleFactor);
 int drawGold(SDL_Renderer* renderer, int x, int y, int scaleFactor);
 int drawScience(SDL_Renderer* renderer, int x, int y, int scaleFactor);
+SDL_Color alarmColor(ClimateState cs);
 extern Nationality currentNationality;
 }
 extern DrawState m_whatsUpDrawingwise;
@@ -255,6 +268,7 @@ extern DrawState m_whatsUpDrawingwise;
 char getSettlersOrder(SettlersWork work);
 
 std::ostream& operator<<(std::ostream& os, Nationality nationality);
+std::ostream& operator<<(std::ostream& os, DiplomatChoice dc);
 
 extern int CONTENT_BASE;
 extern TTF_Font* theFont, *citySizeFont;
@@ -295,8 +309,8 @@ std::vector<Coordinate> coordinatesAroundField(int visibilityRange = 1);
 #ifndef IS_IN_VECTOR_
 #define IS_IN_VECTOR_
 template<typename T>
-bool isInVector(std::vector<T>& theVector, T& whatToFind, bool (*equals) (T& t1, T& t2)){
-	for(T& t: theVector){
+bool isInVector(std::vector<T>& theVector, const T& whatToFind, bool (*equals) (const T& t1, const T& t2)){
+	for(const T& t: theVector){
 		if(equals(whatToFind, t)){
 			return true;
 		}
@@ -309,11 +323,20 @@ public:
 	void operator()();
 	DoNothing();
 };
-
+class SelectionReturn;
 namespace Miscellaneous{
-SDL_Rect printMultipleLines(std::stringstream& str, int x, int y, SDL_Color color, bool shaded = false, SDL_Color backgroundColor = whiteColor);
-void displayText(std::stringstream& str, int x, int y, SDL_Color color, bool shaded = false, SDL_Color backgroundColor = whiteColor);
+SDL_Rect printMultipleLines(const std::string& str, int x, int y, SDL_Color color, bool shaded = false, SDL_Color backgroundColor = whiteColor);
+void displayText(const std::string& str, int x, int y, SDL_Color color, bool shaded = false, SDL_Color backgroundColor = whiteColor);
+bool yesOrNo(int x = FIGURE_INFO_WIDTH, int y = SCREEN_HEIGHT/3, std::string yes = "yes", std::string no = "no");
+void holdImage();
+SelectionReturn selectSavingSlot();
 }
+
+extern unsigned int figureCountGlobal, cityCountGlobal;
+namespace GlobalWarming{
+extern int SWAMPS_TO_MAKE,DESERTS_TO_MAKE,WARMING_EXACERBATION, DESERTIFICATION_BOUND, HORIZONTAL_HOPPING_DISTANCE, DESERTIFICATION_SPREADER, TURNS_UNTIL_SWAMPED;
+}
+extern int slotNumber;
 
 #endif
 

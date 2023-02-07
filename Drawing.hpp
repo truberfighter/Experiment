@@ -49,6 +49,7 @@ protected:
 	int m_columnWhereLastDrawn;
 public:
 	friend class MovableThing;
+	std::list<Drawing*>& m_WhereToDraw(){return m_whereToDraw;}
 	void m_drawAt(int x, int y, SDL_Renderer* renderer = nullptr);
 	virtual Drawing_Element m_DrawingElement() = 0;
 	DrawingElement(const DrawingElement&);

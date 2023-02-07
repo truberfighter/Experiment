@@ -63,14 +63,15 @@ bool Settlers::m_takeOrder(char order){
 	MovementPoints tempMovementPoints = m_movementPoints;
 	try{
 	std::cout<<"order taken by settlers: this = "<<this<<", order = "<<(order == ' '? "space" : "char: ")<<order<<std::endl;
-	switch(order){
-	case 'i': return m_whereItStands->m_Irrigate(*this);
+	switch(order ){
+	case 'i': return m_whereItStands->m_cityContained ? false :  m_whereItStands->m_Irrigate(*this);
 	case 's': return m_sentry();
-	case 'r': return m_whereItStands->m_road(*this);
+	case 'r': return m_whereItStands->m_cityContained ? false : m_whereItStands->m_road(*this);
 	case 'h': return m_homeCity();
-	case 'm': return m_whereItStands->m_Mining(*this);
+	case 'm': return m_whereItStands->m_cityContained ? false : m_whereItStands->m_Mining(*this);
 	case ' ': {m_finishMove(); return true;}
 	case 'b': {return (!m_whereItStands->m_CityContained() ? m_startFoundingNewCity() : m_addToCity());}
+	case 'c': return m_whereItStands->m_cityContained ? false :  m_whereItStands->m_cleanUpPollution(*this);
 	default: return false;
 	}
 }
@@ -149,6 +150,8 @@ bool Settlers::m_startFoundingNewCity(){
 	SDL_RenderPresent(theRenderer);
 	fillingRect.y+=fillingRect.h;
 	SDL_Event currentEvent;
+	bool displayStarted = true;
+	bool clearFirstChar = false;
 	while(!ready){
 		bool renderText = false;
 		while(SDL_PollEvent(&currentEvent)!=0){
@@ -157,8 +160,13 @@ bool Settlers::m_startFoundingNewCity(){
 			}
 			else if(currentEvent.type == SDL_KEYDOWN){
 				if(currentEvent.key.keysym.sym==SDLK_BACKSPACE && cityNameSuggestion.length()>0){
+					if(cityNameSuggestion.length()==1){
+						clearFirstChar = true;
+					}
+					else{
 					cityNameSuggestion.pop_back();
 					renderText = true;
+					}
 				}
 				if(currentEvent.key.keysym.sym==SDLK_ENTER_KEY){
 					ready = true;
@@ -171,17 +179,25 @@ bool Settlers::m_startFoundingNewCity(){
 				//Handle paste
 				else if(currentEvent.key.keysym.sym == SDLK_v && (SDL_GetModState() & KMOD_CTRL) )
 				{
+					if(clearFirstChar){
+						clearFirstChar = false;
+						cityNameSuggestion.pop_back();
+					}
 					cityNameSuggestion = SDL_GetClipboardText();
 					renderText = true;
 				}
 				else if(currentEvent.type == SDL_TEXTINPUT && cityNameSuggestion.length()<MAX_CITY_NAME_LENGTH){
 					//Not copy or pasting, taken from lazyfoo
 					if(!(( SDL_GetModState() & KMOD_CTRL) && ( currentEvent.text.text[ 0 ] == 'c' || currentEvent.text.text[ 0 ] == 'C' || currentEvent.text.text[ 0 ] == 'v' || currentEvent.text.text[ 0 ] == 'V' ) ) ){
+						if(clearFirstChar){
+							cityNameSuggestion.pop_back();
+							clearFirstChar = false;
+						}
 						cityNameSuggestion += currentEvent.text.text;
 						renderText = true;
 					}
 				}
-			if(renderText){
+			if(renderText || displayStarted){
 				SDL_RenderFillRect(theRenderer, &fillingRect);
 				if(cityNameSuggestion != ""){
 					SDL_Surface* cityNameSuggestionSurface = TTF_RenderText_Solid(theFont, cityNameSuggestion.c_str(), blackColor);
@@ -191,6 +207,7 @@ bool Settlers::m_startFoundingNewCity(){
 					SDL_RenderCopy(theRenderer,cityNameSuggestionTexture,nullptr,&fillingRect );
 					SDL_RenderPresent(theRenderer);
 					SDL_DestroyTexture(cityNameSuggestionTexture);
+					displayStarted = false;
 					SDL_FreeSurface(cityNameSuggestionSurface);}
 			}
 		}

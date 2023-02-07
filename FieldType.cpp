@@ -7,13 +7,13 @@
 
 #include "Field.hpp"
 #include "FieldType.hpp"
+#include <algorithm>
 #include "FieldContainer.hpp"
 
 
-
 #define CASE(work,what) case work: return what;
-#define ROAD_CASES(aa,ab) case BUILD_ROAD: return field->m_RoadStatus()== ROAD ? aa : SETTLERSWORK_UNAVAILABLE;\
-case BUILD_RAILROAD: return field->m_RoadStatus()==RAILROAD ? ab : SETTLERSWORK_UNAVAILABLE;
+#define ROAD_CASES(aa,ab) case BUILD_ROAD: return field->m_RoadStatus()== NOTHING ? aa : SETTLERSWORK_UNAVAILABLE;\
+case BUILD_RAILROAD: return field->m_RoadStatus()!=ROAD ? ab : SETTLERSWORK_UNAVAILABLE;
 #define IRRIGATE_CASE(aa) case IRRIGATE: return field->m_IsIrrigated() ? SETTLERSWORK_UNAVAILABLE : aa;
 #define MINING_CASE(aa) case MAKE_MINING: return field->m_IsMined() ? SETTLERSWORK_UNAVAILABLE : aa;
 short int howLongToTakePlains(SettlersWork work, Field* field){
@@ -27,6 +27,7 @@ short int howLongToTakePlains(SettlersWork work, Field* field){
 		}
 	}
 	switch(work){
+	case CLEAN_UP_POLLUTION: {if(!field->m_IsPolluted()) return SETTLERSWORK_UNAVAILABLE; return STANDARD_POLLUTION_CLEANING_TIME;}
 	MINING_CASE(/*STANDARD_FORESTING_TIME*/1) //modified for testing
 	IRRIGATE_CASE(1)
 	ROAD_CASES(STANDARD_ROAD_BUILDING_TIME,STANDARD_RAILROAD_BUILDING_TIME)
@@ -46,6 +47,7 @@ short int howLongToTakeJungle(SettlersWork work, Field* field){
 		}
 	}
 	switch(work){
+		case CLEAN_UP_POLLUTION: {if(!field->m_IsPolluted()) return SETTLERSWORK_UNAVAILABLE; return STANDARD_POLLUTION_CLEANING_TIME;}
 		MINING_CASE(STANDARD_FORESTING_TIME)
 		IRRIGATE_CASE(STANDARD_GRASSLANDING_TIME)
 		ROAD_CASES(4,8)
@@ -65,6 +67,7 @@ switch(work){
 		}
 	}
 	switch(work){
+		case CLEAN_UP_POLLUTION: {if(!field->m_IsPolluted()) return SETTLERSWORK_UNAVAILABLE; return STANDARD_POLLUTION_CLEANING_TIME;}
 		IRRIGATE_CASE(STANDARD_GRASSLANDING_TIME)
 		ROAD_CASES(4,8)
 		CASE(BUILD_FORTRESS,STANDARD_FORTRESS_BUILDING_TIME)
@@ -88,18 +91,19 @@ short int howLongToTakeTundra(SettlersWork work, Field* field)
 	}
 	}
 	switch(work){
+	case CLEAN_UP_POLLUTION: {if(!field->m_IsPolluted()) return SETTLERSWORK_UNAVAILABLE; return STANDARD_POLLUTION_CLEANING_TIME;}
 	ROAD_CASES(STANDARD_ROAD_BUILDING_TIME,STANDARD_RAILROAD_BUILDING_TIME)
 	CASE(BUILD_FORTRESS,STANDARD_FORTRESS_BUILDING_TIME)
 	default: return SETTLERSWORK_UNAVAILABLE;
 	}
 }
 
-short int howLongToTakeRiver(SettlersWork work, Field* field){
+short int howLongToTakeRiver(SettlersWork work,Field* field){
 	if(!field->m_FiguresOnField().empty()){
 	switch(work){
-		case BUILD_ROAD: {if(!field->m_FiguresOnField().front()->m_Nation()->m_canBuildBridges()){
+	case BUILD_ROAD: {if(!field->m_FiguresOnField().front()->m_Nation()->m_canBuildBridges()){
 			return SETTLERSWORK_UNAVAILABLE;
-		}
+		}break;
 		}
 		case BUILD_RAILROAD: {if(!field->m_FiguresOnField().front()->m_Nation()->m_canBuildRailroad())
 			return SETTLERSWORK_UNAVAILABLE; break;
@@ -109,6 +113,7 @@ short int howLongToTakeRiver(SettlersWork work, Field* field){
 		default: break;
 	}}
 	switch(work){
+	case CLEAN_UP_POLLUTION: {if(!field->m_IsPolluted()) return SETTLERSWORK_UNAVAILABLE; return STANDARD_POLLUTION_CLEANING_TIME;}
 	IRRIGATE_CASE(STANDARD_IRRIGATION_TIME)
 	ROAD_CASES(STANDARD_ROAD_BUILDING_TIME,STANDARD_RAILROAD_BUILDING_TIME)
 	CASE(BUILD_FORTRESS,STANDARD_FORTRESS_BUILDING_TIME)
@@ -127,6 +132,7 @@ switch(work){
 		}
 	}
 	switch(work){
+case CLEAN_UP_POLLUTION: {if(!field->m_IsPolluted()) return SETTLERSWORK_UNAVAILABLE; return STANDARD_POLLUTION_CLEANING_TIME;}
 	MINING_CASE( 10)
 	ROAD_CASES(6,12)
 	CASE(BUILD_FORTRESS,7)
@@ -134,7 +140,7 @@ switch(work){
 	}
 }
 
-short int howLongToTakeHill(SettlersWork work, Field* field){
+short int howLongToTakeHills(SettlersWork work,Field* field){
 	if(!field->m_FiguresOnField().empty())
 		switch(work){
 				case BUILD_RAILROAD: {if(!field->m_FiguresOnField().front()->m_Nation()->m_canBuildRailroad())
@@ -145,7 +151,8 @@ short int howLongToTakeHill(SettlersWork work, Field* field){
 				}
 			}
 switch(work){
-	MINING_CASE( 10)
+	case CLEAN_UP_POLLUTION: {if(!field->m_IsPolluted()) return SETTLERSWORK_UNAVAILABLE; return STANDARD_POLLUTION_CLEANING_TIME;}
+	MINING_CASE( 1) //modified for testing
 	CASE(BUILD_FORTRESS,7)
 	IRRIGATE_CASE(7)
 	ROAD_CASES(5,10)
@@ -170,9 +177,9 @@ FieldType& Field::m_getFieldType(){
 }
 
 #undef CASE
-#define CASE(aa,ab) case aa: {count = ab; }
-#define RESOURCE_CASE(aa,ab,bb) case aa: {count = field->m_HasSpecialResource() ? bb : ab; }
-#define SHIELD_CASE(aa) case aa: {count = field->m_HasShield() ? 1 : 0;}
+#define CASE(aa,ab) case aa: {count = ab; break;}
+#define RESOURCE_CASE(aa,ab,bb) case aa: {count = field->m_HasSpecialResource() ? bb : ab; break;}
+#define SHIELD_CASE(aa) case aa: {count = field->m_HasShield() ? 1 : 0; break;}
 
 int shieldsGeneral(Field* field, Landscape ls){
 	int count = 0;
@@ -195,6 +202,7 @@ int shieldsGeneral(Field* field, Landscape ls){
 	CASE(FOREST,2)
 	RESOURCE_CASE(SWAMP,0,4)
 	CASE(ARCTIC,0)
+
 	CASE(TUNDRA,0)
 	CASE(JUNGLE,0)
 	CASE(OCEAN,0)
@@ -219,8 +227,10 @@ int foodGeneral(Field* field, Landscape ls){
 	CASE(MOUNTAIN,0)
 	CASE(HILLS,1)
 	}
-	if(field->m_IsIrrigated())
-		count++;
+	std::vector<Landscape> irrigatables{DESERT,RIVER,PLAINS,GRASSLAND,HILLS};
+	if(field->m_IsIrrigated() || field->m_CityContained())
+		if(std::find(irrigatables.begin(), irrigatables.end(), ls)!=irrigatables.end())
+			count++;
 	return count;
 }
 #define ROAD_CASE(aa) case aa: {count = field->m_RoadStatus()==NOTHING ? 0 : 1; break;}
@@ -258,6 +268,33 @@ standardData, TEXTURES(GRASSLAND)
 	m_fieldTypes.push_back(FieldType{
 		OCEAN,none,none,howLongToTakeOcean, RESOURCES(OCEAN),
 	standardData, TEXTURES(OCEAN)
+	});
+	m_fieldTypes.push_back(FieldType{
+RIVER,irrigator,none,howLongToTakeRiver,RESOURCES(RIVER),MovementData{0.5,ONE_MOVEMENT_POINT},
+TEXTURES(RIVER)	});
+	m_fieldTypes.push_back(FieldType{
+		MOUNTAIN,none,miner,howLongToTakeMountain,RESOURCES(MOUNTAIN),MovementData{2,3*ONE_MOVEMENT_POINT}
+	,TEXTURES(MOUNTAIN)});
+	m_fieldTypes.push_back(FieldType{
+HILLS,irrigator,miner,howLongToTakeHills,RESOURCES(HILLS),MovementData{1,2*ONE_MOVEMENT_POINT},
+	TEXTURES(HILLS)});
+	m_fieldTypes.push_back(FieldType{
+TUNDRA,none,none,howLongToTakeTundra,RESOURCES(TUNDRA),MovementData{0,ONE_MOVEMENT_POINT},TEXTURES(TUNDRA)
+	});
+	m_fieldTypes.push_back(FieldType{
+ARCTIC,none,none,howLongToTakeTundra,RESOURCES(ARCTIC),MovementData{0,ONE_MOVEMENT_POINT},TEXTURES(ARCTIC)
+,TEXTURES(ARCTIC)});
+	m_fieldTypes.push_back(FieldType{
+SWAMP,CHANGER(GRASSLAND),CHANGER(FOREST),howLongToTakeJungle,RESOURCES(SWAMP),MovementData{0.5,2*ONE_MOVEMENT_POINT}
+	,TEXTURES(SWAMP)});
+	m_fieldTypes.push_back(FieldType{JUNGLE,
+CHANGER(GRASSLAND),CHANGER(FOREST),howLongToTakeJungle,RESOURCES(JUNGLE),MovementData{0.5,2*ONE_MOVEMENT_POINT},
+	TEXTURES(JUNGLE)});
+	m_fieldTypes.push_back(FieldType{FOREST,
+CHANGER(PLAINS),none,howLongToTakeForest,RESOURCES(FOREST),MovementData{0.5,2*ONE_MOVEMENT_POINT},
+	TEXTURES(FOREST)});
+	m_fieldTypes.push_back(FieldType{DESERT,
+irrigator,miner,howLongToTakePlains,RESOURCES(DESERT),MovementData{0,ONE_MOVEMENT_POINT},TEXTURES(DESERT)
 	});
 }
 #undef TEXTURES

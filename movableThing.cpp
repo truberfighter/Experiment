@@ -88,12 +88,13 @@ bool MovableThing::m_drawNew(int x, int y, SDL_Renderer* renderer, std::shared_p
 }
 
 MovableThing::~MovableThing(){
-	std::cout<<"MovableThing-Destruktor1, this = "<<this<<std::endl;
 	while(!m_howDrawn.empty()){
-
-		for(Drawing* currentDrawing: m_howDrawn.front()->m_whereToDraw){
-		//std::cout<<"MovableThing-Destruktor2, this = "<<this<<std::endl;
-		currentDrawing->m_delete(m_howDrawn.front());
+auto s =  m_howDrawn.front()->m_WhereToDraw();
+	std::cout<<"MovableThing-Destruktor1, this = "<<this<<", listsize: "<<s.size()<<std::endl;
+		while(!s.empty()){
+		std::cout<<"MovableThing-Destruktor2, this = "<<this<<", currentDrawing = "<<s.front()<<", listsize: "<<s.size()<<std::endl;
+		s.front()->m_delete(m_howDrawn.front());
+		s.pop_front();
 		}
 		m_howDrawn.pop_front();
 	}

@@ -29,7 +29,7 @@ FieldContainer::FieldContainer(int howHigh, int howWide)
 		Meridian newMeridian;
 		for(int j(0); j<howHigh; j++){
 			if((i+j)%2==0)
-				newMeridian.push_back(make_unique<Field>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j, PLAINS));
+				newMeridian.push_back(make_unique<Field>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j, HILLS));
 			else
 				newMeridian.push_back(make_unique<Field>(STANDARD_FIELD_SIZE*i, STANDARD_FIELD_SIZE*j, OCEAN));
 
@@ -60,19 +60,23 @@ void FieldContainer::initContinentIDs(){
 		for(unsigned int j(0); j<ysize; j++){
 
 			shared_ptr<Field>& currentField = vectorToWorkWith[i][j];
-			Coordinate neighbouringCoordinates[4] = {Coordinate(i,j-1), Coordinate(i,j+1)
-			, Coordinate(i+1,j), Coordinate(i-1,j)
-			};
+			std::vector<Coordinate> neighbouringCoordinates;
+			for(int k(-1); k<2;k++)
+				for(int l(-1);l<2;l++)
+					if(k!=0||l!=0)
+						neighbouringCoordinates.push_back(Coordinate(i+k,j+l));
 			bool singleIsland = true;
 			for(Coordinate& compCoord: neighbouringCoordinates){
-				shared_ptr<Field> comparedField = vectorToWorkWith[modulo(compCoord.x, xsize)][ modulo(compCoord.y, ysize)];
+				if(compCoord.y<0||compCoord.y>=(int)ysize)
+					continue;
+				shared_ptr<Field> comparedField = vectorToWorkWith[modulo(compCoord.x, xsize)][compCoord.y];
 				if((comparedField->m_Landscape()!=LANDMASS_SEPARATOR)
 				&&(currentField->m_Landscape()!=LANDMASS_SEPARATOR)){
 					//if both fields are on a landmass,
 					//set their index as the same8int
 					ContinentID minimumContinentID = min((unsigned int)comparedField->m_continentID, min((unsigned int) currentField->m_continentID, (unsigned int) continentCounter));
-					cout<<"minimumContinentID ="<<minimumContinentID<<endl;
-					if(minimumContinentID==continentCounter)continentCounter++;
+					if(minimumContinentID==continentCounter)
+						continentCounter++;
 					currentField->m_continentID=minimumContinentID;
 					comparedField->m_continentID=minimumContinentID;
 					singleIsland = false;

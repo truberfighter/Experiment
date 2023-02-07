@@ -15,6 +15,7 @@
 #include "GameMain.hpp"
 #include <sstream>
 #include <list>
+#include "SelectorSurface.hpp"
 #define NO_EVENT_HANDLING_FOUND return true;
 
 Game* theGame;
@@ -27,7 +28,6 @@ EventHandler::EventHandler()
 {}
 
 void GameMain::m_showNationInfo(){
-	std::cout<<44444<<std::endl;
 	SDL_Color backgroundColor = infoTextBackgroundColor;
 	SDL_Rect rectToFill{0,NATION_INFO_Y, FIGURE_INFO_WIDTH, NATION_INFO_HEIGHT};
 	SDL_SetRenderDrawColor(theRenderer,backgroundColor);
@@ -37,7 +37,8 @@ void GameMain::m_showNationInfo(){
 	theStringstream<<theGame->m_CurrentYear().m_yearString()<<std::endl;
 	theStringstream<<std::setw(5)<<nation.m_Treasury()<<"$"<<"; "<<nation.m_TaxRate()<<"."<<nation.m_LuxuriesRate()<<"."<<nation.m_ScienceRate()<<std::endl;
 	std::cout<<theStringstream.str()<<std::endl;
-	Miscellaneous::printMultipleLines(theStringstream, 0, NATION_INFO_Y, whiteColor);
+	SDL_Rect r = Miscellaneous::printMultipleLines(theStringstream.str(), 0, NATION_INFO_Y, whiteColor);
+
 }
 
 void GameMain::m_showFigureInfo(){
@@ -57,9 +58,12 @@ void GameMain::m_showFigureInfo(){
 		theStringstream<<m_whatToMove->m_figureOverview()<<std::endl;
 		theStringstream<<"Moves: "<<m_whatToMove->m_MovementPoints()<<std::endl;
 	}
-	std::cout<<300000<<std::endl;
-	Miscellaneous::printMultipleLines(theStringstream, 0, FIGURE_INFO_Y, whiteColor);
-	std::cout<<234<<std::endl;
+	SDL_Rect r = Miscellaneous::printMultipleLines(theStringstream.str(), 0, FIGURE_INFO_Y, whiteColor);
+	if(theGame->m_ClimateState()!=NO_CLIMATE_ALARM){
+		std::stringstream s;
+		s<<"Climate alarm:\nStage "<<theGame->m_ClimateState()<<" reached!"<<std::endl;
+		Miscellaneous::printMultipleLines(s.str(), r.x,r.y+r.h, Graphics::Civ::alarmColor(theGame->m_ClimateState()), true, blackColor);
+	}
 	//std::cout<<"stringOfInterest: "<<stringOfInterest<<std::endl;
 
 }
@@ -83,7 +87,7 @@ bool GameMain::m_handleEvent(const SDL_Event& event){
 			std::cout<<"No EventHandling found!"<<std::endl;
 			NO_EVENT_HANDLING_FOUND
 		}
-		m_setWhatToMove(theGame->m_getCurrentFigure());
+		this->m_setWhatToMove(theGame->m_getCurrentFigure());
 		std::cout<<"looolll"<<std::endl;
 		m_drawMainDrawing();
 		std::cout<<"\n currentNatiodn: "<<theGame->m_NationAtCurrentTurn()->m_Nation()<<std::endl;
@@ -133,11 +137,13 @@ bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){
 			}
 		}
 	}
-
-	char orders[]={'s', 'r', ' ', 'h','b','i','m'};
-	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r, SDLK_SPACE,SDLK_h, SDLK_b,SDLK_i,SDLK_m};
+	if(keyCode==SDLK_o){
+		return m_menu();
+	}
+	char orders[]={'s', 'r', ' ', 'h','b','i','m','c'};
+	KeyCode keyCharPossibilities[]={SDLK_s, SDLK_r, SDLK_SPACE,SDLK_h, SDLK_b,SDLK_i,SDLK_m,SDLK_c};
 	if(m_whatToMove){
-	for(int i = 0; i<7; i++){
+	for(int i = 0; i<8; i++){
 		if(keyCode == keyCharPossibilities[i]){
 			try{
 			if(m_whatToMove->m_takeOrder(orders[i])){
@@ -194,4 +200,44 @@ int GameMain::m_drawMainDrawing(){
 	m_showFigureInfo();
 	m_showNationInfo();
 	return whatToReturn;
+}
+
+std::ostream& operator<<(std::ostream& os, MenuReturn& Return){
+	switch(Return){
+	case ALTER_LUXURIES_RATE: os<<"Alter luxuries rate"; break;
+	case ALTER_TAX_RATE: os<<"Alter tax rate"; break;
+	case SAVE_GAME: os<<"Save game"; break;
+	default: os<<"Weird menu return: "<<(int)Return; break;
+	}
+	return os;
+}
+
+bool GameMain::m_menu(){
+try{
+	MenuReturn returns[] = {ALTER_TAX_RATE,ALTER_LUXURIES_RATE,SAVE_GAME};
+	std::vector<std::shared_ptr<SelectionElement>> alternatives;
+	for(MenuReturn currentReturn: returns){
+		std::stringstream s;
+		s<<currentReturn; s.flush();
+		std::function<void()> dn = [](){};
+		auto t = std::make_shared<SelectionElement>(s.str(),currentReturn,dn);
+		alternatives.push_back(t);
+	}
+	SelectorSurface menu(0,0,alternatives);
+	SelectionReturn theReturn = menu.m_fetchSelection();
+	switch(theReturn.layer){
+	case ALTER_TAX_RATE: return theGame->m_NationAtCurrentTurn()->m_alterTaxRate();
+	case ALTER_LUXURIES_RATE: return theGame->m_NationAtCurrentTurn()->m_alterLuxuriesRate();
+	case SAVE_GAME: m_offerSavingGame(); return true;
+	default: return false;
+	}
+}
+catch(SDLQuitException& sqe){
+	throw sqe;
+}
+catch(QuitSelection& sq){
+	if(sq.m_returnSomething==NO_ACTION)
+		return false;
+	throw sq;
+}
 }

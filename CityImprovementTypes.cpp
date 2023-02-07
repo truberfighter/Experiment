@@ -14,6 +14,7 @@
 #include "Diplomat.hpp"
 #include "GameMain.hpp"
 #include "Plane.hpp"
+#include "Caravan.hpp"
 
 int City::figureWidth(FigureType figtype){
 	switch(figtype){
@@ -224,7 +225,10 @@ bool City::m_maybeFinishProduction(){
 	switch(m_whatIsBuilt){
 	case IMPROVEMENT_SETTLERS:
 	{
+		m_shrink();
 		newFigure = std::make_shared<Settlers>(m_whereItStands, m_owningNation, shared_from_this(), gonnaBeVeteran);
+		if(m_size()==0)
+			newFigure->m_Home()=nullptr;
 	figureMade:	m_owningNation->m_addFigure(newFigure);
 		m_whereItStands->m_takeFigure(newFigure);
 		m_takeFigure(newFigure);
@@ -239,7 +243,7 @@ bool City::m_maybeFinishProduction(){
 	CASE_FOR_BUILDING(IMPROVEMENT_LEGION, Legion)
 	CASE_FOR_BUILDING(IMPROVEMENT_DIPLOMAT, Diplomat)
 	CASE_FOR_BUILDING(IMPROVEMENT_MUSKETEERS, Musketeers)
-
+	CASE_FOR_BUILDING(IMPROVEMENT_CARAVAN,Caravan)
 	default: return false;
 	}
 }
@@ -294,7 +298,7 @@ std::vector<ImprovementType> City::m_whatCanBeBuilt(){
 	whatToReturn.push_back(IMPROVEMENT_SETTLERS);
 	whatToReturn.push_back(IMPROVEMENT_CAVALRY);
 	whatToReturn.push_back(IMPROVEMENT_BOMBER);
-	whatToReturn.push_back(IMPROVEMENT_LEGION);
+	whatToReturn.push_back(IMPROVEMENT_CARAVAN);
 	whatToReturn.push_back(IMPROVEMENT_DIPLOMAT);
 	if(m_whereItStands->m_closeToLandscape(OCEAN)){
 		whatToReturn.push_back(IMPROVEMENT_CARRIER);

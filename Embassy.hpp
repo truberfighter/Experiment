@@ -14,8 +14,9 @@
 class Embassy{
 private: std::shared_ptr<Nation> m_nation;
 public: Embassy(std::shared_ptr<Nation> whichNation);
+Nationality m_nationality;
 std::string m_giveEmbassyInfo();
-const std::shared_ptr<Nation> m_Nation();
+const std::shared_ptr<Nation> m_Nation(){return m_nation;};
 };
 
 

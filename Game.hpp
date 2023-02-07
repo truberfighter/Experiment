@@ -16,12 +16,14 @@
 #include <random>
 class City;
 class NationTurn;
+struct GameJson;
 
 struct WonderData{
 	ImprovementType what;
 	Nationality who;
 	bool isDestroyed = false;
 	bool isObsolete = false;
+	City* city = nullptr;
 };
 
 class Game{
@@ -31,6 +33,7 @@ public:
 	Year(unsigned int yearNumberRaw);
 	std::string m_yearString();
 	std::vector<std::shared_ptr<NationTurn>> m_turns;
+	int m_randomSeed;
 };
 private:
 	std::vector<WonderData> m_hasWonderBeenBuilt;
@@ -42,7 +45,12 @@ private:
 	int m_nationAtCurrentTurnIndex = 0;
 	std::vector<std::shared_ptr<Nation>> m_nationsPlaying;
 	void m_startNewTurn();
+	ClimateState m_climateState = NO_CLIMATE_ALARM;
+	int m_pollutionCount = 0; //modified for testing purposes
 public:
+	ClimateState m_ClimateState(){return m_climateState;}
+	bool m_depollute(){if(m_pollutionCount==0) throw false; m_pollutionCount--;return true;}
+	void m_pollute(){m_pollutionCount++;}
 	std::shared_ptr<Nation> m_getNation(Nationality nationality);
 	const WonderData& m_wonderData(ImprovementType imptype);
 	bool m_isObsolete(ImprovementType imptype);
@@ -64,6 +72,9 @@ public:
 	void m_acknowledgeExploration(Technology tech, Nationality nationality = NO_NATIONALITY);
 	int m_getRandomNumberBetween(int lowerBound, int upperBound);
 	bool m_hasActiveWonder(Nationality nationality, ImprovementType imptype);
+	bool m_isWonderOnContinent(City& city,ImprovementType imptype);
+	void m_handleGlobalWarming();
+	GameJson m_createJson();
 	friend class Player;
 };
 

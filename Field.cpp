@@ -14,6 +14,9 @@
 #include <list>
 #include "Ship.hpp"
 #include "FieldType.hpp"
+#include <functional>
+#include "GameSaver.hpp"
+#include <map>
 
 Field::Field(int x, int y, Landscape ls, bool hasSpecialResource, bool hasShield)
 : enable_shared_from_this(),m_x(x), m_y(y), m_landscape(ls),m_layer(STANDARD_FIELD_LAYER), m_hasSpecialResource(hasSpecialResource), m_hasShield(hasShield)
@@ -63,6 +66,10 @@ void Field::m_railRoadProductionEffect(int& count){
 int Field::m_food(Nation& nation){
 	int count = m_food();
 	ACKNOWLEDGE_RAILROAD
+	if(m_isPolluted){
+		count++;
+	count/=2;
+	}
 	ACKNOWLEDGE_DESPOTISM
 	return count;
 }
@@ -70,6 +77,9 @@ int Field::m_food(Nation& nation){
 int Field::m_shields(Nation& nation){
 	int count = m_shields();
 	ACKNOWLEDGE_RAILROAD
+	if(m_isPolluted){
+		count++;
+	count/=2;}
 	ACKNOWLEDGE_DESPOTISM
 	return count;
 }
@@ -77,37 +87,17 @@ int Field::m_shields(Nation& nation){
 int Field::m_trade(Nation& nation){
 	int count = m_trade();
 	ACKNOWLEDGE_RAILROAD
-	ACKNOWLEDGE_DESPOTISM
 	ACKNOWLEDGE_DEMOCRACY
+	if(m_isPolluted){
+			count++;
+		count/=2;
+}
+	ACKNOWLEDGE_DESPOTISM
 	return count;
 }
 
 bool Field::m_HasSpecialResource(){return m_hasSpecialResource;}
 
-bool Field::m_MiningTemplate(SettlersWork whatWorkWillCome, Settlers& settlers){
-	if(m_howLongToTake(whatWorkWillCome)==SETTLERSWORK_UNAVAILABLE){
-			throw(SettlersworkUnavailable());
-		}
-	switch(whatWorkWillCome){
-	case MAKE_MINING:{
-		if(m_isMined){
-				return false;//do not mine again
-			}
-		else{ //if(!m_isMined)
-			settlers.m_work(MAKE_MINING);
-			//Mining complete
-			if(m_maybeFinishWork(settlers, MAKE_MINING)){
-				//set to mined
-				m_isMined = true;
-			}
-			return true;
-		}
-	}
-	default:{
-		return false;
-	}
-	}
-}
 
 
 
@@ -164,7 +154,7 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 
 bool Field::m_createRoadImage(SDL_Color& color){
 	m_drawingElement->m_setAdditionalInstructions
-	([](int x, int y, SDL_Renderer* renderer)->int{return Graphics::drawSquareStarLines(renderer, x, y, brownColor);});
+	([&color](int x, int y, SDL_Renderer* renderer)->int{return Graphics::drawSquareStarLines(renderer, x, y, color);});
 	return true;
 }
 
@@ -196,8 +186,8 @@ bool Field::m_road(Settlers& settlers){
 			std::cout<<"Settlers cannot build rail road!"<<std::endl;
 			return false;
 		}
-		settlers.m_work(BUILD_ROAD);
-		if(!m_maybeFinishWork(settlers, BUILD_ROAD)){
+		settlers.m_work(BUILD_RAILROAD);
+		if(!m_maybeFinishWork(settlers, BUILD_RAILROAD)){
 			return true;
 		}
 		m_roadStatus = RAILROAD;
@@ -229,7 +219,7 @@ void Field::m_releaseFigure(std::shared_ptr<Figure> movingFigure){
 		std::cout<<("Fail: Released figure not removed!")<<std::endl;
 }
 
-int Field::m_distanceTo(std::shared_ptr<City> comparedCity){
+double Field::m_distanceTo(std::shared_ptr<City> comparedCity){
 	if(!comparedCity){
 		std::cout<<"compared City not found"<<std::endl;
 		return 32;
@@ -238,7 +228,7 @@ int Field::m_distanceTo(std::shared_ptr<City> comparedCity){
 	horizontalDistance = std::min(horizontalDistance, WORLD_LENGTH - 1 - horizontalDistance);
 	int verticalDistance = std::abs(comparedCity->m_WhereItStands()->m_y - m_y)/STANDARD_FIELD_SIZE;
 	std::cout<<"horizontal distance: "<<horizontalDistance<<"verticaldistance: "<<verticalDistance<<std::endl;
-	return std::max(horizontalDistance, verticalDistance);
+	return std::sqrt((double)(horizontalDistance*horizontalDistance+verticalDistance*verticalDistance));
 }
 
 void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
@@ -400,7 +390,7 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Coordinate differenceCoordi
 
 void Field::m_initNationFogInfo(std::vector<Nationality>& nationalities){
 	for(Nationality nationality: nationalities){
-		m_nationFogInfo.push_back(NationKnows{false,nationality});
+		m_nationFogInfo.push_back(NationKnowsField{false,false,false,NOTHING,false,nationality});
 	}
 }
 
@@ -411,7 +401,18 @@ FieldElement::FieldElement(SDL_Renderer* renderer, std::shared_ptr<Texture> text
 
 int FieldElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
 	if(m_field->m_isVisible(theGame->m_NationAtCurrentTurn()->m_Nation())){
-		return ImmovableDrawingElement::m_draw(rowShift, columnShift, renderer) + (m_field->m_IsIrrigated() ? Graphics::Civ::drawIrrigation(renderer, m_row + rowShift, m_column + columnShift) : 0);
+		std::function<int()> extraDraw = [this,&renderer,&rowShift,&columnShift](){
+			int whatToReturn = 0;
+		if(m_field->m_CityContained())
+			return 0;
+		SDL_Rect theRect{this->m_row+rowShift + STANDARD_FIELD_SIZE/4, this->m_column+columnShift+STANDARD_FIELD_SIZE/4,STANDARD_FIELD_SIZE/2+1,STANDARD_FIELD_SIZE/2+1,};
+		whatToReturn += (m_field->m_IsMined()) ? SDL_RenderCopy(theRenderer,Graphics::Civ::miningTexture->theTexture(),nullptr,&theRect) : 0;
+		whatToReturn += (m_field->m_IsIrrigated() ? Graphics::Civ::drawIrrigation
+				(renderer, this->m_row + rowShift, this->m_column + columnShift) : 0) ;
+		whatToReturn += (m_field->m_IsPolluted() ? Graphics::Civ::drawPollution
+				(renderer, this->m_row + rowShift, this->m_column + columnShift) : 0) ;
+		return whatToReturn;};
+		return ImmovableDrawingElement::m_draw(rowShift, columnShift, renderer) + extraDraw();
 	}
 	if(SDL_SetRenderDrawColor(theRenderer, blackColor)==0){
 		SDL_Rect rectToFill{m_row + rowShift, m_column + columnShift, STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE};
@@ -426,10 +427,15 @@ int FieldElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
 }
 
 void Field::m_makeVisible(Nationality nationality){
-	for(NationKnows& nk: m_nationFogInfo){
+	for(NationKnowsField& nk: m_nationFogInfo){
 		if(nk.nationality==nationality){
 			std::cout<<"valuer becomes true for "<<nationality<<std::endl;
 			nk.value = true;
+			nk.hasFortress = m_hasFortress;
+			nk.isIrrigated = m_isIrrigated;
+			nk.landscape = m_landscape;
+			nk.isMined = m_isMined;
+			nk.roadStatus = m_roadStatus;
 			return;
 		}
 	}
@@ -448,7 +454,7 @@ void Field::m_makeVisibleAround(int visibilityRange){
 }
 
 bool Field::m_isVisible(Nationality nationality){
-	for(NationKnows& nk: m_nationFogInfo){
+	for(NationKnowsField& nk: m_nationFogInfo){
 		if(nk.nationality==nationality){
 			return nk.value;
 		}
@@ -493,11 +499,9 @@ bool Field::m_Mining(Settlers& settlers){
 	if(m_howLongToTake(MAKE_MINING)==SETTLERSWORK_UNAVAILABLE){
 		return false;
 	}
-	//if(!m_isIrrigated)
 	settlers.m_work(MAKE_MINING);
-//Irrigation complete
 	if(m_maybeFinishWork(settlers, MAKE_MINING)){
-		//set to irrigated
+		//set to mined
 		 m_getFieldType().m_miningMaker.m_whatToDo(this);
 	}
 	return true;
@@ -536,3 +540,31 @@ void Field::m_changeLandscapeTo(Landscape landscape){
 }
 
 std::string Field::m_resourceOverview(){return "Until very much later, forget about that nonsense!";}
+
+bool Field::m_cleanUpPollution(Settlers& settlers){
+	if(m_howLongToTake(CLEAN_UP_POLLUTION)==SETTLERSWORK_UNAVAILABLE){
+		return false;
+	}
+	settlers.m_work(CLEAN_UP_POLLUTION);
+	if(m_maybeFinishWork(settlers, IRRIGATE)){
+		m_isPolluted = false;
+		theGame->m_depollute();
+	}
+	return true;
+}
+
+FieldJson Field::m_createJson(){
+	std::vector<int> figureIDs;
+	for(std::shared_ptr<Figure>& currentFigure: m_figuresOnField){
+		figureIDs.push_back(currentFigure->m_FigureID());
+	}
+	std::vector<std::map<std::string, int>> nationFogInfo;
+	for(NationKnowsField& nk: m_nationFogInfo){
+	std::map<std::string, int> temp = {{"isIrrigated",(int)nk.isIrrigated},{"isMined",(int)nk.isMined},
+	{"hasFortress",(int)nk.hasFortress},{"landscape",(int)nk.landscape},{"value",(int)nk.value},{"nationality",(int)nk.nationality},{"roadStatus",(int)nk.roadStatus}};
+		nationFogInfo.push_back(temp);
+	}
+	return FieldJson{
+		m_x,m_y,(int)m_landscape,m_hasSpecialResource,m_hasShield,m_hasFortress,(int)m_roadStatus,m_isMined,m_isPolluted,m_isIrrigated,m_continentID,m_layer,m_turnsUntilSwamped,nationFogInfo,figureIDs
+	};
+}
