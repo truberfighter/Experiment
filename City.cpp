@@ -31,7 +31,7 @@ CitySurface City::m_createCitySurface(){
 	return CitySurface(this);
 }
 
-City::City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNation, std::string name)
+City::City( Field* whereToPlace, std::shared_ptr<Nation> owningNation, std::string name)
 : m_owningNation(owningNation), m_whereItStands(whereToPlace), m_name(name)
 {
 	//Imprecise. But I do not care that much about limiting the cities right now.
@@ -44,30 +44,39 @@ City::City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNa
 	m_improvements.push_back(CityImprovement{GRANARY,this});
 	m_citizens.push_back(std::make_shared<Citizen>(*this,m_whereItStands->m_getNeighbouringField(UP)));
 	std::cout<<"City-Konstruktor"<<m_citizens.front()->m_state<<std::endl;
+	m_initFogInfo();
 	m_whereItStands->m_DrawingElement()->m_setAdditionalInstructions(drawCity);
 }
 
-Citizen::Citizen(City& home, std::shared_ptr<Field> whereToWork):m_home(home)
+Citizen::Citizen(City& home, Field* whereToWork):m_home(home)
 {
-	m_whereItWorks = nullptr;
-	Nation& myNation = *m_home.m_OwningNation();
-	int production = 0;
-	int temp;
-	for(std::shared_ptr<Field> currentField: m_home.m_WhereItStands()->m_cityFieldsAround()){
-		temp = currentField->m_shields(myNation) + currentField->m_trade(myNation) + currentField->m_food(myNation);
-		if(production < temp && currentField->m_isVisible(m_home.m_OwningNation()->m_Nation())&&!currentField->m_CityContained() && currentField!=m_home.m_WhereItStands()&& !currentField->m_CitizenWorking()){
-			if(!currentField->m_FiguresOnField().empty())
-				if(currentField->m_FiguresOnField().front()->m_Nationality()!=home.m_OwningNation()->m_Nation())
-					continue;
-			currentField->m_setCitizenWorking(this);
-			production = temp;
-			if(m_whereItWorks){
-				m_whereItWorks->m_setCitizenWorking(nullptr);
+	if(!whereToWork){
+		m_whereItWorks = nullptr;
+		Nation& myNation = *m_home.m_OwningNation();
+		int production = 0;
+		int temp;
+		for(Field* currentField: m_home.m_WhereItStands()->m_cityFieldsAround()){
+			temp = currentField->m_shields(myNation) + currentField->m_trade(myNation) + currentField->m_food(myNation);
+			if(production < temp && currentField->m_isVisible(m_home.m_OwningNation()->m_Nation())&&!currentField->m_CityContained() && currentField!=m_home.m_WhereItStands()&& !currentField->m_CitizenWorking()){
+				if(!currentField->m_FiguresOnField().empty())
+					if(currentField->m_FiguresOnField().front()->m_Nationality()!=home.m_OwningNation()->m_Nation())
+						continue;
+				currentField->m_setCitizenWorking(this);
+				production = temp;
+				if(m_whereItWorks){
+					m_whereItWorks->m_setCitizenWorking(nullptr);
+				}
+				m_whereItWorks = currentField;
 			}
-			m_whereItWorks = currentField;
+		}
+		m_state = CONTENT;
+	}
+	else{
+		m_whereItWorks = whereToWork;
+		if(!whereToWork->m_setCitizenWorking(this)){
+			throw InvalidWhereToWork();
 		}
 	}
-	m_state = CONTENT;
 }
 
 int City::m_drawCity(int x, int y, SDL_Renderer* renderer){
@@ -342,7 +351,7 @@ std::vector<UnitCostingResources> City::m_unitCostVector(){
 			else{
 				whatToReturn.back().shieldCost = 1;
 			}
-			if(&(currentFigure->m_WhereItStands())!=m_whereItStands.get()){
+			if(&(currentFigure->m_WhereItStands())!=m_whereItStands){
 				whatToReturn.back().unhappyFaces = unhappyFacesPerUnit;
 			}
 		}
@@ -442,7 +451,7 @@ int City::m_scienceRevenue(){
 	return (production*m_scienceCoefficient());
 }
 
-bool City::m_placeCitizen(std::shared_ptr<Field> fieldClickedOn){
+bool City::m_placeCitizen(Field* fieldClickedOn){
 	if(fieldClickedOn->m_CityContained() != nullptr || !fieldClickedOn->m_isVisible(m_owningNation->m_Nation())
 			|| (!fieldClickedOn->m_figuresOnField.empty() && fieldClickedOn->m_figuresOnField.front()->m_Nationality()!=m_owningNation->m_Nation()))
 	{
@@ -845,9 +854,9 @@ bool City::m_handlePollution(){
 		return false;
 	}
 	int fieldIndex;
-	std::vector<std::shared_ptr<Field>> fields = m_whereItStands->m_cityFieldsAround();
+	std::vector<Field*> fields = m_whereItStands->m_cityFieldsAround();
 	for(int i(20); i>=0;i--){
-		Field* currentField = (fields)[i].get();
+		Field* currentField = (fields)[i];
 		if(currentField->m_CityContained()||!currentField->m_isVisible(m_owningNation->m_Nation())|| currentField->m_IsPolluted()){
 			fields.erase(fields.begin()+i);
 		}
@@ -858,3 +867,26 @@ bool City::m_handlePollution(){
 	return false;
 }
 
+void City::m_makeVisible(Nationality nationality){
+	for(NationKnowsCity& nkc: m_nationFogInfo){
+		if(nkc.whoKnowsThisCity == nationality){
+			nkc.hasCityWalls = m_contains(CITY_WALLS);
+			nkc.home = m_owningNation ? m_owningNation->m_Nation() : NO_NATIONALITY;
+			nkc.noUnits = m_whereItStands->m_figuresOnField.empty();
+			nkc.size = m_size();
+			nkc.yearNumberRaw = theGame->m_Year();
+		}
+	}
+}
+
+void City::m_initFogInfo(){
+	if(!m_nationFogInfo.empty()){
+		throw std::runtime_error("City::nationFogInfo not empty\n");
+	}
+	for(Nationality currentNation: theGame->m_NationalitiesPlaying()){
+		m_nationFogInfo.push_back(NationKnowsCity{0,false,false,-1,NO_NATIONALITY,currentNation});
+	}
+	if(m_owningNation){
+		m_makeVisible(m_owningNation->m_Nation());
+	}
+}

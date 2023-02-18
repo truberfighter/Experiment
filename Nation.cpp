@@ -22,7 +22,6 @@ using namespace std;
 
 Nation::~Nation(){std::cout<<"Nationdestruktor"<<this<<std::endl;}
 
-
 Nation::Nation(Nationality nationality, std::string leaderName, Difficulty difficulty, bool directlyMakingFiguresActive): m_nation(nationality), m_directlyMakingFiguresActive(directlyMakingFiguresActive), m_leaderName(leaderName), m_difficulty(difficulty),enable_shared_from_this()
 {
 	cout<<"Nation-Konstruktor mit Nationalität "<< nationality<<", this = "<<this<<endl;

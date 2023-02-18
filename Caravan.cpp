@@ -11,7 +11,7 @@
 #include "SelectorSurface.hpp"
 #include <algorithm>
 
-Caravan::Caravan(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+Caravan::Caravan(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
 :Figure(whereToStart,nationality,home,isVeteran){\
 	m_resetMovementPoints();\
 	if(!m_initImage()) std::cout<<"Fatal error: MovableThing not created"<<std::endl;\

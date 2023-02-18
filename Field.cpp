@@ -122,7 +122,7 @@ bool Field::m_Pillage(){
 	}
 }
 
-std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
+Field* Field::m_getNeighbouringField(Direction whereToLook){
 	int x = m_x/STANDARD_FIELD_SIZE;
 	int y = m_y/STANDARD_FIELD_SIZE;
 	switch(whereToLook){
@@ -149,7 +149,7 @@ std::shared_ptr<Field> Field::m_getNeighbouringField(Direction whereToLook){
 	//Pol getroffen
 
 	std::vector<Meridian>& fieldsOfTheWorld =  *theContainer->m_getFieldsOfTheWorld();
-	return fieldsOfTheWorld[x][y];
+	return fieldsOfTheWorld[x][y].get();
 }
 
 bool Field::m_createRoadImage(SDL_Color& color){
@@ -245,7 +245,7 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		previousField.m_releaseFigure(movingFigure);
 		m_figuresOnField.push_front(movingFigure);
 		m_makeVisibleAround(movingFigure->m_visibilityRange());
-		movingFigure->m_makeFiguresVisibleAround(shared_from_this());
+		movingFigure->m_makeFiguresVisibleAround(this);
 		if(m_citizenWorking){
 			std::cout<<"handle ctizen working"<<std::endl;
 			std::cout<<m_citizenWorking->m_state<<std::endl;
@@ -266,7 +266,7 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		m_figuresOnField.sort([](std::shared_ptr<Figure> figure1, std::shared_ptr<Figure> figure2)->bool {return figure1->m_defensiveStrength()<figure1->m_defensiveStrength();});
 		std::cout<<", newSize: "<<m_figuresOnField.size()<<std::endl;
 		m_makeVisibleAround(movingFigure->m_visibilityRange());
-		movingFigure->m_makeFiguresVisibleAround(shared_from_this());
+		movingFigure->m_makeFiguresVisibleAround(this);
 		return;
 	}
 	if(frontFigure->m_Nationality()!=movingFigure->m_Nationality()){
@@ -335,8 +335,8 @@ short int Field::m_getCargoCapability(Figure& figureToEnter){
 	return cargoCount;
 }
 
-std::vector<std::shared_ptr<Field>> Field::m_cityFieldsAround(){
-	std::vector<std::shared_ptr<Field>> whatToReturn;
+std::vector<Field*> Field::m_cityFieldsAround(){
+	std::vector<Field*> whatToReturn;
 	Direction direction1[] = {UP,UP,UP,UP_LEFT,UP,UP_RIGHT,UP_LEFT,UP_RIGHT,LEFT,LEFT,RIGHT,RIGHT,STANDING_STILL,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN_LEFT,DOWN_RIGHT,DOWN,DOWN,DOWN};
 	Direction direction2[] = {UP_LEFT,UP,UP_RIGHT,STANDING_STILL,STANDING_STILL,STANDING_STILL,LEFT,
 RIGHT,LEFT,STANDING_STILL,STANDING_STILL,RIGHT,
@@ -366,9 +366,9 @@ bool Field::m_irrigationBonus(){
 	return m_isIrrigated || m_cityContained != nullptr;
 }
 
-std::shared_ptr<Field> Field::m_getNeighbouringField(Coordinate differenceCoordinate){
+Field* Field::m_getNeighbouringField(Coordinate differenceCoordinate){
 	try{
-	std::shared_ptr<Field> whatToReturn = shared_from_this();
+	Field* whatToReturn = this;
 	for(int i(0); i<differenceCoordinate.x;i++){
 		whatToReturn = whatToReturn->m_getNeighbouringField(RIGHT);
 	}
@@ -427,6 +427,9 @@ int FieldElement::m_draw(int rowShift, int columnShift, SDL_Renderer* renderer){
 }
 
 void Field::m_makeVisible(Nationality nationality){
+	if(m_cityContained){
+		m_cityContained->m_makeVisible(nationality);
+	}
 	for(NationKnowsField& nk: m_nationFogInfo){
 		if(nk.nationality==nationality){
 			std::cout<<"valuer becomes true for "<<nationality<<std::endl;

@@ -35,7 +35,7 @@ class Figure: public std::enable_shared_from_this<Figure> {
 protected:
 	int m_figureID;
 	std::vector<Nationality> m_visibilityInfo;
-	std::shared_ptr<Field> m_whereItStands;
+	Field* m_whereItStands;
 	std::shared_ptr<City> m_home;
 	std::shared_ptr<Nation> m_nationality;
 	std::shared_ptr<MovableThing> m_image;
@@ -51,10 +51,10 @@ public:
 	void m_hideFrom(Nationality nationality);
 	bool m_isVisible(Nationality nationality);
 	void m_makeVisible(Nationality nationality);
-	virtual void m_makeFiguresVisibleAround(std::shared_ptr<Field> fieldBase = nullptr);
+	virtual void m_makeFiguresVisibleAround(Field* fieldBase = nullptr);
 	void m_setFigureState (FigureState newState){m_figureState = newState;}
 	Nationality m_Nationality();
-	Figure(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	Figure(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	Figure(){}
 	virtual ~Figure();
 	virtual FigureType m_FigureType() = 0;
@@ -96,6 +96,7 @@ public:
 	void m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr<City> newHome = nullptr);
 	friend class Figurebutton;
 	friend class FigureFactory;
+	friend class GameLoader;
 	virtual void m_printData(std::ostream& os);
 };
 
@@ -141,7 +142,7 @@ return;}
 		return m_image;\
 }
 #define DECONSTRUCTOR(CLASS) CLASS::~CLASS(){}\
-CLASS::	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+CLASS::	CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
 :NormalUnit(whereToStart,nationality,home,isVeteran){\
 	m_resetMovementPoints();\
 	if(!m_initImage()) std::cout<<"Fatal error: MovableThing not created"<<std::endl;\

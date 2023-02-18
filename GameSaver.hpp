@@ -11,7 +11,7 @@
 #include <string>
 #include <fstream>
 #include <map>
-class json; class Citizen;class GameMain;
+class Citizen;class GameMain;
 
 struct FieldJson{
 	int x,y;
@@ -45,9 +45,15 @@ struct NationJson{
 	int explorationProgress;
 	int difficulty;
 	std::vector<int> embassies;
+	std::vector<int> foundedCityIDs;
+	std::vector<int> cityIDs;
 };
 
 struct CityJson{
+	bool buyInTurn;
+	std::vector<std::map<std::string, int>> nationFogInfo;
+	int whatIsBuilt;
+	int nationality;
 	int size;
 	int globalIndex;
 	std::vector<int> improvements;
@@ -58,6 +64,9 @@ struct CityJson{
 	int shields;
 	int food;
 	std::vector<int> tradeRoutePartners;
+	int wonderHappy;
+	int wonderContent;
+	float industrialPollutionCoefficient;
 	//there should be something about visibility
 };
 
@@ -75,6 +84,7 @@ struct GameJson{
 	int nationAtCurrentTurnIndex;
 	int climateState;
 	int pollutionCount;
+	std::vector<int> nationalities;
 };
 
 struct GameMainJson{

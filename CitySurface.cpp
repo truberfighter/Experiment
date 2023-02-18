@@ -200,7 +200,7 @@ void CitySurface::m_drawCityFields(){
 	int yToStart = CITIZENS_OVERVIEW_HEIGHT;
 	Nation& nation = *m_associatedCity->m_owningNation;
 	std::vector<Coordinate> coordinateVector = Field::coordinatesAroundCity();
-	std::vector<std::shared_ptr<Field>> fieldVector = m_associatedCity->m_WhereItStands()->m_cityFieldsAround();
+	std::vector<Field*> fieldVector = m_associatedCity->m_WhereItStands()->m_cityFieldsAround();
 	for (int i(0); i<21; i++){
 		bool drawProduction = false;
 		for(std::shared_ptr<Citizen>& currentCitizen: m_associatedCity->m_citizens){

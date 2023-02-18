@@ -12,7 +12,7 @@
 #include "Plane.hpp"
 
 FigureCategory Plane::m_FigureCategory(){return FLIGHT;}
-Plane::	Plane(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)
+Plane::	Plane(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)
 :Figure(whereToStart,nationality,home,isVeteran)
 {
 

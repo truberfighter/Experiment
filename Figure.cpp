@@ -23,7 +23,7 @@ bool debug = false;
 using namespace std;
 
 
-Figure::Figure(std::shared_ptr<Field> whereToStart, std::shared_ptr<Nation> nationality,  std::shared_ptr<City> home, bool isVeteran)
+Figure::Figure(Field* whereToStart, std::shared_ptr<Nation> nationality,  std::shared_ptr<City> home, bool isVeteran)
 : enable_shared_from_this<Figure>(), m_nationality(nationality), m_whereItStands(whereToStart), m_home(home), m_isVeteran(isVeteran)
 {
 	m_figureID = figureCountGlobal;
@@ -127,7 +127,7 @@ bool Figure::m_initImage(){
 }
 
 MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
-	std::shared_ptr<Field> aim =  m_whereItStands->m_getNeighbouringField(whereToGo);
+	Field* aim =  m_whereItStands->m_getNeighbouringField(whereToGo);
 	if(aim->m_CityContained()&&aim->m_FiguresOnField().empty()&&m_FigureCategory()!=GROUND){
 		if(aim->m_CityContained()->m_OwningNation()->m_Nation()!=m_nationality->m_Nation()){
 			return MOVE_PROHIBITED;
@@ -544,7 +544,7 @@ bool Figure::m_isVisible(Nationality nationality){
 	return isInVector<Nationality>(m_visibilityInfo, nationality, [](const Nationality& n1, const Nationality& n2){return n1==n2;});
 }
 
-void Figure::m_makeFiguresVisibleAround(std::shared_ptr<Field> fieldBase){
+void Figure::m_makeFiguresVisibleAround(Field* fieldBase){
 	if(fieldBase == nullptr){
 		fieldBase = m_whereItStands;
 	}

@@ -79,13 +79,8 @@ int Window::m_createNewDrawing(){
 }
 
 void Window::m_InitWindowSurface(){
-	SDL_Texture* sdltexture[2] = {IMG_LoadTexture( m_renderer, "bilder/Landscapes/Plains.png"), IMG_LoadTexture( m_renderer, "bilder/Landscapes/Grassland.png")};
-	std::shared_ptr<Texture> theTextures[2] = {make_shared<Texture>(sdltexture[0], STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE),
-			std::make_shared<Texture>(sdltexture[1], STANDARD_FIELD_SIZE, STANDARD_FIELD_SIZE)
-	};
 	 m_createNewDrawing();
 	 m_setCurrentDrawing( m_mainDrawings.size()-1);
-	//std::vector<unique_ptr<ImmovableDrawingElement>> v;
 	Drawing& currentDrawing = *( m_currentDrawing);
 	for(int i(0); i < WORLD_LENGTH; i++){
 		for(int j(0); j<WORLD_HEIGHT; j++){

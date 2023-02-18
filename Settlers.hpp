@@ -28,7 +28,7 @@ public:
 	int m_drawSettlersWork(SDL_Rect& rectToDraw);
 	void m_loseOneWorkPoint();
 	FigureType m_FigureType() override;
-	Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	Settlers(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	Settlers(){}
 	~Settlers();
 	bool m_takeOrder(char order) ;

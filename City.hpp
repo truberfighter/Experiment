@@ -27,10 +27,11 @@ class Improvement;
 class Diplomat;
 struct NationKnowsCity{
 	int size;
-	int occupied;
+	bool noUnits;
 	bool hasCityWalls;
 	int yearNumberRaw;
 	Nationality home;
+	Nationality whoKnowsThisCity;
 };
 class TradeRoute{
 public:
@@ -51,6 +52,9 @@ struct CityProduction{
 class SellException{
 public:
 	ImprovementType m_what;
+};
+class InvalidWhereToWork: public std::exception{
+public: const char* m_what() const noexcept {return "Invalid field where to work has been assigned to a citizen!\n";}
 };
 
 class CityImprovement{
@@ -79,8 +83,8 @@ struct UnitCostingResources{
 class Citizen{
 public:
 	~Citizen();
-	Citizen(City& home, std::shared_ptr<Field> whereToWork = nullptr);
-	std::shared_ptr<Field> m_whereItWorks;
+	Citizen(City& home, Field* whereToWork = nullptr);
+	Field* m_whereItWorks;
 	CitizenState m_state;
 	City& m_home;
 	CitizenState m_changeState();
@@ -108,7 +112,7 @@ private:
 	std::vector<CityImprovement> m_improvements;
 	ImprovementType m_whatIsBuilt = IMPROVEMENT_SETTLERS;
 	std::shared_ptr<Nation> m_owningNation;
-	std::shared_ptr<Field> m_whereItStands;
+	Field* m_whereItStands;
 	std::string m_name;
 	std::vector<std::shared_ptr<Citizen>> m_citizens;
 	std::list<std::shared_ptr<Figure>> m_figuresOwned;
@@ -117,6 +121,9 @@ private:
 	std::vector<std::shared_ptr<TradeRoute>> m_tradeRoutes;
 	void m_cityEconomy();
 public:
+	int m_wonderContent = 0;
+	int m_wonderHappy = 0;
+	float m_industrialPollutionCoefficient = 0;
 	int m_shieldsPerPollution();
 	float m_goldCoefficient();
 	float m_scienceCoefficient();
@@ -125,10 +132,7 @@ public:
 	int m_templeValue();
 	bool m_makeVeteran();
 	float m_productionCoefficient();
-	int m_wonderHappy = 0;
-	int m_wonderContent = 0;
 	int m_unhappyPerUnit();
-	float m_industrialPollutionCoefficient;
 	float m_populationPollutionCoefficient();
 	static std::function<void(City*)> m_whenDestroyed(ImprovementType imptype);
 	static std::function<void(City*)> m_whenBuilt(ImprovementType imptype);
@@ -145,11 +149,12 @@ public:
 	std::vector<std::shared_ptr<Citizen>>& m_Citizens(){return m_citizens;}
 	ImprovementType m_WhatIsBuilt(){return m_whatIsBuilt;}
 	int m_GlobalIndex(){return m_globalIndex;}
-	std::shared_ptr<Field> m_WhereItStands(){return m_whereItStands;}
+	Field* m_WhereItStands(){return m_whereItStands;}
 	std::shared_ptr<Nation> m_OwningNation(){return m_owningNation;}
 	bool m_takeFigure(std::shared_ptr<Figure> figureToTake);
 	bool m_releaseFigure(std::shared_ptr<Figure> figureToRelease);
-	City(std::shared_ptr<Field> whereToPlace, std::shared_ptr<Nation> owningNation, std::string name);
+	City(Field* whereToPlace, std::shared_ptr<Nation> owningNation, std::string name);
+	City(){}
 	virtual ~City();
 	int m_drawCity(int x, int y, SDL_Renderer* renderer = theRenderer);
 	int m_drawCityName(int x, int y,SDL_Renderer* renderer);
@@ -174,12 +179,13 @@ public:
 	int m_corruptionProduction();
 	CityProduction m_revenueProduction();
 	void m_startNewTurn();
+	void m_makeVisible(Nationality nationality);
 	void m_sortFiguresByValue();
 	bool m_maybeFinishProduction();
 	void m_grow();
 	void m_clearProduction(){m_shields=0;}
 	std::shared_ptr<CityImprovement> m_maybeBuild(ImprovementType imptype);
-	bool m_placeCitizen(std::shared_ptr<Field> fieldClickedOn);
+	bool m_placeCitizen(Field* fieldClickedOn);
 	bool m_sell(int index);
 	void m_buy(int price);
 	void m_announceCannotMaintain(ImprovementType imptype);
@@ -191,11 +197,13 @@ public:
 	int m_pollutionProduction();
 	int m_everydaysPollution();
 	bool m_handlePollution();
+	void m_initFogInfo();
 	CityJson m_createJson();
 	friend class Settlers;
 	friend void Nation::m_destroyCity(std::shared_ptr<City> cityToDestroy);
 	friend void TradeRoute::m_destroyItself();
 	friend void Nation::m_captureCity(std::shared_ptr<City>);
+	friend class CityFactory; friend class GameLoader;
 };
 
 template<typename T>

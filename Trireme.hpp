@@ -19,7 +19,7 @@ class City;
 private:\
 public:\
 	FigureType m_FigureType() override;\
-	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
+	CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
 	CLASS(){}\
 	~CLASS();\
 	float m_attackingStrength();\
@@ -35,7 +35,7 @@ SHIP_CLASS(Trireme)
 SHIP_CLASS(Carrier)
 #define DECONSTRUCTOR_SHIP(CLASS)CLASS::~CLASS(){std::cout<<m_FigureType()<<"-Destruktor, this = "<<this<<std::endl;}\
 \
-CLASS::CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+CLASS::CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
 :Ship(whereToStart, nationality, home, isVeteran)\
 {\
 	m_resetMovementPoints();\

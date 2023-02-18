@@ -21,7 +21,7 @@ class Diplomat: public Figure{
 public:
 	virtual FigureType m_FigureType() override;
 	Diplomat(){}
-	Diplomat(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	Diplomat(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~Diplomat();
 	bool m_takeOrder(char order);
 	virtual std::string m_orderOverview();

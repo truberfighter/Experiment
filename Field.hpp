@@ -115,11 +115,11 @@ public:
 	void m_setIsMined(bool a){m_isMined = a;}
 	std::shared_ptr<City> m_CityContained();
 	void m_setCityContained(std::shared_ptr<City> newCity);
-	std::shared_ptr<Field> m_getNeighbouringField(Direction whereToLook);
-	std::shared_ptr<Field> m_getNeighbouringField(Coordinate differenceCoordinate);
+	Field* m_getNeighbouringField(Direction whereToLook);
+	Field* m_getNeighbouringField(Coordinate differenceCoordinate);
 	void m_drawField();
 	bool m_closeToLandscape(Landscape ls);
-	std::vector<std::shared_ptr<Field>> m_cityFieldsAround();
+	std::vector<Field*> m_cityFieldsAround();
 	friend std::ostream& operator<<(std::ostream&, Field&);
 	void m_changeLandscapeTo(Landscape landscape);
 	bool m_HasShield(){return m_hasShield;}
@@ -130,6 +130,7 @@ public:
 	friend class Game;
 	friend class Settlers;
 	friend class FieldFactory;
+	friend class GameLoader;
 };
 std::ostream& operator<<(std::ostream& os, Landscape ls);
 std::ostream& operator<<(std::ostream&, Field&);

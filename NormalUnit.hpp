@@ -18,7 +18,7 @@ private:
 public:
 	virtual FigureType m_FigureType() override = 0;
 	NormalUnit(){}
-	NormalUnit(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	NormalUnit(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~NormalUnit();
 	bool m_takeOrder(char order);
 	virtual std::string m_orderOverview();

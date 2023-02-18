@@ -21,18 +21,18 @@ class FieldContainer{
 	std::vector<FieldType> m_fieldTypes;
 	//static  FieldContainer* theContainer;
 public:
+	static void initFieldContainer(int height, int length);
 	FieldContainer(int howHigh, int howWide);
 	~FieldContainer();
 	FieldContainer();
 	std::vector<Meridian>* m_getFieldsOfTheWorld();
 	static FieldContainer* getTheContainer();
-	friend void initFieldContainer();
 	void initContinentIDs();
 	std::vector<FieldType>& m_FieldTypes();
 	void m_initFieldTypes();
-
+	void m_initFigureImages();
+	void m_initFogInfos(std::vector<Nationality>& nationsToPlay);
 };
 
-void initFieldContainer();
 
 #endif /* FIELDCONTAINER_HPP_ */

@@ -80,7 +80,7 @@ bool CitySurface::m_handleLeftClick(const SDL_MouseButtonEvent& event){
 			std::cout<<"differenceCoordinate: "<<differenceCoordinate<<std::endl;
 			if(isInVector<Coordinate>(coordinateVector, differenceCoordinate, [](const Coordinate& x, const Coordinate& y){return x.x==y.x&&x.y==y.y;})){
 				std::cout<<"ruft gleich m_placeCitizen auf"<<std::endl;
-				std::shared_ptr<Field> fieldClickedOn = m_associatedCity->m_whereItStands->m_getNeighbouringField(differenceCoordinate);
+				Field* fieldClickedOn = m_associatedCity->m_whereItStands->m_getNeighbouringField(differenceCoordinate);
 				std::cout<<"*fieldClickedOn: "<<*fieldClickedOn<<std::endl;
 				return m_associatedCity->m_placeCitizen(fieldClickedOn);
 			}

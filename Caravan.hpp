@@ -20,7 +20,7 @@ class Caravan: public Figure{
 public:
 	virtual FigureType m_FigureType() override;
 	Caravan(){}
-	Caravan(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	Caravan(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~Caravan();
 	bool m_takeOrder(char order);
 	virtual std::string m_orderOverview();

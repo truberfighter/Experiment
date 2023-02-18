@@ -46,12 +46,14 @@ private:
 	std::vector<std::shared_ptr<Nation>> m_nationsPlaying;
 	void m_startNewTurn();
 	ClimateState m_climateState = NO_CLIMATE_ALARM;
-	int m_pollutionCount = 0; //modified for testing purposes
+	int m_pollutionCount = 0;
 public:
+	void m_initDefault(std::vector<Nationality>& nationsToPlay);
 	ClimateState m_ClimateState(){return m_climateState;}
 	bool m_depollute(){if(m_pollutionCount==0) throw false; m_pollutionCount--;return true;}
 	void m_pollute(){m_pollutionCount++;}
 	std::shared_ptr<Nation> m_getNation(Nationality nationality);
+	std::vector<Nationality> m_NationalitiesPlaying();
 	const WonderData& m_wonderData(ImprovementType imptype);
 	bool m_isObsolete(ImprovementType imptype);
 	std::vector<WonderData>& m_HasWonderBeenBuilt(){return m_hasWonderBeenBuilt;}
@@ -59,8 +61,7 @@ public:
 	std::vector<std::shared_ptr<City>>& m_CitiesAlive(){return m_citiesAlive;}
 	std::vector<std::shared_ptr<City>>& m_AllCities(){return m_allCities;}
 	std::vector<std::shared_ptr<Nation>>& m_NationsPlaying(){return m_nationsPlaying;}
-	Game(std::vector<Nationality>& nationsToPlay);
-	Game(std::vector<std::shared_ptr<Nation>>& nationsToPlay);
+	Game();
 	bool m_addNation(Nationality naewNationality);
 	bool m_addNation(std::shared_ptr<Nation> newNation);
 	void m_makeEndOfTurn();
@@ -76,6 +77,8 @@ public:
 	void m_handleGlobalWarming();
 	GameJson m_createJson();
 	friend class Player;
+	friend class GameLoader;
+	friend class GameFactory;
 };
 
 extern bool gameReady;

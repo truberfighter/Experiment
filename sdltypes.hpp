@@ -10,6 +10,8 @@
 #include <string>
 #include <sstream>
 #include <functional>
+#include <stdexcept>
+#include <exception>
 #define KeyCode unsigned int
 class Field;
 class MovableThing;

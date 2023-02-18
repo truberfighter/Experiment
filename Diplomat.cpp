@@ -9,7 +9,7 @@
 #include "Field.hpp"
 #include "SelectorSurface.hpp"
 
-Diplomat::	Diplomat(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+Diplomat::	Diplomat(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
 :Figure(whereToStart,nationality,home,isVeteran){\
 	m_resetMovementPoints();\
 	if(!m_initImage()) std::cout<<"Fatal error: MovableThing not created"<<std::endl;\

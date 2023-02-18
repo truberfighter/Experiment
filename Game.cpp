@@ -24,45 +24,44 @@ std::shared_ptr<Figure> Game::m_getCurrentFigure(Nation* nation){
 	return whatToReturn;
 }
 
-Game::Game(std::vector<Nationality>& nationsToPlay){
-	for(int i(WONDER_MIN); i<=WONDER_MAX;i++){
-		m_hasWonderBeenBuilt.push_back(WonderData{(ImprovementType)i,NO_NATIONALITY,false});
-	}
-	bool firstNation = true;
-	for(std::vector<std::shared_ptr<Field>>& currentMeridian: *theContainer->m_getFieldsOfTheWorld()){
-		for(std::shared_ptr<Field> currentField: currentMeridian){
-			currentField->m_initNationFogInfo(nationsToPlay);
-		}
-	}
-	for(Nationality currentNationality: nationsToPlay){
-		Graphics::Civ::currentNationality = currentNationality;
-		std::shared_ptr<Nation> nationPointer =  std::make_shared<Nation>(currentNationality, "", PLAYER_PRINCE, firstNation);
-		int randomIndex = m_getRandomNumberBetween(0, Science::possibleStartingTechs().size()-1);
-		nationPointer->m_setWhatToExplore (Science::possibleStartingTechs()[randomIndex]);
-		nationPointer->m_maybeFinishExploration();
-		firstNation = false;
-		m_nationsPlaying.push_back(nationPointer);
-		Nation& nation = *nationPointer;
-		Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
-		std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
-		std::shared_ptr<Field> fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y];
-		for(int i(0); i<1; i++){
-			std::shared_ptr<Settlers> theSettlersPointer =
-			std::make_shared<Settlers>(fieldPointer, nationPointer);
-			nation.m_addFigure(theSettlersPointer);
-			fieldPointer->m_takeFigure(theSettlersPointer);
-			std::shared_ptr<Trireme> theTriremePointer =
-			std::make_shared<Trireme>(fieldPointer->m_getNeighbouringField(LEFT), nationPointer);
-			nation.m_addFigure(theTriremePointer);
-			fieldPointer->m_getNeighbouringField(LEFT)->m_takeFigure(theTriremePointer);
-			std::stringstream stream; stream<<"City of "<<nation.m_Nation();stream.flush();
-			std::cout<<"stream: "<<stream.str();
-		}
-		nationPointer->m_setMakingActive(false);
-	}
-	Graphics::Civ::currentNationality = nationsToPlay[0];
-	gameReady = true;
+Game::Game(){
+
 }
+
+void Game::m_initDefault(std::vector<Nationality>& nationsToPlay){
+	for(int i(WONDER_MIN); i<=WONDER_MAX;i++){
+			std::cout<<m_hasWonderBeenBuilt.empty()<<std::endl;
+			m_hasWonderBeenBuilt.push_back(WonderData{(ImprovementType)i,NO_NATIONALITY,false,false,nullptr});
+		}
+		bool firstNation = true;
+		for(Nationality currentNationality: nationsToPlay){
+			Graphics::Civ::currentNationality = currentNationality;
+			std::shared_ptr<Nation> nationPointer =  std::make_shared<Nation>(currentNationality, "", PLAYER_PRINCE, firstNation);
+			int randomIndex = m_getRandomNumberBetween(0, Science::possibleStartingTechs().size()-1);
+			nationPointer->m_setWhatToExplore (Science::possibleStartingTechs()[randomIndex]);
+			nationPointer->m_maybeFinishExploration();
+			firstNation = false;
+			m_nationsPlaying.push_back(nationPointer);
+			Nation& nation = *nationPointer;
+			Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
+			std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
+			Field* fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y].get();
+			for(int i(0); i<1; i++){
+				std::shared_ptr<Settlers> theSettlersPointer =
+				std::make_shared<Settlers>(fieldPointer, nationPointer);
+				nation.m_addFigure(theSettlersPointer);
+				fieldPointer->m_takeFigure(theSettlersPointer);
+				std::shared_ptr<Trireme> theTriremePointer =
+				std::make_shared<Trireme>(fieldPointer->m_getNeighbouringField(LEFT), nationPointer);
+				nation.m_addFigure(theTriremePointer);
+				fieldPointer->m_getNeighbouringField(LEFT)->m_takeFigure(theTriremePointer);
+			}
+			nationPointer->m_setMakingActive(false);
+		}
+		Graphics::Civ::currentNationality = nationsToPlay[0];
+		gameReady = true;
+}
+
 
 Game::Year::Year(unsigned int yearNumberRaw):m_yearNumberRaw(yearNumberRaw)
 {
@@ -364,4 +363,12 @@ while1:	while(notSwamped>0||notDesertificated>0){
 		}
 	}
 	GlobalWarming::DESERTIFICATION_BOUND = std::min(GlobalWarming::DESERTIFICATION_BOUND + GlobalWarming::DESERTIFICATION_SPREADER, WORLD_HEIGHT/2 - 5);
+}
+
+std::vector<Nationality> Game::m_NationalitiesPlaying(){
+	std::vector<Nationality> whatToReturn;
+	for(std::shared_ptr<Nation>& currentNation: m_nationsPlaying){
+		whatToReturn.push_back(currentNation->m_Nation());
+	}
+	return whatToReturn;
 }

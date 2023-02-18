@@ -39,7 +39,7 @@ public:
 	void m_showNationInfo();
 	void m_initInfoDrawing();
 	void lol(){this->EventHandler::lol(); std::cout<<"GameMain::lol()"<<std::endl;}
-	GameMain();
+	GameMain(StartingMode mode = START_A_NEW_GAME);
 	void m_initLetterTextures();
 	SDL_Renderer* m_currentRenderer;
 	virtual ~GameMain();
@@ -59,8 +59,10 @@ public:
 	void m_draw();
 	void m_offerSavingGame();
 	bool m_menu();
+	void m_basicInitGame();
+	void m_initWindow();
 	GameMainJson m_createJson();
-	friend class GameSaver;
+	friend class GameSaver; friend class GameLoader; friend class GameFactory;
 };
 
 std::ostream& operator<<(std::ostream& os, MenuReturn& Return);

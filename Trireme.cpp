@@ -18,7 +18,7 @@ FIGURE_TYPE(Trireme,TRIREME)
 
 Carrier::~Carrier(){std::cout<<m_FigureType()<<"-Destruktor, this = "<<this<<std::endl;}\
 \
-Carrier::Carrier(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)
+Carrier::Carrier(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)
 :Ship(whereToStart, nationality, home, isVeteran)
 {
 	m_isCarrier = true;

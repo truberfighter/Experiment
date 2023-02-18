@@ -14,7 +14,7 @@
 private:\
 public:\
 	FigureType m_FigureType() override;\
-	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
+	CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
 	CLASS(){}\
 	~CLASS();\
 	virtual float m_attackingStrength();\

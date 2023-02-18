@@ -44,8 +44,8 @@ std::vector<Meridian>* FieldContainer::m_getFieldsOfTheWorld(){
 	return m_fieldsOfTheWorld;
 }
 
-void initFieldContainer(){
-theContainer = new FieldContainer(WORLD_HEIGHT, WORLD_LENGTH);
+void FieldContainer::initFieldContainer(int height, int length){
+theContainer = new FieldContainer(height, length);
 //FieldContainer &d = *FieldContainer::theContainer;
 }
 
@@ -87,13 +87,36 @@ void FieldContainer::initContinentIDs(){
 				currentField->m_continentID = continentCounter++;
 		}
 	}
-	for(unsigned int i(0); i< xsize;i++){
-		for(unsigned int j(0); j<ysize; j++){
-			0;
+	bool changeHappened = false;
+	while(changeHappened){
+		for(unsigned int i(0); i< xsize;i++){
+			for(unsigned int j(0); j<ysize; j++){
+				//modify continentid to minimum coming
+			}
 		}
 	}
 }
 
 std::vector<FieldType>& FieldContainer::m_FieldTypes(){
 	return m_fieldTypes;
+}
+
+void FieldContainer::m_initFogInfos(std::vector<Nationality>& nationsToPlay){
+	for(std::vector<std::shared_ptr<Field>>& currentMeridian: *m_getFieldsOfTheWorld()){
+		for(std::shared_ptr<Field> currentField: currentMeridian){
+			currentField->m_initNationFogInfo(nationsToPlay);
+		}
+	}
+}
+
+void FieldContainer::m_initFigureImages(){
+	for(auto& it: *m_fieldsOfTheWorld){
+		for(std::shared_ptr<Field> currentField: it){
+			for(std::shared_ptr<Figure> currentFigure: currentField->m_figuresOnField){
+				if(!currentFigure->m_initImage()){
+					throw std::runtime_error("image of figure not initted");
+				}
+			}
+		}
+	}
 }

@@ -47,10 +47,12 @@ SDL_Texture *theTexture2;
 shared_ptr<Drawing> someDrawing;
 
 
-GameMain::GameMain(): EventHandler(), m_whatToMove(nullptr)
+GameMain::GameMain(StartingMode mode): EventHandler(), m_whatToMove(nullptr)
 {
-	m_theWindows.push_back(unique_ptr<Window>());
-	m_initGame();
+	if(mode==START_A_NEW_GAME){
+		m_theWindows.push_back(unique_ptr<Window>());
+		m_initGame();
+	}
 }
 
 GameMain::~GameMain(){
@@ -70,11 +72,13 @@ void GameMain::m_initGame(){
 	m_currentRenderer = theRenderer;
 	m_initLetterTextures();
 	m_initFieldTextures();
-	initFieldContainer();
+	FieldContainer::initFieldContainer(WORLD_HEIGHT,WORLD_LENGTH);
 	Graphics::Civ::miningTexture = std::make_shared<Texture>(IMG_LoadTexture(theRenderer, "bilder/Landscapes/Mining.png"),STANDARD_FIELD_SIZE/2+1,STANDARD_FIELD_SIZE/2+1);
 	vector<Nationality> nationsToPlay{ROMAN, MONGOL, ZULU, CHINESE};
-	m_theGame = make_unique<Game>(nationsToPlay);
+	m_theGame = make_unique<Game>();
 	theGame = m_theGame.get();
+	theContainer->m_initFogInfos(nationsToPlay);
+	theGame->m_initDefault(nationsToPlay);
 	m_whatToMove = theGame->m_getCurrentFigure(theGame->m_NationAtCurrentTurn().get());
 	FieldContainer::getTheContainer()->initContinentIDs();
 	m_theWindows.push_back(unique_ptr<Window>());
@@ -155,9 +159,11 @@ true;	}
 }
 
 void GameMain::doSomething(){
-	 for(std::shared_ptr<Nation> currentNation: theGame->m_NationsPlaying()){
-		for(shared_ptr<Figure> currentFigure : currentNation->m_Figures()){
-			currentFigure->m_integrateInto(*someDrawing);
+	for(auto& it: *theContainer->m_getFieldsOfTheWorld()){
+		for(std::shared_ptr<Field> currentField: it){
+			for(std::shared_ptr<Figure> currentFigure: currentField->m_FiguresOnField()){
+				currentFigure->m_integrateInto(*someDrawing);
+			}
 		}
 	}
 		 Window* theWindow=&(*m_currentWindow());
@@ -201,7 +207,7 @@ bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 	Coordinate meantCoordinate {xModulo(m_topLeftCorner.x + currentEvent.x - Coordinates::leftCornerX()), m_topLeftCorner.y + currentEvent.y - Coordinates::leftCornerY()};
 	if(currentEvent.x > Coordinates::leftCornerX() && currentEvent.y > Coordinates::leftCornerY() && currentEvent.x < SCREEN_WIDTH && currentEvent.y < SCREEN_HEIGHT && meantCoordinate.x>=0 && meantCoordinate.y>=0){
 	if(meantCoordinate.x < WORLD_LENGTH*STANDARD_FIELD_SIZE && meantCoordinate.y<WORLD_HEIGHT*STANDARD_FIELD_SIZE){
-	std::shared_ptr<Field> fieldClickedOn = (*theContainer->m_getFieldsOfTheWorld())[meantCoordinate.x/STANDARD_FIELD_SIZE][meantCoordinate.y/STANDARD_FIELD_SIZE];
+	Field* fieldClickedOn = (*theContainer->m_getFieldsOfTheWorld())[meantCoordinate.x/STANDARD_FIELD_SIZE][meantCoordinate.y/STANDARD_FIELD_SIZE].get();
 	std::cout<<*fieldClickedOn<<std::endl;
 	if(fieldClickedOn->m_CityContained() && fieldClickedOn->m_CityContained()->m_OwningNation()==theGame->m_NationAtCurrentTurn()){
 		std::cout<<"city hit!"<<std::endl;
@@ -343,4 +349,18 @@ void GameMain::m_offerSavingGame(){
 	catch(InvalidSelectionElement& ise){
 		std::cerr<<"A file has been corrupted at slot with index (starting at 0): "<<ise.what->layer<<std::endl;
 	}
+}
+
+void GameMain::m_basicInitGame(){
+		m_currentRenderer = theRenderer;
+		m_initLetterTextures();
+		m_initFieldTextures();
+		Graphics::Civ::miningTexture = std::make_shared<Texture>(IMG_LoadTexture(theRenderer, "bilder/Landscapes/Mining.png"),STANDARD_FIELD_SIZE/2+1,STANDARD_FIELD_SIZE/2+1);
+		//TTF_Init();
+}
+
+void GameMain::m_initWindow(){
+	theWindow->m_InitWindowSurface();
+	someDrawing = theWindow->m_CurrentDrawing();
+	m_setCurrentDrawing(someDrawing);
 }

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-Settlers::Settlers(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality
+Settlers::Settlers(Field* whereToStart,  std::shared_ptr<Nation> nationality
 , std::shared_ptr<City> home, bool isVeteran)
 : Figure(whereToStart, nationality, home, isVeteran), m_workStepsCount(0)
 {

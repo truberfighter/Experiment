@@ -96,7 +96,7 @@ public:
 	void m_removeFigure(std::shared_ptr<Figure> figureToRemove);
 	NationJson m_createJson();
 	int m_firstUnhappyCitizen(){return 7-m_difficulty;}
-	friend class Embassy;
+	friend class Embassy; friend class NationFactory; friend class GameLoader;
 };
 
 

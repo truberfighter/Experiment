@@ -21,7 +21,7 @@
 #include "GameLoader.hpp"
 #include "AppInitter.hpp"
 #include <functional>
-
+#include <random>
 
 //Screen dimension constants
 //const int SCREEN_WIDTH = 640,SCREEN_HEIGHT= 480;
@@ -35,11 +35,28 @@ using namespace std;
 SDL_Event currentEvent;
 
 int main(int argc, char* args[] ){
-	AppInitter initter;
+
+AppInitter initter;
 	initter.m_init();
 	switch(initter.m_requestStartingMode()){
-	case LOAD_GAME:{ //load
+	case LOAD_GAME:{
+		init:
+		try{
+			//load
 		//GameLoader theGameLoader;
+		int slotNr = (int) Miscellaneous::selectSavingSlot().index;
+		GameLoader loader(slotNr);
+		std::unique_ptr<GameMain> loadModeGameMain(loader.m_load());
+		(*loadModeGameMain)();
+		}
+		catch(std::runtime_error& theException){
+			if(std::strcmp(theException.what(),"file corrupted")==0){
+				goto init;
+			}
+			else{
+				return 33;
+			}
+		}
 		break;
 	}
 	case START_A_NEW_GAME: //new
@@ -51,7 +68,7 @@ int main(int argc, char* args[] ){
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
-	return 500;
+	return 0;
 }
 
 

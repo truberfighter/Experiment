@@ -15,7 +15,7 @@ protected:
 public:
 	virtual FigureType m_FigureType() override = 0;
 	Plane(){}
-	Plane(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	Plane(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
 	virtual ~Plane();
 	bool m_takeOrder(char order);
 	virtual std::string m_orderOverview();
@@ -36,7 +36,7 @@ public:
 public:\
 	virtual FigureType m_FigureType() override;\
 	CLASS(){}\
-	CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
+	CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
 	virtual ~CLASS();\
 	virtual float m_attackingStrength();\
 	virtual float m_defensiveStrength();\
@@ -53,7 +53,7 @@ PLANE(Fighter)
 #define MAXIMUM_TURNS_FLYING(CLASS,TURNS) int CLASS::m_maximumTurnsFlying(){return TURNS;}
 #define DECONSTRUCTOR_PLANE(CLASS)CLASS::~CLASS(){std::cout<<m_FigureType()<<"-Destruktor, this = "<<this<<std::endl;}\
 \
-CLASS::CLASS(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+CLASS::CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
 :Plane(whereToStart, nationality, home, isVeteran)\
 {\
 	m_resetMovementPoints();\

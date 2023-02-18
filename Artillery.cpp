@@ -16,7 +16,7 @@ FigureCategory NormalUnit::m_FigureCategory(){
 
 std::string NormalUnit::m_orderOverview(){return "H: HomeCity, S: Sentry, P: Pillage, F: Fortify";}
 
-NormalUnit::NormalUnit(std::shared_ptr<Field> whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)
+NormalUnit::NormalUnit(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)
 : Figure(whereToStart, nationality, home, isVeteran)
 {
 }
