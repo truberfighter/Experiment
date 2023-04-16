@@ -26,7 +26,7 @@ struct NationKnowsField{
 class City;
 class Settlers;
 class Citizen;
-class Figure;
+class Figure; class Nuclear;
 class FieldContainer;
 struct FieldJson;
 
@@ -67,10 +67,13 @@ protected:
 	void m_railRoadProductionEffect(int& count);
 	int m_turnsUntilSwamped = 0;
 public:
+	static std::vector<Coordinate> coordinatesAroundCity();
+	std::vector<Field*> m_neighbouringFields(int range);
+	void m_receiveNuclearStrike(Nuclear* striker);
 	int& m_TurnsUntilSwamped(){return m_turnsUntilSwamped;}
 	bool m_IsPolluted(){return m_isPolluted;}
 	void m_setPollution(bool what){m_isPolluted = what;}
-	bool m_pollute(){if(m_isPolluted)return false; m_isPolluted = true; return true;}
+	bool m_pollute(){if(m_isPolluted || m_cityContained)return false; m_isPolluted = true; return true;}
 	const ContinentID m_ContinentID(){return m_continentID;}
 	FieldType& m_getFieldType();
 	double m_distanceTo(std::shared_ptr<City>);
@@ -78,7 +81,6 @@ public:
 	void m_makeVisible(Nationality nationality);
 	void m_initNationFogInfo(std::vector<Nationality>& nationalities);
 	bool m_irrigationBonus();
-	static std::vector<Coordinate> coordinatesAroundCity();
 	Citizen* m_CitizenWorking(){return m_citizenWorking;}
 	bool m_setCitizenWorking(Citizen* citizen){if(m_cityContained!=nullptr) return false; m_citizenWorking = citizen; return true;}
 	short int m_getCargoCapability(Figure& figureToEnter);
@@ -90,6 +92,7 @@ public:
 	int m_X() const;
 	int m_Y() const;
 	std::shared_ptr<FieldElement> m_DrawingElement();
+	bool m_defenseFailKillsAll();
 	void m_takeFigure(std::shared_ptr<Figure> movingFigure);
 	void m_releaseFigure(std::shared_ptr<Figure> movingFigure);
 	MovementPoints m_movementPoints();
@@ -124,6 +127,7 @@ public:
 	void m_changeLandscapeTo(Landscape landscape);
 	bool m_HasShield(){return m_hasShield;}
 	bool m_cleanUpPollution(Settlers& settlers);
+	int m_maxNormDistanceTo(Field* field);
 	FieldJson m_createJson();
 	friend class FieldContainer;
 	friend class City;

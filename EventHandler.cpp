@@ -132,6 +132,7 @@ bool GameMain::m_handleKeyboardEvent(const SDL_Event& event){
 				else return false;
 				}
 				catch(Fight& fight){
+					m_theSoundManager->m_makeFightSound(fight);
 					return true;
 				}
 			}

@@ -29,6 +29,7 @@ public:
 	virtual int m_maximumTurnsFlying() = 0;
 	virtual int m_shieldCost() override = 0;
 	virtual void m_printData(std::ostream& os) override;
+	virtual void m_finishWinningAttack(Field* battlefield);
 	friend class FigureFactory;
 };
 
@@ -47,8 +48,23 @@ public:\
 	int m_shieldCost();\
 };
 PLANE(Bomber)
-PLANE(Nuclear)
 PLANE(Fighter)
+class Nuclear: public Plane{
+public:
+	virtual FigureType m_FigureType() override;
+	Nuclear(){}
+	Nuclear(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);
+	virtual ~Nuclear();
+	virtual float m_attackingStrength();
+	virtual float m_defensiveStrength();
+	virtual short unsigned int m_visibilityRange();
+	virtual short unsigned int m_defaultMovementPoints();
+	std::shared_ptr<MovableThing> m_createImage() override;
+	int m_maximumTurnsFlying();
+	int m_shieldCost();
+	virtual void m_finishWinningAttack(Field* battlefield);
+	virtual bool m_canBeSeenBy(Figure* figureLooking);
+};
 
 #define MAXIMUM_TURNS_FLYING(CLASS,TURNS) int CLASS::m_maximumTurnsFlying(){return TURNS;}
 #define DECONSTRUCTOR_PLANE(CLASS)CLASS::~CLASS(){std::cout<<m_FigureType()<<"-Destruktor, this = "<<this<<std::endl;}\

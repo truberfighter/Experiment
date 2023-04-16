@@ -443,21 +443,22 @@ bool CitySurface::m_changeWhatIsBuilt(){
 			namestream.flush();
 			//ImprovementRightClick coming!
 			std::function<void()> irc = [](){};
-			std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(namestream.str(), ((int) imptype < 0 ? IMPROVEMENT_UNIT_LAYER : IMPROVEMENT_LAYER),irc);
+			std::shared_ptr<SelectionElement> selectionElement = std::make_shared<SelectionElement>(namestream.str(), (City::isFigureType(imptype) ? IMPROVEMENT_UNIT_LAYER : IMPROVEMENT_LAYER),irc);
 		whatToSelectFrom.push_back(selectionElement);
 	}
 	SelectorSurface improvementSelection(0,0,whatToSelectFrom);
 	SelectionReturn result = improvementSelection.m_fetchSelection();
-	m_associatedCity->m_whatIsBuilt = whatIsPossible[result.index];
+	m_associatedCity->m_whatIsBuilt = whatIsPossible[result.unsortedIndex];
 	std::cout<<result.content<<", index: "<<result.index<<", building: "<<m_associatedCity->m_whatIsBuilt<<std::endl;
 	return true;
 	}
 	catch(SDLQuitException& se){
-		throw se;
+		throw;
 	}
 	catch(QuitSelection& qs){
 		if(qs.m_returnSomething==NO_ACTION)
 			return true;
+		throw;
 	}
 }
 

@@ -82,5 +82,25 @@ STRENGTH_OF Nuclear WHEN_DEFENDING(0)
 VISIBILITY(Nuclear,1)
 MAXIMUM_TURNS_FLYING(Nuclear,2)
 
+bool Nuclear::m_canBeSeenBy(Figure* figureLooking){
+	return false;
+}
 
+void Plane::m_finishWinningAttack(Field* battlefield){
+	Figure::m_finishWinningAttack(battlefield);
+}
+
+void Nuclear::m_finishWinningAttack(Field* battlefield){
+	std::vector<Field*> fieldsDamaged = battlefield->m_neighbouringFields(1);
+	for(Field* currentField: fieldsDamaged){
+		currentField->m_receiveNuclearStrike(this);
+	}
+	Plane::m_finishWinningAttack(battlefield);
+}
+
+void Bomber::m_finishWinningAttack(Field* battlefield){
+	Plane::m_finishWinningAttack(battlefield);
+	m_movementPoints = 0;;
+	m_finishMove();
+}
 #endif /* PLANE_CPP_ */

@@ -59,7 +59,7 @@ bool Caravan::m_doCaravanThings(Field& fieldWhereToGo){
 	return true;
 	}
 	catch(SDLQuitException& sqe){
-		throw sqe;
+		throw;
 	}
 }
 
@@ -99,7 +99,7 @@ bool Caravan::m_enterCity(City& city){
 	return true;
 	}
 	catch(SDLQuitException& sqe){
-		throw sqe;
+		throw;
 	}
 }
 

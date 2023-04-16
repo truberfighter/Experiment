@@ -3,8 +3,9 @@
 
 #include "SDL2\SDL_ttf.h"
 #include <SDL2\SDL.h>
-#include <iostream>
 #include <SDL2\SDL_image.h>
+#include <SDL2\SDL_mixer.h>
+#include <iostream>
 #include <memory>
 #include <vector>
 #include <string>
@@ -210,11 +211,12 @@ public:
 	std::string what(){return m_whatsUp;}
 };
 
-class Fight{
+class Fight: public std::exception{
 public:
 	FightResult m_result;
+	std::shared_ptr<Figure> attacker, defender;
 	Fight(FightResult result):m_result(result){}
-	std::string what(){return "Fight";}
+	virtual const char* what() const throw()  {return "Fight";}
 };
 
 class CityFounded{
@@ -225,8 +227,9 @@ class TooManyCities{
 
 };
 
-class SDLQuitException{
-
+class SDLQuitException: std::runtime_error{
+public:
+	SDLQuitException():std::runtime_error("SDL QuitException"){}
 };
 
 int SDL_SetRenderDrawColor(SDL_Renderer* renderer, SDL_Color color);
@@ -332,6 +335,11 @@ void displayText(const std::string& str, int x, int y, SDL_Color color, bool sha
 bool yesOrNo(int x = FIGURE_INFO_WIDTH, int y = SCREEN_HEIGHT/3, std::string yes = "yes", std::string no = "no");
 void holdImage();
 SelectionReturn selectSavingSlot();
+}
+
+namespace Audio{
+int playSound(Mix_Chunk* chunk);
+Mix_Chunk* loadAudio(std::string filename);
 }
 
 extern unsigned int figureCountGlobal, cityCountGlobal;

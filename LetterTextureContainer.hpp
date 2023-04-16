@@ -16,6 +16,7 @@ private:
 	char m_imageLetter;
 	SDL_Color& m_color;
 public:
+	~LetterTexture(){std::cout<<"letter texture destroyed for image letter "<<m_imageLetter<<std::endl;}
 	LetterTexture(char imageLetter, SDL_Color& color = whiteColor, int size = FIGURESTATE_TEXTURE_WIDTH);
 	SDL_Color& m_Color();
 	char m_ImageLetter();

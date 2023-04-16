@@ -123,8 +123,8 @@ bool Diplomat::m_enterCity(std::shared_ptr<City> city){
 	}
 	SelectorSurface selector(FIGURE_INFO_WIDTH,SCREEN_HEIGHT/3,selectionElements);
 	SelectionReturn result = selector.m_fetchSelection();
-	std::cout<<"DiplomatChoice: "<<whatToChooseFrom[result.index]<<std::endl;
-	switch(whatToChooseFrom[result.index]){
+	std::cout<<"DiplomatChoice: "<<whatToChooseFrom[result.unsortedIndex]<<std::endl;
+	switch(whatToChooseFrom[result.unsortedIndex]){
 	case INCITE_REVOLT:
 	{
 		if (!city->m_offerRevolt(*this))
@@ -192,7 +192,7 @@ bool Diplomat::m_enterCity(std::shared_ptr<City> city){
 			std::cout<<"selectionbasesize: "<<selectionBase.size()<<std::endl;
 			SelectorSurface surface(theRect.x,theRect.h+theRect.y, selectionBase, false, Graphics::Civ::shieldGreyColor(), blackColor, Graphics::Civ::brightCityBackgroundColor());
 			SelectionReturn result = surface.m_fetchSelection();
-			m_nationality->m_addTechnology(availableTechnologies[result.index]);
+			m_nationality->m_addTechnology(availableTechnologies[result.unsortedIndex]);
 		}
 		break;
 	}

@@ -14,6 +14,7 @@
 #include "GameMain.hpp"
 #include "Artillery.hpp"
 #include "Diplomat.hpp"
+#include "Plane.hpp"
 
 Citizen::	~Citizen(){std::cout<<"Citizen-Destruktor: City: "<<m_home.m_Name()<<std::endl;}
 
@@ -677,7 +678,7 @@ void City::m_announceCannotMaintain(ImprovementType imptype){
 			quitSurface = true;
 		}
 		catch(SDLQuitException& sdlqe){
-			throw sdlqe;
+			throw;
 		}
 	}
 }
@@ -823,6 +824,18 @@ bool City::m_offerRevolt(Diplomat& diplomat){
 	return true;
 }
 
+void City::m_destroy(ImprovementType imptype){
+	for(std::vector<CityImprovement>::iterator it = m_improvements.begin(); it!= m_improvements.end();it++){
+		if(it->m_what == imptype){
+			m_improvements.erase(it);
+			if(City::isWonderType(imptype)){
+				std::find_if(theGame->m_HasWonderBeenBuilt().begin(),theGame->m_HasWonderBeenBuilt().end(),
+					[imptype](WonderData& data){return data.what==imptype;})->isDestroyed = true;
+			}
+		}
+	}
+}
+
 int City::m_everydaysPollution(){
 	if(m_contains(MASS_TRANSIT))
 		return 0;
@@ -889,4 +902,15 @@ void City::m_initFogInfo(){
 	if(m_owningNation){
 		m_makeVisible(m_owningNation->m_Nation());
 	}
+}
+
+void City::m_receiveNuclearStrike(Nuclear* striker){
+	int shrunkSize = (m_size()+1)/2;
+	while(m_size()>shrunkSize){
+		m_shrink();
+	}
+	for(int i(0); i<(int)m_improvements.size(); i+=2){
+		m_destroy(m_improvements[i].m_what);
+	}
+	m_shields/=2; m_food/=2;
 }

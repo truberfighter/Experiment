@@ -58,9 +58,6 @@ GameMain::GameMain(StartingMode mode): EventHandler(), m_whatToMove(nullptr)
 GameMain::~GameMain(){
 	TTF_CloseFont(theFont);
 	delete theLetterTextureContainer;
-	 if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
-	  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
-	 }
 }
 
 void GameMain::m_initLetterTextures(){
@@ -69,6 +66,8 @@ void GameMain::m_initLetterTextures(){
 }
 
 void GameMain::m_initGame(){
+	m_theSoundManager = std::make_unique<FightSoundManager>(ROMAN);
+	m_theSoundManager->m_createMap();
 	m_currentRenderer = theRenderer;
 	m_initLetterTextures();
 	m_initFieldTextures();
@@ -247,6 +246,9 @@ bool GameMain::m_handleLeftClick(const SDL_MouseButtonEvent& currentEvent){
 
 void GameMain::m_offerSavingGame(){
 	try{
+	Mix_Music* chunk = Mix_LoadMUS("explosion-6055.mp3");
+	if(Mix_PlayMusic(chunk,1)!=0)
+	std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
 	SelectionReturn theReturn = Miscellaneous::selectSavingSlot();
 	int fileIndex = theReturn.index;
 	std::stringstream nameStream;
@@ -355,6 +357,8 @@ void GameMain::m_basicInitGame(){
 		m_currentRenderer = theRenderer;
 		m_initLetterTextures();
 		m_initFieldTextures();
+		m_theSoundManager = std::make_unique<FightSoundManager>(NO_NATIONALITY);
+		m_theSoundManager->m_createMap();
 		Graphics::Civ::miningTexture = std::make_shared<Texture>(IMG_LoadTexture(theRenderer, "bilder/Landscapes/Mining.png"),STANDARD_FIELD_SIZE/2+1,STANDARD_FIELD_SIZE/2+1);
 		//TTF_Init();
 }

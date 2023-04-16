@@ -13,6 +13,7 @@
 #include "sdltypes.hpp"
 #include <list>
 #include "Ship.hpp"
+#include "Plane.hpp"
 #include "FieldType.hpp"
 #include <functional>
 #include "GameSaver.hpp"
@@ -232,6 +233,7 @@ double Field::m_distanceTo(std::shared_ptr<City> comparedCity){
 }
 
 void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
+	try{
 	std::cout<<"m_takeFigure aufgerufen: this = "<<*this<<", previousField: "<<movingFigure->m_WhereItStands()<<std::endl;
 	Field& previousField = movingFigure->m_WhereItStands();
 	if(m_figuresOnField.empty()){
@@ -274,18 +276,24 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 		Nationality winningNationality = theGame->m_calculateWinnerInFight(movingFigure, m_figuresOnField.front());
 		std::cout<<"fightwinner is "<<winningNationality<<std::endl;
 		FightResult result;
+		movingFigure->m_FigureCache() = m_FiguresOnField();
 		if(winningNationality == frontFigure->m_Nationality()){
 			result = ATTACKER_LOSES;
 			previousField.m_releaseFigure(movingFigure);
 			movingFigure->m_Nation()->m_destroyFigure(movingFigure);
 		}
 		else{
-			result = DEFENDER_LOSES;
-			if(m_hasFortress){
+			result = movingFigure->m_WinningAttackResult();
+			if(m_hasFortress || m_cityContained){
 			frontFigure->m_WhereItStands().m_releaseFigure(frontFigure);
 			frontFigure->m_Nation()->m_destroyFigure(frontFigure);
 			}
 			else{
+				if(m_figuresOnField.size()>1){
+					std::stringstream s;
+					s<<m_figuresOnField.size()<<" units destroyed!"; s.flush();
+					Miscellaneous::displayText(s.str(), FIGURE_INFO_WIDTH, 2*SCREEN_HEIGHT/3, blackColor, true, whiteColor);
+				}
 				while(!m_figuresOnField.empty()){
 					std::cout<<"begin clearing loop for attacked field"<<std::endl;
 					std::shared_ptr<Figure> currentFigure = m_figuresOnField.front();
@@ -295,7 +303,16 @@ void Field::m_takeFigure(std::shared_ptr<Figure> movingFigure){
 				}
 			}
 		}
-		throw(Fight(result));
+		std::cout<<"throw 1"<<std::endl;
+			Fight fightToThrow(result);
+			fightToThrow.attacker = movingFigure;
+			fightToThrow.defender = frontFigure;
+			throw fightToThrow;
+	}
+	}
+	catch(std::exception& e){
+		std::cout<<"throw 2"<<std::endl;
+		throw;
 	}
 }
 
@@ -313,6 +330,14 @@ bool Field::m_militaryProblem(std::shared_ptr<Figure> movingFigure){
 		return true;
 	}
 	return false;
+}
+
+bool Field::m_defenseFailKillsAll(){
+	if(m_cityContained)
+		return false;
+	if(m_hasFortress)
+		return false;
+	return true;
 }
 
 short int Field::m_getCargoCapability(Figure& figureToEnter){
@@ -384,7 +409,7 @@ Field* Field::m_getNeighbouringField(Coordinate differenceCoordinate){
 	return whatToReturn;
 	}
 	catch(PoleHitException& theException){
-		throw theException;
+		throw;
 	}
 }
 
@@ -440,6 +465,19 @@ void Field::m_makeVisible(Nationality nationality){
 			nk.isMined = m_isMined;
 			nk.roadStatus = m_roadStatus;
 			return;
+		}
+	}
+}
+
+std::vector<Field*> Field::m_neighbouringFields(int range){
+	std::vector<Field*> whatToReturn;
+	std::vector<Coordinate> coordinates = coordinatesAroundField(range);
+	for(Coordinate& currentCoordinate: coordinates){
+		try{
+			whatToReturn.push_back(m_getNeighbouringField(currentCoordinate));
+		}
+		catch(PoleHitException& phe){
+
 		}
 	}
 }
@@ -570,4 +608,24 @@ FieldJson Field::m_createJson(){
 	return FieldJson{
 		m_x,m_y,(int)m_landscape,m_hasSpecialResource,m_hasShield,m_hasFortress,(int)m_roadStatus,m_isMined,m_isPolluted,m_isIrrigated,m_continentID,m_layer,m_turnsUntilSwamped,nationFogInfo,figureIDs
 	};
+}
+
+int Field::m_maxNormDistanceTo(Field* field){
+	return std::max(std::abs(m_x-field->m_x),std::abs(m_y-field->m_y))/STANDARD_FIELD_SIZE;
+}
+
+void Field::m_receiveNuclearStrike(Nuclear* striker){
+	if(m_cityContained){
+		m_cityContained->m_receiveNuclearStrike(striker);
+	}
+	m_pollute();
+	for(std::shared_ptr<Figure> killedFigure: m_figuresOnField){
+		killedFigure->m_Nation()->m_destroyFigure(killedFigure);
+	}
+	if(!m_cityContained){
+		m_roadStatus = NOTHING;
+	}
+	m_hasFortress = false;
+	m_isIrrigated = false;
+	m_isMined = false;
 }

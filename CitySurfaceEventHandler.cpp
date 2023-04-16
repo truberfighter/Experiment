@@ -234,7 +234,7 @@ ImprovementType imptype = m_associatedCity->m_improvements[effectiveIndex].m_wha
 		std::vector<std::shared_ptr<SelectionElement>> theVector{se1,se2};
 		SelectorSurface surface(0,0,theVector);
 		SelectionReturn result = surface.m_fetchSelection();
-		if(result.index == 1){
+		if(result.unsortedIndex == 1){
 			m_associatedCity->m_sell(effectiveIndex);
 			m_createSellingButtonElements();
 		}

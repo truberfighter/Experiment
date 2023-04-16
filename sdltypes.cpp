@@ -861,3 +861,34 @@ SelectionReturn Miscellaneous::selectSavingSlot(){
 	}
 	catch(InvalidSelectionElement& ise){ throw ise;}
 }
+
+int Audio::playSound(Mix_Chunk* chunk){
+	return Mix_PlayChannel(-1,chunk,0);
+}
+
+Mix_Chunk* Audio::loadAudio(std::string filename){
+	//from Stack overflow
+	std::string extension;
+	std::string::size_type idx;
+	idx = filename.rfind('.');
+	if(idx != std::string::npos)
+	{
+	    extension = filename.substr(idx+1);
+	}
+	else
+	{
+		throw std::runtime_error("Invalid filename! No extension!");
+	}
+	Mix_Chunk* whatToReturn = nullptr;
+	if(extension.compare("wav")==0){
+		whatToReturn = Mix_LoadWAV(filename.c_str());
+	}
+	if(extension.compare("mp3")==0){
+		throw std::runtime_error("mp3 cannot be loaded into a chunk!");
+	}
+	if(whatToReturn ==nullptr){
+		std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
+		throw std::runtime_error("Invalid filename!");;
+	}
+	return whatToReturn;
+}

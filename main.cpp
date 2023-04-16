@@ -35,7 +35,6 @@ using namespace std;
 SDL_Event currentEvent;
 
 int main(int argc, char* args[] ){
-
 AppInitter initter;
 	initter.m_init();
 	switch(initter.m_requestStartingMode()){

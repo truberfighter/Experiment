@@ -24,7 +24,7 @@
 class Field;
 class Nation;
 class Improvement;
-class Diplomat;
+class Diplomat; class Nuclear;
 struct NationKnowsCity{
 	int size;
 	bool noUnits;
@@ -156,6 +156,7 @@ public:
 	City(Field* whereToPlace, std::shared_ptr<Nation> owningNation, std::string name);
 	City(){}
 	virtual ~City();
+	void m_destroy(ImprovementType imptype);
 	int m_drawCity(int x, int y, SDL_Renderer* renderer = theRenderer);
 	int m_drawCityName(int x, int y,SDL_Renderer* renderer);
 	std::string m_Name(){return this->m_name;}
@@ -202,6 +203,7 @@ public:
 	friend class Settlers;
 	friend void Nation::m_destroyCity(std::shared_ptr<City> cityToDestroy);
 	friend void TradeRoute::m_destroyItself();
+	void m_receiveNuclearStrike(Nuclear* striker);
 	friend void Nation::m_captureCity(std::shared_ptr<City>);
 	friend class CityFactory; friend class GameLoader;
 };

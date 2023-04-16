@@ -395,7 +395,7 @@ Technology Nation::m_askForNewExploration(){
 		someDrawing->m_draw();});
 	SelectionReturn result;
 	result = surface.m_fetchSelection();
-	return whatToChooseFrom[result.index];
+	return whatToChooseFrom[result.unsortedIndex];
 	}
 	catch(SDLQuitException& exception){
 		throw exception;
@@ -565,13 +565,7 @@ void Nation::m_captureCity(std::shared_ptr<City> cityToCapture){
 	}
 	std::cout<<"citytocapture: "<<cityToCapture.get()<<std::endl;
 	for(ImprovementType imptype: eraseData){
-		forbegin:
-		for(std::vector<CityImprovement>::iterator it = cityToCapture->m_improvements.begin(); it!= cityToCapture->m_improvements.end();it++){
-			if(it->m_what == imptype){
-				cityToCapture->m_improvements.erase(it);
-				goto forbegin;
-			}
-		}
+		cityToCapture->m_destroy(imptype);
 	}
 	while(!cityToCapture->m_figuresOwned.empty()){
 		std::shared_ptr<Figure> figureToRelease = cityToCapture->m_figuresOwned.front();

@@ -13,10 +13,14 @@ AppInitter::AppInitter()
 }
 
 void AppInitter::m_init(){
-	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0 ){
-	  std::cout<<"SDL_Error: %s\n"<<SDL_GetError()<<std::endl;
+	if( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0 ){
+	  std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
 	  return;
 	}
+    if( Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ){
+    	std::cout<<"SDL_Error: "<<SDL_GetError()<<std::endl;
+    	return;
+    }
 	int imgflags = IMG_INIT_PNG;
 	IMG_Init(imgflags);
 	TTF_Init();

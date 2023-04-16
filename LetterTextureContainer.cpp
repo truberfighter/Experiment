@@ -15,12 +15,11 @@ LetterTextureContainer* theLetterTextureContainer = nullptr;
 LetterTexture::LetterTexture(char imageLetter, SDL_Color& color, int size)
 :  Texture(nullptr, size, size), m_imageLetter(imageLetter), m_color(color)
 {
-	char* tempChar = (char*) malloc(sizeof (char) * 1);
-	*tempChar = imageLetter;
-	SDL_Surface* temp = TTF_RenderText_Solid(theFont, tempChar, m_color);
+	std::string theString;
+	theString+=m_imageLetter;
+	SDL_Surface* temp = TTF_RenderText_Solid(theFont, theString.c_str(), m_color);
 	m_theTexture = SDL_CreateTextureFromSurface(theRenderer, temp);
 	SDL_FreeSurface(temp);
-	free(tempChar);
 }
 
 SDL_Color& LetterTexture::m_Color(){

@@ -19,6 +19,7 @@
 #include "GameMain.hpp"
 #include "GameLoader.hpp"
 #include "Settlers.hpp"
+#include "Ship.hpp"
 
 using namespace GlobalWarming;
 using nlohmann::json;
@@ -196,6 +197,14 @@ void Settlers::m_printData(std::ostream& os){
 	json theJson;
 	PUSH("workStepsCount",(int)m_workStepsCount)
 	PUSH("currentWork",m_currentWork)
+	os<<theJson<<std::endl;
+	std::cout<<theJson<<std::endl;
+}
+
+void Ship::m_printData(std::ostream& os){
+	Figure::m_printData(os);
+	json theJson;
+	PUSH("mayBombardGroundTroops",m_mayBombardGroundTroops)
 	os<<theJson<<std::endl;
 	std::cout<<theJson<<std::endl;
 }

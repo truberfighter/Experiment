@@ -21,7 +21,7 @@ public:\
 	FigureType m_FigureType() override;\
 	CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
 	CLASS(){}\
-	~CLASS();\
+	virtual ~CLASS();\
 	float m_attackingStrength();\
 	float m_defensiveStrength();\
 	int m_shieldCost();\
@@ -33,9 +33,31 @@ public:\
 
 SHIP_CLASS(Trireme)
 SHIP_CLASS(Carrier)
+SHIP_CLASS(Transport)
+SHIP_CLASS(Ironclad)
+SHIP_CLASS(Cruiser)
+SHIP_CLASS(Frigate)
+SHIP_CLASS(Sail)
+SHIP_CLASS(Battleship)
+
+class Submarine: public Ship{\
+private:\
+public:\
+	FigureType m_FigureType() override;\
+	Submarine(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home = nullptr, bool isVeteran = false);\
+	Submarine(){}\
+	virtual ~Submarine();\
+	float m_attackingStrength();\
+	float m_defensiveStrength();\
+	int m_shieldCost();\
+	short unsigned int m_visibilityRange();\
+	short unsigned int m_defaultMovementPoints();\
+	std::shared_ptr<MovableThing> m_createImage() override;\
+	short unsigned int m_cargoCountMax();\
+	virtual bool m_canBeSeenBy(Figure* looking);
+};
 #define DECONSTRUCTOR_SHIP(CLASS)CLASS::~CLASS(){std::cout<<m_FigureType()<<"-Destruktor, this = "<<this<<std::endl;}\
-\
-CLASS::CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
+ CLASS::CLASS(Field* whereToStart,  std::shared_ptr<Nation> nationality, std::shared_ptr<City> home, bool isVeteran)\
 :Ship(whereToStart, nationality, home, isVeteran)\
 {\
 	m_resetMovementPoints();\

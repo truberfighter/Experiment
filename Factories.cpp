@@ -60,15 +60,15 @@ std::shared_ptr<Figure> FigureFactory::m_createFigure(FigureJson& data){
 	case MILITIA: whatToReturn = std::make_shared<Settlers>(); break;
 	case PHALANX: whatToReturn = std::make_shared<Phalanx>(); break;
 	case CAVALRY: whatToReturn = std::make_shared<Cavalry>(); break;
-	case TRIREME: whatToReturn = std::make_shared<Trireme>(); break;
-	case CARRIER: whatToReturn = std::make_shared<Carrier>(); break;
-	//case IRONCLAD: whatToReturn = std::make_shared<Ironclad>(); break;
-	//case SUBMARINE: whatToReturn = std::make_shared<Submarine>(); break;
-	//case CRUISER: whatToReturn = std::make_shared<Cruiser>(); break;
-	//case SAIL: whatToReturn = std::make_shared<Sail>(); break;
-	//case FRIGATE: whatToReturn = std::make_shared<Frigate>(); break;
-	//case BATTLESHIP: whatToReturn = std::make_shared<Battleship>(); break;
-	//case TRANSPORT: whatToReturn = std::make_shared<Transport>(); break;
+	case TRIREME: throw IstreamNeeded();
+	case CARRIER: throw IstreamNeeded();
+	case IRONCLAD: throw IstreamNeeded();
+	case SUBMARINE: throw IstreamNeeded();
+	case CRUISER: throw IstreamNeeded();
+	case SAIL: throw IstreamNeeded();
+	case FRIGATE: throw IstreamNeeded();
+	case BATTLESHIP: throw IstreamNeeded();
+	case TRANSPORT: throw IstreamNeeded();
 	case ARMOR: whatToReturn = std::make_shared<Armor>(); break;
 	case ARTILLERY: whatToReturn = std::make_shared<Artillery>(); break;
 	case CARAVAN: whatToReturn = std::make_shared<Caravan>(); break;
@@ -117,6 +117,33 @@ std::shared_ptr<Figure> FigureFactory::m_createFigure(FigureJson& data, Json& da
 	Plane* createdObject = reinterpret_cast<Plane*>(whatToReturn.get());
 	createdObject->m_turnsFlying = data2["turnsFlying"];
 	break; }
+	case TRIREME: {whatToReturn = std::make_shared<Trireme>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
+	case CARRIER:{ whatToReturn = std::make_shared<Carrier>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
+	case IRONCLAD:{ whatToReturn = std::make_shared<Ironclad>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
+	case SUBMARINE: {whatToReturn = std::make_shared<Submarine>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
+	case CRUISER: {whatToReturn = std::make_shared<Cruiser>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
+	case SAIL:{ whatToReturn = std::make_shared<Sail>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
+	case FRIGATE:{ whatToReturn = std::make_shared<Frigate>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
+	case BATTLESHIP: {whatToReturn = std::make_shared<Battleship>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"];  break;}
+	case TRANSPORT: {whatToReturn = std::make_shared<Transport>();
+	Ship* createdObject = reinterpret_cast<Ship*>(whatToReturn.get());
+	createdObject->m_mayBombardGroundTroops = data2["mayBombardGroundTroops"]; break;}
 	default: throw IstreamNotNeeded();
 	}
 	m_figure = whatToReturn.get();

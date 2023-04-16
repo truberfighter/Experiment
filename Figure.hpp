@@ -33,6 +33,7 @@ struct FigureJson{
 
 class Figure: public std::enable_shared_from_this<Figure> {
 protected:
+	std::list<std::shared_ptr<Figure>> m_figuresAttacked;
 	int m_figureID;
 	std::vector<Nationality> m_visibilityInfo;
 	Field* m_whereItStands;
@@ -46,11 +47,17 @@ protected:
 	MovementPoints m_calculateMoveCost(Direction whereToGo);
 	MovementPoints m_calculateStandardMoveCostGround(Field& fieldToVisit);
 	int m_drawFigureState(int, int, SDL_Renderer*);
+	FightResult m_winningAttackResult = DEFENDER_LOSES;
 public:
+
+	auto& m_FigureCache(){return m_figuresAttacked;}
+	FightResult m_WinningAttackResult(){return m_winningAttackResult;}
+	static constexpr int maxVisibilityRange(){return 2;}
+	virtual void m_finishWinningAttack(Field* battlefield);
 	int m_FigureID(){return m_figureID;}
 	void m_hideFrom(Nationality nationality);
 	bool m_isVisible(Nationality nationality);
-	void m_makeVisible(Nationality nationality);
+	virtual void m_makeVisible(Nationality nationality);
 	virtual void m_makeFiguresVisibleAround(Field* fieldBase = nullptr);
 	void m_setFigureState (FigureState newState){m_figureState = newState;}
 	Nationality m_Nationality();
@@ -94,6 +101,7 @@ public:
 	bool m_homeCity();
 	int m_desertationCost();
 	void m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr<City> newHome = nullptr);
+	virtual bool m_canBeSeenBy(Figure* figureLooking);
 	friend class Figurebutton;
 	friend class FigureFactory;
 	friend class GameLoader;

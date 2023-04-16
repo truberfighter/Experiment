@@ -46,13 +46,13 @@ void Game::m_initDefault(std::vector<Nationality>& nationsToPlay){
 			Coordinate fieldCoordinate = Nation::getStandardCoordinateForNation(currentNationality);
 			std::vector<Meridian>& fieldsOfTheWorld = *theContainer->m_getFieldsOfTheWorld();
 			Field* fieldPointer = fieldsOfTheWorld[fieldCoordinate.x][fieldCoordinate.y].get();
-			for(int i(0); i<1; i++){
+			for(int i(0); i<4; i++){
 				std::shared_ptr<Settlers> theSettlersPointer =
 				std::make_shared<Settlers>(fieldPointer, nationPointer);
 				nation.m_addFigure(theSettlersPointer);
 				fieldPointer->m_takeFigure(theSettlersPointer);
-				std::shared_ptr<Trireme> theTriremePointer =
-				std::make_shared<Trireme>(fieldPointer->m_getNeighbouringField(LEFT), nationPointer);
+				std::shared_ptr<Submarine> theTriremePointer =
+				std::make_shared<Submarine>(fieldPointer->m_getNeighbouringField(LEFT), nationPointer);
 				nation.m_addFigure(theTriremePointer);
 				fieldPointer->m_getNeighbouringField(LEFT)->m_takeFigure(theTriremePointer);
 			}
@@ -119,7 +119,7 @@ Nationality Game::m_calculateWinnerInFight(std::shared_ptr<Figure> attacker, std
 	try{
 	float attackingStrength = attacker->m_attackingStrength()*std::min((float)1, (float) attacker->m_MovementPoints().m_movementPoints/ONE_MOVEMENT_POINT);
 	float defensiveStrength = defender->m_defensiveStrength();
-	defensiveStrength *= defender->m_WhereItStands().m_defenseBonus();
+	defensiveStrength *= (1+defender->m_WhereItStands().m_defenseBonus());
 	if(attacker->m_IsVeteran()){
 		attackingStrength *= 1.5;
 	}
@@ -129,8 +129,8 @@ Nationality Game::m_calculateWinnerInFight(std::shared_ptr<Figure> attacker, std
 	if(defender->m_FigureState()==FORTIFIED || defender->m_FigureState() == COMPLETELY_FORTIFIED){
 		defensiveStrength*=1.5;
 	}
-	attackingStrength *= 2^8;
-	defensiveStrength *= 2^8; //für mehr Präzision, indem Überträge/Rundiúngen entschärft werden
+	attackingStrength *= std::pow(2,8);
+	defensiveStrength *= std::pow(2,8); //für mehr Präzision, indem Überträge/Rundiúngen entschärft werden
 	int randomNumber = m_getRandomNumberBetween(1, ((int) attackingStrength) + ((int) defensiveStrength));
 
 	return randomNumber <= attackingStrength ? attacker->m_Nationality() : defender->m_Nationality();

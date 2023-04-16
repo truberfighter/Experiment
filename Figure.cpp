@@ -84,6 +84,7 @@ bool Figure::m_sentry(){
 }
 //Start a turn. Sentried units are kinda ignored for the first part.
 bool Figure::m_startMove(bool activateSentried){
+	m_makeFiguresVisibleAround(m_whereItStands);
 	cout<<"Figure::m_startMove: visibilitySize = "<<m_visibilityInfo.size()<<", figureState = "<<m_figureState<<", visibilityInfoSize = "<<m_visibilityInfo.size()<<"nationality = "<<m_nationality->m_Nation()<<"m_figureType = "<<m_FigureType()<<", this = "<<this<<std::endl;
 	switch(m_figureState){
 	case DONE_WITH_TURN:{
@@ -141,7 +142,7 @@ MovementPoints Figure::m_calculateMoveCost(Direction whereToGo){
 		}
 		if(!aim->m_FiguresOnField().empty()){
 			std::cout<<"field aimed at is not empty"<<std::endl;
-			return (aim->m_FiguresOnField().front()->m_Nationality()==m_Nationality()) ? (aim->m_CityContained() ? m_movementPoints : MOVE_PROHIBITED) : ONE_MOVEMENT_POINT;
+			return (aim->m_FiguresOnField().front()->m_Nationality()==m_Nationality()) ? (aim->m_CityContained() ? m_movementPoints : MOVE_PROHIBITED) : ((reinterpret_cast<Ship*>(this))->m_MayBombardGroundTroops() ? ONE_MOVEMENT_POINT : MOVE_PROHIBITED);
 		}
 		if(aim->m_CityContained()!=nullptr){
 			return MovementPoints(m_movementPoints);
@@ -251,9 +252,11 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 	catch(Fight& fight){
 		cout<<fight.what();
 		flush(cout);
+		this->m_finishWinningAttack(m_whereItStands->m_getNeighbouringField(whereToGo));
 		if(fight.m_result == ATTACKER_LOSES || fight.m_result == KAMIKAZE){
 			// You died!
-			throw(fight);
+			m_figuresAttacked.clear();
+			throw;
 		}
 		m_movementPoints.m_movementPoints = max(m_movementPoints.m_movementPoints - ONE_MOVEMENT_POINT, 0);
 		if(m_whereItStands->m_getNeighbouringField(whereToGo)->m_CityContained()){
@@ -265,7 +268,8 @@ bool Figure::m_tryMoveToField(Direction whereToGo){
 				cout<<"catching fight in tryMoveToField:  listsize = "<<m_nationality->m_queueSize()<<", this = "<<this;
 			}
 		}
-		throw(fight);
+		m_figuresAttacked.clear();
+		throw;
 	}
 	catch(CaravanDead& cd){
 		m_nationality->m_destroyFigure(shared_from_this());
@@ -553,8 +557,20 @@ void Figure::m_makeFiguresVisibleAround(Field* fieldBase){
 		std::cout<<*fieldBase->m_getNeighbouringField(currentCoordinate)<<std::endl;
 		for(const std::shared_ptr<Figure>& currentFigure: fieldBase->m_getNeighbouringField(currentCoordinate)->m_FiguresOnField()){
 			if(currentFigure->m_Nationality()!=m_Nationality()){
-				currentFigure->m_makeVisible(m_Nationality());
-				m_makeVisible(currentFigure->m_Nationality());
+				if(currentFigure->m_canBeSeenBy(this)){
+					m_makeVisible(currentFigure->m_Nationality());
+				}
+			}
+		}
+	}
+	std::vector<Coordinate> coordinates2 = coordinatesAroundField(Figure::maxVisibilityRange());
+	for(Coordinate& currentCoordinate: coordinates2){
+		std::cout<<*fieldBase->m_getNeighbouringField(currentCoordinate)<<std::endl;
+		for(const std::shared_ptr<Figure>& currentFigure: fieldBase->m_getNeighbouringField(currentCoordinate)->m_FiguresOnField()){
+			if(currentFigure->m_Nationality()!=m_Nationality()){
+				if(m_canBeSeenBy(currentFigure.get())){
+					currentFigure->m_makeVisible(m_Nationality());
+				}
 			}
 		}
 	}
@@ -599,7 +615,6 @@ void Figure::m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr
 	m_home->m_releaseFigure(shared_from_this());
 	}
 	newCity->m_takeFigure(shared_from_this());
-	std::cout<<1<<std::endl;
 	m_home = newCity;
 	m_nationality = newNation;
 	if(m_FigureType()==SETTLERS){
@@ -612,5 +627,15 @@ void Figure::m_changeNationTo(std::shared_ptr<Nation> newNation, std::shared_ptr
 	SDL_Texture* newTexture = IMG_LoadTexture(theRenderer,imageString.c_str());
 	m_image->m_setTexture(
 			std::make_shared<Texture>(newTexture,
-City::figureWidth(m_FigureType()), City::figureHeight(m_FigureType())));
+	City::figureWidth(m_FigureType()), City::figureHeight(m_FigureType())));
+
 }
+
+bool Figure::m_canBeSeenBy(Figure* figureLooking){
+	return m_whereItStands->m_maxNormDistanceTo(figureLooking->m_whereItStands) <= figureLooking->m_visibilityRange();
+}
+
+void Figure::m_finishWinningAttack(Field* battlefield){
+
+}
+

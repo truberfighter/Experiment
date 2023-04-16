@@ -18,6 +18,9 @@ SelectorSurface::SelectorSurface(int x, int y, std::vector<std::shared_ptr<Selec
 	if(maliciousIterator!=m_whatToAskFor.end()){
 		throw InvalidSelectionElement{*maliciousIterator};
 	}
+	for(unsigned int unsortedIndexCounter(0);unsortedIndexCounter<m_whatToAskFor.size();unsortedIndexCounter++){
+		m_whatToAskFor[unsortedIndexCounter]->unsortedIndex = unsortedIndexCounter;
+	}
 std::cout<<"SelectorSurface-Konstruktor, m_whatToAskFor-size: "<<m_whatToAskFor.size()<<std::endl;
 }
 
@@ -59,6 +62,9 @@ if(currentRelativeIndex == (NEXT_INDEX(endIndexesIndex,HowMuchToDraw - 1,endInde
 if(currentRelativeIndex==elementsPerUnit){\
 	SDL_SetRenderDrawColor(theRenderer, m_markedColor);\
 }\
+if(endIndexes.size()>0 && m_effectiveIndex()==endIndexes[1] && endIndexesIndex == 0 ){\
+SDL_SetRenderDrawColor(theRenderer, m_markedColor);\
+}\
 SDL_Surface* moreSurface = TTF_RenderText_Solid(theFont, "MORE", blackColor);\
 SDL_Texture* elementTexture = SDL_CreateTextureFromSurface(theRenderer, moreSurface);\
 SDL_Rect textRect{currentX,currentY,moreSurface->w,NORMAL_FONT_HEIGHT};\
@@ -79,7 +85,7 @@ currentX = m_x; currentY = m_y;
 CONTAINER.at(INDEX + 1) : MAXIMUM)
 
 SelectionReturn SelectorSurface::m_fetchSelection(){
-	std::sort(m_whatToAskFor.begin(),m_whatToAskFor.end(), [](std::shared_ptr<SelectionElement>& s1, std::shared_ptr<SelectionElement>& s2)->bool{return s1->layer<=s2->layer;});
+	std::sort(m_whatToAskFor.begin(),m_whatToAskFor.end(), [](std::shared_ptr<SelectionElement>& s1, std::shared_ptr<SelectionElement>& s2)->bool{return s1->layer<s2->layer;});
 	SDL_SetRenderDrawColor(theRenderer, m_standardColor);
 	HowMuchToDraw = m_whatToAskFor.size();
 	int currentX(m_x), currentY(m_y);
@@ -127,7 +133,7 @@ SelectionReturn SelectorSurface::m_fetchSelection(){
 					throw qs;
 				}
 				else if(qs.m_returnSomething == SELECTION){
-					return SelectionReturn{m_whatToAskFor[m_effectiveIndex()]->content,(unsigned int) m_effectiveIndex(),m_whatToAskFor[m_effectiveIndex()]->layer};
+					return SelectionReturn{m_whatToAskFor[m_effectiveIndex()]->content,(unsigned int) m_effectiveIndex(),m_whatToAskFor[m_effectiveIndex()]->layer,m_whatToAskFor[m_effectiveIndex()]->unsortedIndex};
 				}
 				else if(qs.m_returnSomething == NEXT_PAGE){
 					SDL_SetRenderDrawColor(theRenderer,m_standardColor.r,m_standardColor.g,m_standardColor.b,m_standardColor.a);
@@ -157,7 +163,7 @@ bool SelectorSurface::m_handleEvent(const SDL_Event& event){
 	{
 		std::cout<<"mousebuttondown"<<std::endl;
 		if(event.button.button == SDL_BUTTON_LEFT){
-			return m_handleLeftClick(event.button);
+			return m_handleLeftClick(event.button);this;
 		}
 		if(event.button.button == SDL_BUTTON_RIGHT){
 			m_select(event.button.x, event.button.y);

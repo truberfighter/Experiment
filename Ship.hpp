@@ -10,6 +10,7 @@ class City;
 class Ship: public Figure{
 protected:
 	bool m_isCarrier = false;
+	bool m_mayBombardGroundTroops = true;
 public:
 	virtual FigureType m_FigureType() override = 0;
 	Ship(){}
@@ -26,6 +27,9 @@ public:
 	std::shared_ptr<MovableThing> m_createImage() override = 0;
 	virtual short unsigned int m_cargoCountMax() = 0;
 	std::vector<std::shared_ptr<Figure>> m_getCargo();
+	bool m_MayBombardGroundTroops(){return m_mayBombardGroundTroops;}
+	void m_printData(std::ostream& os);
+	friend class FigureFactory;
 };
 
 

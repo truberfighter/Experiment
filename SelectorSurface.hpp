@@ -15,6 +15,7 @@ struct SelectionReturn{
 	std::string content;
 	unsigned int index;
 	Layer layer;
+	unsigned int unsortedIndex;
 };
 
 extern int selectionElementGlobalIndex;
@@ -23,6 +24,7 @@ class SelectionElement{
 public:
 	std::string content;
 	int layer;
+	unsigned int unsortedIndex;
 	std::function<void()> rightClickOrders;
 	SelectionElement(std::string c, int l, std::function<void()>& f): content(c), layer(l), rightClickOrders(f){ /*layer = selectionElementGlobalIndex++;*/	}
 	~SelectionElement(){std::cout<<"SelectionElementDestruktor: this = "<<this<<", content: "<<content<<", layer: "<<layer<<std::endl;}

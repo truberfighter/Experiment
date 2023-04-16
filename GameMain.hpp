@@ -14,6 +14,7 @@
 #include "EventHandler.hpp"
 #include <string>
 #include "Game.hpp"
+#include "FightSoundManager.hpp"
 
 enum MenuReturn{ALTER_TAX_RATE,ALTER_LUXURIES_RATE,SAVE_GAME};
 struct GameMainJson;
@@ -32,6 +33,7 @@ private:
 	std::shared_ptr<Drawing> m_currentFigureInfo;
 	BlinkingState m_currentBlinkingState = VISIBLE();
 	BlinkingTime m_blinkingIntervalTime = STANDARD_BLINKING_INTERVAL_TIME;
+	std::unique_ptr<FightSoundManager> m_theSoundManager;
 public:
 	bool m_handleEvent(const SDL_Event& event) override;
 	bool m_handleKeyboardEvent(const SDL_Event& event) override;
@@ -62,6 +64,7 @@ public:
 	void m_basicInitGame();
 	void m_initWindow();
 	GameMainJson m_createJson();
+	FightSoundManager* m_TheSoundManager(){return m_theSoundManager.get();}
 	friend class GameSaver; friend class GameLoader; friend class GameFactory;
 };
 
